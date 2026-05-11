@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCEANS LLC — Concept Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg:        #04080F;
+    --bg2:       #080E1A;
+    --bg3:       #0C1526;
+    --surface:   #101E30;
+    --border:    rgba(0,180,255,0.12);
+    --accent:    #00B4FF;
+    --accent2:   #0070CC;
+    --accent3:   #00D4AA;
+    --text:      #D8EEFF;
+    --muted:     #6A8FAD;
+    --white:     #F0F8FF;
+    --mono:      'IBM Plex Mono', monospace;
+    --sans:      'IBM Plex Sans', sans-serif;
+    --display:   'Syne', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    position: fixed;
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%,-50%);
+    transition: transform 0.1s ease;
+    mix-blend-mode: screen;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1px solid rgba(0,180,255,0.4);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%,-50%);
+    transition: transform 0.18s ease, width 0.2s, height 0.2s, border-color 0.2s;
+  }
+
+  /* Canvas */
+  #hero-canvas {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px;
+    height: 72px;
+    background: rgba(4,8,15,0.72);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+  nav.scrolled { background: rgba(4,8,15,0.95); }
+
+  .nav-logo {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: 0.08em;
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none;
+  }
+  .nav-logo-icon {
+    width: 32px; height: 32px;
+    border: 2px solid var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .nav-logo-icon::after {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    opacity: 0.25;
+    bottom: 4px; left: -50%;
+    animation: wave-logo 2.2s ease-in-out infinite;
+  }
+  @keyframes wave-logo {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
+  }
+  .nav-logo-o {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--accent);
+    z-index: 1;
+  }
+
+  .nav-links {
+    display: flex; gap: 36px; list-style: none;
+  }
+  .nav-links a {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+    position: relative;
+  }
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -3px; left: 0;
+    width: 0; height: 1px;
+    background: var(--accent);
+    transition: width 0.25s;
+  }
+  .nav-links a:hover { color: var(--white); }
+  .nav-links a:hover::after { width: 100%; }
+
+  .nav-cta {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 8px 20px;
+    text-decoration: none;
+    transition: all 0.22s;
+    border-radius: 3px;
+  }
+  .nav-cta:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    height: 100vh;
+    min-height: 700px;
+    display: flex; align-items: center;
+    overflow: hidden;
+  }
+
+  .hero-content {
+    position: relative; z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 48px;
+    width: 100%;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 28px;
+    display: flex; align-items: center; gap: 14px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: block;
+    width: 40px; height: 1px;
+    background: var(--accent);
+  }
+
+  .hero-title {
+    font-family: var(--display);
+    font-size: clamp(44px, 6vw, 82px);
+    font-weight: 800;
+    line-height: 1.05;
+    color: var(--white);
+    margin-bottom: 28px;
+    max-width: 820px;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.4s forwards;
+  }
+  .hero-title em {
+    font-style: normal;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--accent);
+  }
+
+  .hero-sub {
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 540px;
+    margin-bottom: 48px;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.6s forwards;
+  }
+
+  .hero-actions {
+    display: flex; gap: 16px; align-items: center;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.8s forwards;
+  }
+
+  .btn-primary {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: var(--accent);
+    color: var(--bg);
+    padding: 14px 32px;
+    text-decoration: none;
+    font-weight: 500;
+    border-radius: 3px;
+    transition: all 0.22s;
+    border: none; cursor: pointer;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: #33C8FF; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,180,255,0.3); }
+
+  .btn-outline {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: 1px solid rgba(0,180,255,0.35);
+    color: var(--text);
+    padding: 14px 32px;
+    text-decoration: none;
+    border-radius: 3px;
+    transition: all 0.22s;
+    display: inline-block;
+  }
+  .btn-outline:hover { border-color: var(--accent); color: var(--white); background: rgba(0,180,255,0.06); }
+
+  .hero-stats {
+    position: absolute;
+    right: 48px;
+    bottom: 80px;
+    z-index: 2;
+    display: flex; flex-direction: column; gap: 28px;
+    opacity: 0;
+    animation: fadeLeft 0.9s 1s forwards;
+  }
+  .stat-item { text-align: right; }
+  .stat-num {
+    font-family: var(--display);
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1;
+  }
+  .stat-num span { color: var(--accent); }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 32px; left: 48px;
+    z-index: 2;
+    display: flex; align-items: center; gap: 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0;
+    animation: fadeUp 0.8s 1.2s forwards;
+  }
+  .scroll-line {
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+    animation: scrollPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes scrollPulse {
+    0%,100% { opacity: 0.4; }
+    50%      { opacity: 1; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeLeft {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ── SECTION SCAFFOLD ── */
+  section { padding: 120px 0; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 48px; }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-label::before {
+    content: ''; display: block;
+    width: 24px; height: 1px;
+    background: var(--accent);
+  }
+
+  .section-title {
+    font-family: var(--display);
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+
+  .section-sub {
+    font-size: 16px;
+    font-weight: 300;
+    line-height: 1.75;
+    color: var(--muted);
+    max-width: 560px;
+  }
+
+  /* ── CAPABILITIES ── */
+  .capabilities { background: var(--bg2); }
+
+  .cap-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 72px;
+    gap: 48px;
+  }
+
+  .cap-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .cap-card {
+    background: var(--bg2);
+    padding: 40px 32px;
+    transition: background 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .cap-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.35s ease;
+  }
+  .cap-card:hover { background: var(--surface); }
+  .cap-card:hover::before { transform: scaleX(1); }
+
+  .cap-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 32px;
+  }
+  .cap-icon {
+    width: 48px; height: 48px;
+    margin-bottom: 24px;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+  }
+  .cap-card:hover .cap-icon { opacity: 1; }
+
+  .cap-title {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 14px;
+    line-height: 1.25;
+  }
+  .cap-desc {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+  .cap-tags {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(0,180,255,0.25);
+    padding: 3px 8px;
+    border-radius: 2px;
+  }
+
+  /* ── APPROACH ── */
+  .approach { background: var(--bg); }
+
+  .approach-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+
+  .approach-visual {
+    position: relative;
+    height: 520px;
+  }
+  .approach-diagram {
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg3);
+  }
+
+  /* pipeline diagram */
+  .pipeline {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 32px;
+    position: relative;
+  }
+  .pipeline-step {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    position: relative;
+  }
+  .p-box {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 16px;
+    background: var(--surface);
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .p-box:hover {
+    border-color: var(--accent);
+    background: rgba(0,180,255,0.06);
+  }
+  .p-box-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .p-box-title {
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--white);
+  }
+  .p-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 0;
+    width: 100%;
+  }
+  .p-line {
+    width: 1px;
+    height: 24px;
+    background: linear-gradient(to bottom, var(--accent2), var(--accent));
+    opacity: 0.5;
+  }
+  .p-arrow {
+    color: var(--accent);
+    font-size: 12px;
+    line-height: 1;
+    opacity: 0.6;
+  }
+
+  .approach-content {}
+  .approach-list {
+    list-style: none;
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .approach-item {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    transition: all 0.25s;
+    cursor: default;
+  }
+  .approach-item:hover {
+    border-color: var(--border);
+    background: var(--bg3);
+  }
+  .approach-item-icon {
+    width: 36px; height: 36px;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--accent);
+    font-size: 16px;
+  }
+  .approach-item-title {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 6px;
+  }
+  .approach-item-desc {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--muted);
+  }
+
+  /* ── EXPERIENCE ── */
+  .experience { background: var(--bg2); }
+
+  .exp-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 56px;
+  }
+
+  .exp-card {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 36px 28px;
+    background: var(--bg3);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.28s;
+    cursor: default;
+  }
+  .exp-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,180,255,0.05) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .exp-card:hover { border-color: rgba(0,180,255,0.3); transform: translateY(-4px); }
+  .exp-card:hover::after { opacity: 1; }
+
+  .exp-client {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .exp-title {
+    font-family: var(--display);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+  .exp-desc {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+  .exp-meta {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+
+  /* ── ABOUT ── */
+  .about-section { background: var(--bg); }
+
+  .about-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+
+  .about-values {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .value-card {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px 20px;
+    background: var(--bg3);
+    transition: all 0.25s;
+    cursor: default;
+  }
+  .value-card:hover { border-color: rgba(0,180,255,0.3); background: var(--surface); }
+  .value-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .value-title {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+  .value-desc {
+    font-size: 12px;
+    line-height: 1.65;
+    color: var(--muted);
+  }
+
+  .about-right {}
+  .founder-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg3);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    transition: border-color 0.25s;
+    cursor: default;
+  }
+  .founder-card:hover { border-color: rgba(0,180,255,0.3); }
+  .founder-avatar {
+    width: 80px; height: 80px;
+    flex-shrink: 0;
+    background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .founder-info { padding: 20px 24px; }
+  .founder-name {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+  .founder-role {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .founder-bio {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  /* ── CTA BAND ── */
+  .cta-band {
+    background: var(--bg3);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 80px 0;
+  }
+  .cta-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 48px;
+  }
+  .cta-text {}
+  .cta-title {
+    font-family: var(--display);
+    font-size: clamp(28px, 3.5vw, 44px);
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1.15;
+    margin-bottom: 14px;
+  }
+  .cta-title em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .cta-desc {
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--muted);
+    max-width: 480px;
+    line-height: 1.7;
+  }
+  .cta-actions { flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; align-items: flex-end; }
+  .cta-note {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--bg);
+    padding: 64px 0 40px;
+    border-top: 1px solid var(--border);
+  }
+  .footer-inner {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 56px;
+  }
+  .footer-brand {}
+  .footer-logo {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+  }
+  .footer-tagline {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 260px;
+    margin-bottom: 20px;
+  }
+  .footer-contact {
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 2;
+    color: var(--muted);
+  }
+  .footer-contact a { color: var(--accent); text-decoration: none; }
+
+  .footer-col-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .footer-links { list-style: none; }
+  .footer-links li { margin-bottom: 10px; }
+  .footer-links a {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--white); }
+
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .footer-copy {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .footer-copy span { color: var(--text); }
+  .footer-gh {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .footer-gh::before {
+    content: '⬡';
+    color: var(--accent);
+    font-size: 12px;
+  }
+
+  /* divider */
+  .grid-line {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    margin: 0;
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  /* badge */
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 2px;
+    border: 1px solid rgba(0,180,255,0.3);
+    color: var(--accent);
+  }
+  .badge.green { border-color: rgba(0,212,170,0.3); color: var(--accent3); }
+
+  /* glow accent line */
+  .glow-line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.3;
+  }
+
+  /* Tech stack banner */
+  .stack-banner {
+    background: var(--bg3);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0;
+    overflow: hidden;
+  }
+  .stack-track {
+    display: flex; gap: 48px; align-items: center;
+    width: max-content;
+    animation: marquee 20s linear infinite;
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  .stack-item {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .stack-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); opacity: 0.5; }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon"><span class="nav-logo-o">O</span></div>
+    OCEANS
+  </a>
+  <ul class="nav-links">
+    <li><a href="#capabilities">Services</a></li>
+    <li><a href="#approach">Approach</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta">Get In Touch</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Systems Engineering · T&amp;E · Mission Data</div>
+    <h1 class="hero-title">
+      Engineering that<br>
+      earns <em>operational</em><br>
+      trust.
+    </h1>
+    <p class="hero-sub">
+      OCEANS LLC delivers systems engineering, enterprise architecture, and rigorous test &amp; evaluation that translate federal mission needs into defensible, decision-ready outcomes.
+    </p>
+    <div class="hero-actions">
+      <a href="#capabilities" class="btn-primary">Explore Capabilities</a>
+      <a href="#contact" class="btn-outline">Download Capabilities Statement</a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-item reveal">
+      <div class="stat-num">50<span>+</span></div>
+      <div class="stat-label">Years Combined Experience</div>
+    </div>
+    <div class="stat-item reveal reveal-delay-1">
+      <div class="stat-num">2013</div>
+      <div class="stat-label">Founded</div>
+    </div>
+    <div class="stat-item reveal reveal-delay-2">
+      <div class="stat-num">4<span>+</span></div>
+      <div class="stat-label">Core Service Lines</div>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    Scroll to explore
+  </div>
+</section>
+
+<!-- STACK BANNER -->
+<div class="stack-banner">
+  <div class="stack-track">
+    <div class="stack-item"><div class="stack-dot"></div>Systems Engineering</div>
+    <div class="stack-item"><div class="stack-dot"></div>Enterprise Architecture</div>
+    <div class="stack-item"><div class="stack-dot"></div>RDT&E</div>
+    <div class="stack-item"><div class="stack-dot"></div>Ontology-Driven Data</div>
+    <div class="stack-item"><div class="stack-dot"></div>Federal Acquisition</div>
+    <div class="stack-item"><div class="stack-dot"></div>White Team Operations</div>
+    <div class="stack-item"><div class="stack-dot"></div>TRL Assessments</div>
+    <div class="stack-item"><div class="stack-dot"></div>CONOPS Development</div>
+    <div class="stack-item"><div class="stack-dot"></div>Common Operating Pictures</div>
+    <!-- duplicate for loop -->
+    <div class="stack-item"><div class="stack-dot"></div>Systems Engineering</div>
+    <div class="stack-item"><div class="stack-dot"></div>Enterprise Architecture</div>
+    <div class="stack-item"><div class="stack-dot"></div>RDT&E</div>
+    <div class="stack-item"><div class="stack-dot"></div>Ontology-Driven Data</div>
+    <div class="stack-item"><div class="stack-dot"></div>Federal Acquisition</div>
+    <div class="stack-item"><div class="stack-dot"></div>White Team Operations</div>
+    <div class="stack-item"><div class="stack-dot"></div>TRL Assessments</div>
+    <div class="stack-item"><div class="stack-dot"></div>CONOPS Development</div>
+    <div class="stack-item"><div class="stack-dot"></div>Common Operating Pictures</div>
+  </div>
+</div>
+
+<!-- CAPABILITIES -->
+<section class="capabilities" id="capabilities">
+  <div class="container">
+    <div class="cap-header">
+      <div>
+        <div class="section-label reveal">Our Services</div>
+        <h2 class="section-title reveal reveal-delay-1">Four core<br>capability areas</h2>
+      </div>
+      <p class="section-sub reveal reveal-delay-2">Every engagement is scoped to deliver defensible evidence — not just analysis — for operational and acquisition decisions.</p>
+    </div>
+    <div class="cap-grid">
+      <div class="cap-card reveal">
+        <div class="cap-num">01</div>
+        <svg class="cap-icon" viewBox="0 0 48 48" fill="none" stroke="#00B4FF" stroke-width="1.5">
+          <rect x="6" y="14" width="36" height="24" rx="2"/>
+          <path d="M16 14V10M32 14V10M6 22h36"/>
+          <circle cx="16" cy="30" r="2" fill="#00B4FF" stroke="none"/>
+          <circle cx="24" cy="30" r="2" fill="#00B4FF" stroke="none"/>
+          <circle cx="32" cy="30" r="2" fill="#00B4FF" stroke="none"/>
+        </svg>
+        <div class="cap-title">Requirements Development</div>
+        <div class="cap-desc">Translating mission needs, operational gaps, and stakeholder inputs into structured, testable requirements with full traceability.</div>
+        <div class="cap-tags">
+          <span class="tag">Gap Analysis</span>
+          <span class="tag">Use Cases</span>
+          <span class="tag">Metrics Mapping</span>
+        </div>
+      </div>
+      <div class="cap-card reveal reveal-delay-1">
+        <div class="cap-num">02</div>
+        <svg class="cap-icon" viewBox="0 0 48 48" fill="none" stroke="#00B4FF" stroke-width="1.5">
+          <rect x="8" y="8" width="14" height="14" rx="2"/>
+          <rect x="26" y="8" width="14" height="14" rx="2"/>
+          <rect x="17" y="26" width="14" height="14" rx="2"/>
+          <path d="M15 15h18M24 22v4"/>
+        </svg>
+        <div class="cap-title">Systems Engineering &amp; Architecture</div>
+        <div class="cap-desc">End-to-end architecture design connecting validated requirements to secure, scalable, lifecycle-aligned solutions.</div>
+        <div class="cap-tags">
+          <span class="tag">CONOPS</span>
+          <span class="tag">Cybersecurity</span>
+          <span class="tag">Integration</span>
+        </div>
+      </div>
+      <div class="cap-card reveal reveal-delay-2">
+        <div class="cap-num">03</div>
+        <svg class="cap-icon" viewBox="0 0 48 48" fill="none" stroke="#00B4FF" stroke-width="1.5">
+          <path d="M8 36L20 20l8 8 8-12 4 4"/>
+          <circle cx="38" cy="12" r="3"/>
+          <path d="M8 40h32"/>
+          <rect x="8" y="36" width="4" height="4" fill="#00B4FF" stroke="none" opacity="0.5"/>
+        </svg>
+        <div class="cap-title">Research, Development, Test &amp; Evaluation</div>
+        <div class="cap-desc">50+ years of mission-aligned, quantitative RDT&E providing defensible evidence for operational and acquisition decisions.</div>
+        <div class="cap-tags">
+          <span class="tag">TRL Eval</span>
+          <span class="tag">White Team</span>
+          <span class="tag">Test Plans</span>
+        </div>
+      </div>
+      <div class="cap-card reveal reveal-delay-3">
+        <div class="cap-num">04</div>
+        <svg class="cap-icon" viewBox="0 0 48 48" fill="none" stroke="#00B4FF" stroke-width="1.5">
+          <circle cx="24" cy="24" r="10"/>
+          <circle cx="24" cy="24" r="3" fill="#00B4FF" stroke="none" opacity="0.6"/>
+          <path d="M24 8v6M24 34v6M8 24h6M34 24h6"/>
+          <path d="M13.4 13.4l4.2 4.2M30.4 30.4l4.2 4.2M13.4 34.6l4.2-4.2M30.4 17.6l4.2-4.2" stroke-width="1"/>
+        </svg>
+        <div class="cap-title">Mission Data, COPs &amp; Ontologies</div>
+        <div class="cap-desc">Ontology-driven data architectures enabling multi-domain awareness, interoperability, and decision-quality operating pictures.</div>
+        <div class="cap-tags">
+          <span class="tag">Ontologies</span>
+          <span class="tag">COP Validation</span>
+          <span class="tag">Integration</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APPROACH -->
+<section class="approach" id="approach">
+  <div class="container">
+    <div class="approach-inner">
+      <div class="approach-visual">
+        <div class="approach-diagram">
+          <div class="pipeline">
+            <div class="pipeline-step">
+              <div class="p-box" style="border-color: rgba(0,180,255,0.35);">
+                <div class="p-box-label">01 · Intake</div>
+                <div class="p-box-title">Mission Need &amp; Scoping</div>
+              </div>
+            </div>
+            <div class="p-connector"><div class="p-line"></div><div class="p-arrow">▼</div></div>
+            <div class="pipeline-step">
+              <div class="p-box">
+                <div class="p-box-label">02 · Requirements</div>
+                <div class="p-box-title">Structured Requirements Development</div>
+              </div>
+            </div>
+            <div class="p-connector"><div class="p-line"></div><div class="p-arrow">▼</div></div>
+            <div class="pipeline-step">
+              <div class="p-box">
+                <div class="p-box-label">03 · Architecture</div>
+                <div class="p-box-title">Systems Engineering &amp; Design</div>
+              </div>
+            </div>
+            <div class="p-connector"><div class="p-line"></div><div class="p-arrow">▼</div></div>
+            <div class="pipeline-step">
+              <div class="p-box">
+                <div class="p-box-label">04 · Evaluation</div>
+                <div class="p-box-title">T&amp;E Execution &amp; Analysis</div>
+              </div>
+            </div>
+            <div class="p-connector"><div class="p-line"></div><div class="p-arrow">▼</div></div>
+            <div class="pipeline-step">
+              <div class="p-box" style="border-color: rgba(0,212,170,0.35);">
+                <div class="p-box-label" style="color: var(--accent3);">05 · Outcome</div>
+                <div class="p-box-title">Decision-Grade Reporting</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="approach-content">
+        <div class="section-label reveal">Our Methodology</div>
+        <h2 class="section-title reveal reveal-delay-1">From mission need<br>to defensible outcome.</h2>
+        <p class="section-sub reveal reveal-delay-2">We don't hand off a report and walk away. Our end-to-end lifecycle process ensures every recommendation is traceable to a validated requirement and every metric withstands technical, operational, and executive review.</p>
+        <ul class="approach-list">
+          <li class="approach-item reveal reveal-delay-1">
+            <div class="approach-item-icon">⬡</div>
+            <div>
+              <div class="approach-item-title">Traceability First</div>
+              <div class="approach-item-desc">Every deliverable traces from mission need to measurable threshold. Nothing exists in isolation.</div>
+            </div>
+          </li>
+          <li class="approach-item reveal reveal-delay-2">
+            <div class="approach-item-icon">◈</div>
+            <div>
+              <div class="approach-item-title">Quantitative Rigor</div>
+              <div class="approach-item-desc">We build structured test designs with defensible, statistically grounded analysis — not qualitative assertions.</div>
+            </div>
+          </li>
+          <li class="approach-item reveal reveal-delay-3">
+            <div class="approach-item-icon">◯</div>
+            <div>
+              <div class="approach-item-title">Decision-Grade Outputs</div>
+              <div class="approach-item-desc">All reports and recommendations are formatted for decision-makers at technical, operational, and executive levels.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="experience" id="experience">
+  <div class="container">
+    <div class="section-label reveal">Past Performance</div>
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 56px; gap:32px;">
+      <h2 class="section-title reveal reveal-delay-1">Relevant experience<br>across federal missions</h2>
+      <a href="#contact" class="btn-outline reveal reveal-delay-2" style="flex-shrink:0;">Request Full Past Performance</a>
+    </div>
+    <div class="exp-grid">
+      <div class="exp-card reveal">
+        <div class="exp-client">Department of Defense</div>
+        <div class="exp-title">Operational Test &amp; Evaluation — Command &amp; Control Systems</div>
+        <div class="exp-desc">Designed and executed a structured OT&E program for a multi-domain C2 capability, serving as White Team lead and delivering an acquisition-grade assessment report.</div>
+        <div class="exp-meta">
+          <span class="badge">T&E</span>
+          <span class="badge">C2</span>
+          <span class="badge">White Team</span>
+        </div>
+      </div>
+      <div class="exp-card reveal reveal-delay-1">
+        <div class="exp-client">Department of Homeland Security</div>
+        <div class="exp-title">Enterprise Architecture &amp; Sensor Integration</div>
+        <div class="exp-desc">Developed integration architectures and CONOPS for multi-sensor border surveillance systems, with full lifecycle cybersecurity documentation.</div>
+        <div class="exp-meta">
+          <span class="badge">Architecture</span>
+          <span class="badge">Sensor Fusion</span>
+          <span class="badge green">Active</span>
+        </div>
+      </div>
+      <div class="exp-card reveal reveal-delay-2">
+        <div class="exp-client">Federal Program Office</div>
+        <div class="exp-title">Mission Data Ontology &amp; COP Validation</div>
+        <div class="exp-desc">Designed a structured ontology schema and data integration architecture enabling multi-domain COP performance assessment and analytic dashboards.</div>
+        <div class="exp-meta">
+          <span class="badge">Ontologies</span>
+          <span class="badge">COP</span>
+          <span class="badge">Data Architecture</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about-section" id="about">
+  <div class="container">
+    <div class="about-inner">
+      <div>
+        <div class="section-label reveal">Our Story</div>
+        <h2 class="section-title reveal reveal-delay-1">Built on thirty years<br>of trust.</h2>
+        <p class="section-sub reveal reveal-delay-2" style="margin-bottom:24px;">OCEANS LLC was founded in 2013 by Daniel Brent and Paul Morrisseau — colleagues who met in Jacksonville when Daniel was serving in the U.S. Navy and later reunited at SRI International in St. Petersburg. They built the company on a simple conviction: federal programs deserve rigorous, objective engineering — not just confident-sounding reports.</p>
+        <p class="section-sub reveal reveal-delay-3">Headquartered back where it began in Jacksonville, FL, OCEANS bridges high-level engineering discipline with real-world operational need.</p>
+        <div class="about-values">
+          <div class="value-card reveal reveal-delay-1">
+            <div class="value-label">Core Value</div>
+            <div class="value-title">Discipline</div>
+            <div class="value-desc">Structured methodology, traceability, and measurable criteria — in every engagement.</div>
+          </div>
+          <div class="value-card reveal reveal-delay-2">
+            <div class="value-label">Core Value</div>
+            <div class="value-title">Clarity</div>
+            <div class="value-desc">Findings and recommendations that work at technical, operational, and executive levels.</div>
+          </div>
+          <div class="value-card reveal reveal-delay-3">
+            <div class="value-label">Core Value</div>
+            <div class="value-title">Integrity</div>
+            <div class="value-desc">Objective, defensible results grounded in validated requirements. We own our outcomes.</div>
+          </div>
+          <div class="value-card reveal reveal-delay-4">
+            <div class="value-label">Jacksonville, FL</div>
+            <div class="value-title">Est. 2013</div>
+            <div class="value-desc">Government · Military · Homeland Security — where it counts most.</div>
+          </div>
+        </div>
+      </div>
+      <div class="about-right">
+        <div class="section-label reveal" style="margin-bottom:28px;">Leadership</div>
+        <div class="founder-card reveal reveal-delay-1">
+          <div class="founder-avatar">DB</div>
+          <div class="founder-info">
+            <div class="founder-name">Daniel Brent</div>
+            <div class="founder-role">Co-Founder &amp; Principal</div>
+            <div class="founder-bio">U.S. Navy veteran with extensive experience in operational systems, sensor deployment, and mission engineering for federal clients.</div>
+          </div>
+        </div>
+        <div class="founder-card reveal reveal-delay-2">
+          <div class="founder-avatar">PM</div>
+          <div class="founder-info">
+            <div class="founder-name">Paul Morrisseau</div>
+            <div class="founder-role">Co-Founder &amp; Principal</div>
+            <div class="founder-bio">Engineering graduate with 25+ years in enterprise architecture, systems integration, and government program support at SRI International and beyond.</div>
+          </div>
+        </div>
+        <div style="margin-top:32px; padding:24px; border:1px solid var(--border); border-radius:4px; background:var(--bg3);" class="reveal reveal-delay-3">
+          <div class="section-label" style="margin-bottom:12px;">Contact</div>
+          <div class="footer-contact">
+            <div>Jacksonville, FL 32099</div>
+            <div><a href="mailto:info@oceansllc.com">info@oceansllc.com</a></div>
+            <div>727-455-9383</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BAND -->
+<div class="cta-band" id="contact">
+  <div class="container">
+    <div class="cta-inner">
+      <div class="cta-text">
+        <h2 class="cta-title reveal">Ready to bring <em>rigor</em><br>to your program?</h2>
+        <p class="cta-desc reveal reveal-delay-1">Whether you're scoping a new T&amp;E effort, need architecture support, or want to understand how OCEANS can support your acquisition — start with a conversation.</p>
+      </div>
+      <div class="cta-actions reveal reveal-delay-2">
+        <a href="mailto:info@oceansllc.com" class="btn-primary">Schedule a Conversation</a>
+        <a href="#" class="btn-outline">Download Capabilities Statement ↓</a>
+        <div class="cta-note">CAGE · NAICS · Contract Vehicles inside</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="footer-logo">OCEANS LLC</div>
+        <p class="footer-tagline">Systems engineering, test &amp; evaluation, and mission data solutions for federal customers who need defensible outcomes.</p>
+        <div class="footer-contact">
+          <div>Jacksonville, FL</div>
+          <div><a href="mailto:info@oceansllc.com">info@oceansllc.com</a></div>
+          <div>727-455-9383</div>
+          <div><a href="https://www.linkedin.com/company/oceans-llc" target="_blank">LinkedIn ↗</a></div>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Services</div>
+        <ul class="footer-links">
+          <li><a href="#capabilities">Requirements Development</a></li>
+          <li><a href="#capabilities">Systems Engineering</a></li>
+          <li><a href="#capabilities">RDT&E</a></li>
+          <li><a href="#capabilities">Mission Data &amp; COPs</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <ul class="footer-links">
+          <li><a href="#about">About</a></li>
+          <li><a href="#about">Leadership</a></li>
+          <li><a href="#experience">Past Performance</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Resources</div>
+        <ul class="footer-links">
+          <li><a href="#">Capabilities Statement</a></li>
+          <li><a href="#">Contract Vehicles</a></li>
+          <li><a href="#">Certifications</a></li>
+          <li><a href="#">NAICS Codes</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2025 <span>OCEANS LLC</span>. All rights reserved.</div>
+      <div class="footer-gh">Hosted on GitHub Pages · Built with React + Vite</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Cursor
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursorRing');
+let mx=0, my=0, rx=0, ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cursor.style.left=mx+'px'; cursor.style.top=my+'px'; });
+function animRing(){ rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animRing); }
+animRing();
+document.querySelectorAll('a,button,.cap-card,.exp-card,.value-card,.founder-card,.approach-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ ring.style.width='56px'; ring.style.height='56px'; ring.style.borderColor='rgba(0,180,255,0.7)'; });
+  el.addEventListener('mouseleave',()=>{ ring.style.width='36px'; ring.style.height='36px'; ring.style.borderColor='rgba(0,180,255,0.4)'; });
+});
+
+// Nav scroll
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', ()=>{ nav.classList.toggle('scrolled', window.scrollY>60); });
+
+// Hero canvas – flowing wave field
+const canvas = document.getElementById('hero-canvas');
+const ctx    = canvas.getContext('2d');
+let W,H, particles=[];
+
+function resize(){ W=canvas.width=canvas.offsetWidth; H=canvas.height=canvas.offsetHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+class Particle {
+  constructor(){
+    this.x = Math.random()*W;
+    this.y = Math.random()*H;
+    this.size  = Math.random()*1.5+0.3;
+    this.speed = Math.random()*0.4+0.1;
+    this.angle = Math.random()*Math.PI*2;
+    this.opacity = Math.random()*0.5+0.1;
+    this.life  = Math.random();
+    this.maxLife = Math.random()*200+100;
+    this.age = 0;
+  }
+  update(){
+    this.age++;
+    const waveX = Math.sin(this.y*0.008 + Date.now()*0.0006)*0.5;
+    const waveY = Math.cos(this.x*0.006 + Date.now()*0.0004)*0.3;
+    this.x += (Math.cos(this.angle)*this.speed + waveX)*0.8;
+    this.y += (Math.sin(this.angle)*this.speed + waveY)*0.5;
+    if(this.x<-10||this.x>W+10||this.y<-10||this.y>H+10||this.age>this.maxLife){ Object.assign(this, new Particle()); this.age=0; }
+  }
+  draw(){
+    const fade = Math.min(this.age/30, 1) * Math.min((this.maxLife-this.age)/30, 1);
+    ctx.globalAlpha = this.opacity * fade;
+    ctx.fillStyle = '#00B4FF';
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+for(let i=0;i<180;i++) particles.push(new Particle());
+
+function drawWaves(){
+  const now = Date.now()*0.001;
+  for(let w=0;w<3;w++){
+    ctx.beginPath();
+    ctx.strokeStyle = `rgba(0,180,255,${0.04+w*0.015})`;
+    ctx.lineWidth = 1;
+    for(let x=0;x<=W;x+=3){
+      const y = H*0.5 + Math.sin(x*0.006+now*(0.4+w*0.15)+w*1.2)*60 + Math.sin(x*0.012+now*0.3+w*2)*30;
+      x===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+}
+
+function drawGrid(){
+  ctx.strokeStyle = 'rgba(0,70,140,0.12)';
+  ctx.lineWidth = 0.5;
+  const step = 60;
+  for(let x=0;x<W;x+=step){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for(let y=0;y<H;y+=step){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+}
+
+function animate(){
+  ctx.clearRect(0,0,W,H);
+
+  // bg gradient
+  const g = ctx.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,'#04080F');
+  g.addColorStop(0.5,'#060D18');
+  g.addColorStop(1,'#04080F');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+  drawGrid();
+  drawWaves();
+
+  ctx.globalAlpha=1;
+  particles.forEach(p=>{ p.update(); p.draw(); });
+  ctx.globalAlpha=1;
+
+  // accent glow
+  const glow = ctx.createRadialGradient(W*0.15, H*0.5, 0, W*0.15, H*0.5, W*0.4);
+  glow.addColorStop(0,'rgba(0,100,200,0.08)');
+  glow.addColorStop(1,'transparent');
+  ctx.fillStyle=glow; ctx.fillRect(0,0,W,H);
+
+  requestAnimationFrame(animate);
+}
+animate();
+
+// Scroll reveal
+const reveals = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:0.12});
+reveals.forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
