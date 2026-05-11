@@ -1,0 +1,31 @@
+---
+import "../styles/global.css";
+import { ACTIVE_THEME } from "../lib/theme";
+---
+
+<html lang="en" data-theme={ACTIVE_THEME}>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>OCEANS LLC — theme: {ACTIVE_THEME}</title>
+  </head>
+  <body>
+    <main class="min-h-screen p-12 max-w-6xl mx-auto">
+      <p class="font-mono text-xs uppercase tracking-widest text-accent">▌ Theme — {ACTIVE_THEME}</p>
+      <h1 class="font-display text-5xl md:text-7xl font-bold text-fg-strong mt-4 leading-[1.04]">
+        Engineering that earns operational trust.
+      </h1>
+      <p class="font-sans text-base text-muted mt-6 max-w-xl leading-relaxed">
+        Systems engineering, test &amp; evaluation, and mission data solutions for federal customers who need defensible outcomes.
+      </p>
+      <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-2">
+        <div class="aspect-square rounded bg-bg"></div>
+        <div class="aspect-square rounded bg-surface"></div>
+        <div class="aspect-square rounded bg-accent"></div>
+        <div class="aspect-square rounded bg-muted"></div>
+      </div>
+    </main>
+  </body>
+</html>
