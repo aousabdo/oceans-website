@@ -1,0 +1,58 @@
+# Existing OCEANS LLC company directories at this level — NOT part of the website repo
+/0_admin/
+/1_source_docs/
+/2_authoring/
+/3_outputs/
+/4_scripts_and_tools/
+/Forms/
+/Meetings/
+/Public_docs/
+/cuas_arch/
+/presentations_n_docs/
+/recordings/
+/tmp/
+/reorganize_cuas.sh
+/setup_oceans_dirs.sh
+
+# Brainstorm scratch (visual companion artifacts)
+.superpowers/
+
+# Node
+node_modules/
+.npm
+npm-debug.log*
+.pnpm-debug.log*
+
+# Astro
+.astro/
+dist/
+
+# Build / cache
+.cache/
+.parcel-cache/
+
+# Env
+.env
+.env.local
+.env.*.local
+.dev.vars
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+
+# Test artifacts
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Cloudflare
+.wrangler/
+
+# TypeScript build info
+*.tsbuildinfo
