@@ -1,1 +1,120 @@
 @import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────────
+   Tailwind 4 token registration.
+   Operator values are the defaults — Tailwind generates
+   `bg-bg`, `text-fg`, `text-accent`, `font-display`, etc.
+   from these. Other themes override the same CSS variables on
+   their `[data-theme="..."]` selectors so utilities cascade.
+───────────────────────────────────────────────────────────────── */
+@theme {
+  --color-bg:              #1A2840;
+  --color-bg-2:            #14223A;
+  --color-surface:         #253553;
+  --color-surface-2:       #314466;
+
+  --color-fg:              #EAF2FB;
+  --color-fg-strong:       #F8FBFF;
+  --color-muted:           #9AB4D0;
+
+  --color-accent:          #5BD4FF;
+  --color-accent-2:        #314466;
+  --color-accent-warm:     #FFB454;
+  --color-accent-go:       #5EE6B8;
+  --color-accent-warn:     #FFB454;
+  --color-accent-critical: #FF6B6B;
+  --color-border-hairline: rgba(91, 212, 255, 0.18);
+
+  --font-display: "Syne", system-ui, sans-serif;
+  --font-sans:    "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono:    "IBM Plex Mono", ui-monospace, monospace;
+  --font-serif:   Georgia, serif;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Theme: Institute (Editorial Cream)
+───────────────────────────────────────────────────────────────── */
+[data-theme="institute"] {
+  --color-bg:              #F4F1EC;
+  --color-bg-2:            #EDE7DC;
+  --color-surface:         #FFFFFF;
+  --color-surface-2:       #EDE7DC;
+
+  --color-fg:              #1A2333;
+  --color-fg-strong:       #0F1626;
+  --color-muted:           #5A6478;
+
+  --color-accent:          #1A4477;
+  --color-accent-2:        #7A6E5A;
+  --color-accent-warm:     #B8924A;
+  --color-accent-go:       #5E7A6B;
+  --color-accent-warn:     #B8924A;
+  --color-accent-critical: #8C2E2E;
+  --color-border-hairline: rgba(26, 35, 51, 0.13);
+
+  --font-display: "Newsreader", Georgia, serif;
+  --font-sans:    "Inter", system-ui, sans-serif;
+  --font-mono:    ui-monospace, monospace;
+  --font-serif:   "Newsreader", Georgia, serif;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Theme: Mariner (Open Sky)
+───────────────────────────────────────────────────────────────── */
+[data-theme="mariner"] {
+  --color-bg:              #EEF5FA;
+  --color-bg-2:            #F4F9FC;
+  --color-surface:         #FFFFFF;
+  --color-surface-2:       #E4EEF5;
+
+  --color-fg:              #0A2942;
+  --color-fg-strong:       #061A30;
+  --color-muted:           #4A6480;
+
+  --color-accent:          #1A6FAB;
+  --color-accent-2:        #7FB8E0;
+  --color-accent-warm:     #B8924A;
+  --color-accent-go:       #2F855A;
+  --color-accent-warn:     #B8924A;
+  --color-accent-critical: #B33A3A;
+  --color-border-hairline: rgba(26, 111, 171, 0.18);
+
+  --font-display: "Cormorant Garamond", "Fraunces", Georgia, serif;
+  --font-sans:    "Inter", system-ui, sans-serif;
+  --font-mono:    ui-monospace, monospace;
+  --font-serif:   "Cormorant Garamond", "Fraunces", Georgia, serif;
+}
+
+[data-theme="mariner"] body {
+  background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-2) 100%);
+  background-attachment: fixed;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Base
+───────────────────────────────────────────────────────────────── */
+@layer base {
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-bg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
