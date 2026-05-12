@@ -1,0 +1,36 @@
+---
+// Back-to-top floating button — fades in after scrolling past 800px,
+// fades out near the top. Smooth-scrolls on click. Respects reduced-motion.
+---
+<button
+  type="button"
+  id="back-to-top"
+  aria-label="Back to top"
+  class="fixed bottom-6 right-6 z-30 w-11 h-11 rounded-full bg-surface border border-accent/30 text-accent shadow-lg backdrop-blur transition-all duration-300 grid place-items-center opacity-0 pointer-events-none translate-y-2 hover:bg-accent hover:text-bg hover:border-accent focus-visible:opacity-100 focus-visible:pointer-events-auto focus-visible:translate-y-0"
+>
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 19V5M5 12l7-7 7 7"></path>
+  </svg>
+</button>
+<script>
+  const btn = document.getElementById("back-to-top");
+  if (btn) {
+    const onScroll = () => {
+      if (window.scrollY > 800) {
+        btn.style.opacity = "1";
+        btn.style.transform = "translateY(0)";
+        btn.style.pointerEvents = "auto";
+      } else {
+        btn.style.opacity = "0";
+        btn.style.transform = "translateY(8px)";
+        btn.style.pointerEvents = "none";
+      }
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    btn.addEventListener("click", () => {
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
+    });
+  }
+</script>

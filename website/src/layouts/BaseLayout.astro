@@ -3,6 +3,7 @@ import "@styles/global.css";
 import { ACTIVE_THEME } from "@lib/theme";
 import { buildSeo, type SeoInput } from "@lib/seo";
 import { organizationLd } from "@lib/schema";
+import BackToTop from "@components/BackToTop.astro";
 
 interface Props extends Omit<SeoInput, "path"> {
   path?: string;
@@ -63,6 +64,7 @@ const fontHrefs: Record<typeof ACTIVE_THEME, string> = {
       <slot />
     </main>
     <slot name="footer" />
+    <BackToTop />
     <script is:inline>
       // Scroll-reveal — flag below-the-fold sections, animate them in on view.
       (function () {
