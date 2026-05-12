@@ -1,0 +1,119 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import SectionLabel from "@components/SectionLabel.astro";
+import Button from "@components/Button.astro";
+import Card from "@components/Card.astro";
+import CaseStudyCard from "@components/CaseStudyCard.astro";
+import MaritimeVideoHero from "@components/themes/mariner/MaritimeVideoHero.astro";
+import WaveDivider from "@components/themes/mariner/WaveDivider.astro";
+import Compass from "@components/themes/mariner/Compass.astro";
+import { getCollection } from "astro:content";
+
+const services = (await getCollection("services")).sort((a, b) => a.data.order - b.data.order);
+const cases = (await getCollection("caseStudies")).slice(0, 3);
+const headings = ["N", "NE", "E", "SE"];
+---
+<PageLayout title="OCEANS LLC" path="/">
+  <!-- DEPTH 01 — HERO -->
+  <section class="relative min-h-[640px] md:min-h-[720px] overflow-hidden">
+    <MaritimeVideoHero class="absolute inset-0 h-full">
+      <div class="absolute inset-0 flex items-center">
+        <div class="mx-auto max-w-6xl px-6 w-full">
+          <p class="font-serif italic text-accent tracking-[0.3em] text-xs">
+            ⌁&nbsp;&nbsp;OCEANS&nbsp;&nbsp;⌁
+          </p>
+          <h1 class="font-display font-light text-fg-strong text-6xl md:text-8xl lg:text-9xl mt-6 leading-[0.95]">
+            Depth.<br />Discipline.<br /><em class="text-accent">Direction.</em>
+          </h1>
+          <p class="mt-8 max-w-lg text-lg text-muted font-serif italic">
+            Engineering the systems that carry federal missions through deep, uncertain water.
+          </p>
+          <div class="mt-10">
+            <Button href="/services" variant="primary">Plot a course</Button>
+          </div>
+        </div>
+      </div>
+    </MaritimeVideoHero>
+  </section>
+
+  <WaveDivider />
+
+  <!-- DEPTH 02 -->
+  <section class="mx-auto max-w-3xl px-6 py-24 text-center">
+    <p class="font-serif italic text-accent tracking-[0.2em] text-xs">
+      ⌁&nbsp;&nbsp;what we make possible&nbsp;&nbsp;⌁
+    </p>
+    <h2 class="font-display font-light text-4xl md:text-5xl text-fg-strong mt-6 leading-tight">
+      Missions that depend on engineering they can defend.
+    </h2>
+  </section>
+
+  <!-- DEPTH 03 — CAPABILITIES AS COMPASS HEADINGS -->
+  <section class="mx-auto max-w-6xl px-6 py-16">
+    <SectionLabel>⌁&nbsp;&nbsp;capabilities&nbsp;&nbsp;⌁</SectionLabel>
+    <div class="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {
+        services.map((s, i) => (
+          <Card href={`/services/${s.data.slug}`} accent>
+            <span class="font-serif italic text-accent tracking-widest text-xs">
+              {headings[i]} · {s.data.number}
+            </span>
+            <h3 class="font-display font-light text-2xl text-fg-strong mt-3 leading-tight">
+              {s.data.title}
+            </h3>
+            <p class="mt-3 text-sm text-muted leading-relaxed font-serif">{s.data.summary}</p>
+          </Card>
+        ))
+      }
+    </div>
+  </section>
+
+  <WaveDivider />
+
+  <!-- DEPTH 05 — PAST PERFORMANCE AS CHART -->
+  <section class="mx-auto max-w-6xl px-6 py-24">
+    <div class="flex items-center gap-4 mb-12">
+      <Compass size={56} />
+      <div>
+        <SectionLabel>⌁&nbsp;&nbsp;past performance&nbsp;&nbsp;⌁</SectionLabel>
+        <h2 class="font-display font-light text-3xl md:text-4xl text-fg-strong mt-2">
+          Where we have charted course.
+        </h2>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {
+        cases.map((c) => (
+          <CaseStudyCard
+            client={c.data.client}
+            title={c.data.title}
+            summary={c.data.summary}
+            badges={c.data.badges}
+            href={`/experience/${c.data.slug}`}
+          />
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- DEPTH 08 — CTA -->
+  <section class="relative bg-surface-2/40 border-t border-border-hairline">
+    <WaveDivider flip class="absolute -top-1 left-0 right-0" />
+    <div class="mx-auto max-w-3xl px-6 py-24 text-center">
+      <p class="font-serif italic text-accent tracking-[0.2em] text-xs">
+        ⌁&nbsp;&nbsp;set out&nbsp;&nbsp;⌁
+      </p>
+      <h2 class="font-display font-light text-4xl md:text-5xl text-fg-strong mt-6 leading-tight">
+        Plot a course with us.
+      </h2>
+      <p class="mt-6 text-fg leading-relaxed max-w-xl mx-auto font-serif">
+        Whether you are scoping a new T&amp;E effort, need architecture support, or want to
+        understand what defensible engineering looks like at your organization — write to us.
+      </p>
+      <div class="mt-10 flex justify-center gap-3 flex-wrap">
+        <Button href="/contact" variant="primary">Begin a conversation</Button>
+        <Button href="/capabilities" variant="outline">Capabilities statement</Button>
+      </div>
+    </div>
+  </section>
+</PageLayout>

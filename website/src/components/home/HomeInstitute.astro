@@ -1,0 +1,180 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import SectionLabel from "@components/SectionLabel.astro";
+import Button from "@components/Button.astro";
+import PullQuote from "@components/PullQuote.astro";
+import Pipeline from "@components/Pipeline.astro";
+import BlogPostCard from "@components/BlogPostCard.astro";
+import DropCap from "@components/themes/institute/DropCap.astro";
+import FigureCaption from "@components/themes/institute/FigureCaption.astro";
+import { getCollection } from "astro:content";
+import { readingTime } from "@lib/format";
+
+const services = (await getCollection("services")).sort((a, b) => a.data.order - b.data.order);
+const posts = (await getCollection("blog", ({ data }) => !data.draft))
+  .sort((a, b) => +b.data.date - +a.data.date)
+  .slice(0, 3);
+const team = (await getCollection("team"))
+  .filter((t) => t.data.leadership)
+  .sort((a, b) => a.data.order - b.data.order);
+const roman = ["I.", "II.", "III.", "IV.", "V.", "VI.", "VII.", "VIII.", "IX."];
+const pipelineSteps = [
+  { label: "I. Intake", title: "Mission Need & Scoping", emphasis: true },
+  { label: "II. Requirements", title: "Structured Requirements Development" },
+  { label: "III. Architecture", title: "Systems Engineering & Design" },
+  { label: "IV. Evaluation", title: "T&E Execution & Analysis" },
+  { label: "V. Outcome", title: "Decision-Grade Reporting", emphasis: true },
+];
+---
+<PageLayout title="OCEANS LLC" path="/">
+  <!-- MASTHEAD -->
+  <section class="border-b border-border-hairline">
+    <div class="mx-auto max-w-5xl px-6 pt-20 pb-12">
+      <p class="font-serif text-sm italic text-muted">— Vol. 1 · Jacksonville, Florida · Est. 2013</p>
+      <h1 class="font-display text-5xl md:text-7xl font-semibold text-fg-strong mt-6 leading-[1.05]">
+        Rigorous engineering for federal missions
+        <em class="font-light italic">that cannot fail.</em>
+      </h1>
+      <div class="mt-10 max-w-3xl">
+        <DropCap>
+          OCEANS LLC delivers systems engineering, test &amp; evaluation, and mission-data
+          architecture for federal customers. Founded in 2013 by Daniel Brent and Paul Morrisseau,
+          the practice is built on a simple conviction — federal programs deserve rigorous,
+          objective engineering, not just confident-sounding reports.
+        </DropCap>
+      </div>
+    </div>
+  </section>
+
+  <!-- II. ON DEFENSIBLE ENGINEERING -->
+  <section class="mx-auto max-w-3xl px-6 py-20">
+    <SectionLabel>II. On defensible engineering</SectionLabel>
+    <div class="mt-6 text-fg leading-relaxed text-lg font-serif space-y-4">
+      <p>
+        For three decades we have watched programs succeed and fail. The pattern is consistent:
+        programs succeed when their engineering is traceable from mission need to measurable
+        outcome, and when their evaluation is independent enough to be inconvenient.
+      </p>
+      <p>
+        We built OCEANS to do that work — the slow, careful, traceable work that keeps a program
+        defensible at every gate review. It is not glamorous. It is required.
+      </p>
+    </div>
+    <PullQuote attribution="Daniel Brent and Paul Morrisseau, Co-Founders">
+      Federal programs deserve rigorous, objective engineering — not just confident-sounding reports.
+    </PullQuote>
+  </section>
+
+  <!-- III. CAPABILITIES -->
+  <section class="border-y border-border-hairline bg-surface-2/40">
+    <div class="mx-auto max-w-5xl px-6 py-20">
+      <SectionLabel>III. Capabilities</SectionLabel>
+      <div class="mt-10 space-y-12 divide-y divide-border-hairline">
+        {
+          services.map((s, i) => (
+            <article class="pt-12 first:pt-0 grid grid-cols-1 md:grid-cols-4 gap-8">
+              <div class="font-serif">
+                <div class="text-3xl text-muted italic">{roman[i]}</div>
+                <h3 class="font-display text-2xl text-fg-strong mt-2">{s.data.title}</h3>
+              </div>
+              <div class="md:col-span-3">
+                <p class="text-fg leading-relaxed font-serif">{s.data.summary}</p>
+                <ul class="mt-4 list-disc list-inside text-muted leading-relaxed">
+                  {s.data.methods.slice(0, 4).map((m) => (
+                    <li>{m}</li>
+                  ))}
+                </ul>
+                <a
+                  href={`/services/${s.data.slug}`}
+                  class="mt-4 inline-block font-mono text-xs text-accent uppercase tracking-widest"
+                >
+                  Read more →
+                </a>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- IV. METHODOLOGY -->
+  <section class="mx-auto max-w-3xl px-6 py-20">
+    <SectionLabel>IV. Methodology</SectionLabel>
+    <figure class="mt-8">
+      <Pipeline steps={pipelineSteps} />
+      <FigureCaption number="1">
+        Engagement lifecycle, from mission need to decision-grade reporting.
+      </FigureCaption>
+    </figure>
+  </section>
+
+  <!-- V. CLIENT REGISTER -->
+  <section class="border-y border-border-hairline">
+    <div class="mx-auto max-w-5xl px-6 py-12">
+      <SectionLabel>V. Client register</SectionLabel>
+      <p class="mt-4 font-serif italic text-muted text-lg leading-relaxed">
+        DoD · DHS · TSA · CBP · USCG · Federal program offices · Selected state &amp; local partners.
+      </p>
+    </div>
+  </section>
+
+  <!-- VI. RECENT THINKING -->
+  {
+    posts.length > 0 && (
+      <section class="mx-auto max-w-5xl px-6 py-20">
+        <SectionLabel>VI. Recent thinking</SectionLabel>
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-10 md:divide-x md:divide-border-hairline">
+          {posts.map((p, i) => (
+            <div class={i > 0 ? "md:pl-8" : ""}>
+              <BlogPostCard
+                title={p.data.title}
+                date={p.data.date}
+                author={p.data.author}
+                excerpt={p.data.excerpt}
+                readTime={readingTime(p.body ?? "")}
+                href={`/blog/${p.id}`}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- VII. LEADERSHIP -->
+  <section class="border-t border-border-hairline">
+    <div class="mx-auto max-w-5xl px-6 py-20">
+      <SectionLabel>VII. Leadership</SectionLabel>
+      <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-12">
+        {
+          team.map((t) => (
+            <article>
+              <div class="font-serif italic text-muted text-sm">{t.data.role}</div>
+              <h3 class="font-display text-2xl text-fg-strong mt-1">{t.data.name}</h3>
+              <p class="mt-4 text-fg leading-relaxed font-serif">{t.data.bio}</p>
+              <p class="mt-3 font-serif italic text-muted">— {t.data.name.split(" ")[0]}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- VIII. CORRESPONDENCE -->
+  <section class="bg-surface-2/40 border-t border-border-hairline">
+    <div class="mx-auto max-w-3xl px-6 py-20">
+      <SectionLabel>VIII. Correspondence</SectionLabel>
+      <h2 class="font-display text-3xl md:text-4xl font-semibold text-fg-strong mt-4">
+        Begin a conversation.
+      </h2>
+      <p class="mt-6 font-serif text-fg leading-relaxed">
+        Write to <a href="mailto:info@oceansllc.com" class="text-accent">info@oceansllc.com</a>, or
+        call 727-455-9383. We will respond within two business days.
+      </p>
+      <div class="mt-8">
+        <Button href="/contact" variant="primary">Write to us</Button>
+      </div>
+    </div>
+  </section>
+</PageLayout>

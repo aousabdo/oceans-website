@@ -1,0 +1,71 @@
+---
+interface Props {
+  class?: string;
+}
+const props = Astro.props as Props;
+const { class: extra = "" } = props;
+---
+<canvas id="op-hero" class:list={["absolute inset-0 w-full h-full", extra]} aria-hidden="true"></canvas>
+<script>
+  const canvas = document.getElementById("op-hero") as HTMLCanvasElement | null;
+  if (canvas && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const ctx = canvas.getContext("2d")!;
+    let w = 0,
+      h = 0;
+    const resize = () => {
+      w = canvas.width = canvas.offsetWidth;
+      h = canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    interface P {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      r: number;
+      a: number;
+    }
+    const particles: P[] = Array.from({ length: 140 }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.2,
+      r: Math.random() * 1.4 + 0.3,
+      a: Math.random() * 0.5 + 0.15,
+    }));
+    const accent = getComputedStyle(document.documentElement)
+      .getPropertyValue("--color-accent")
+      .trim() || "#5BD4FF";
+    const tick = () => {
+      ctx.clearRect(0, 0, w, h);
+      const now = performance.now() * 0.001;
+      ctx.strokeStyle = "rgba(91,212,255,0.06)";
+      ctx.lineWidth = 1;
+      for (let wi = 0; wi < 3; wi++) {
+        ctx.beginPath();
+        for (let x = 0; x <= w; x += 3) {
+          const y = h * 0.5 + Math.sin(x * 0.006 + now * (0.4 + wi * 0.15) + wi * 1.2) * 60;
+          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+      for (const p of particles) {
+        p.x += p.vx + Math.sin(p.y * 0.008 + now * 0.6) * 0.4;
+        p.y += p.vy + Math.cos(p.x * 0.006 + now * 0.4) * 0.25;
+        if (p.x < -10) p.x = w + 10;
+        if (p.x > w + 10) p.x = -10;
+        if (p.y < -10) p.y = h + 10;
+        if (p.y > h + 10) p.y = -10;
+        ctx.globalAlpha = p.a;
+        ctx.fillStyle = accent;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(tick);
+    };
+    tick();
+  }
+</script>

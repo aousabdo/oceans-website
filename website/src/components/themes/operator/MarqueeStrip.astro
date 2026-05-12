@@ -1,0 +1,36 @@
+---
+interface Props {
+  items: string[];
+  speed?: number;
+}
+const props = Astro.props as Props;
+const { items, speed = 22 } = props;
+const doubled = [...items, ...items];
+---
+<div class="overflow-hidden bg-bg-2 border-y border-border-hairline py-5">
+  <div class="flex gap-12 whitespace-nowrap w-max" style={`animation: marquee ${speed}s linear infinite`}>
+    {
+      doubled.map((it) => (
+        <div class="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-widest text-muted">
+          <span class="w-1 h-1 rounded-full bg-accent opacity-60" />
+          {it}
+        </div>
+      ))
+    }
+  </div>
+</div>
+<style>
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .flex.w-max {
+      animation: none !important;
+    }
+  }
+</style>

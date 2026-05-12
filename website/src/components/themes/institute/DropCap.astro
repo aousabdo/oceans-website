@@ -1,0 +1,16 @@
+---
+interface Props {
+  class?: string;
+}
+const props = Astro.props as Props;
+const { class: extra = "" } = props;
+---
+<p
+  class:list={[
+    "font-serif text-lg text-fg leading-relaxed",
+    "first-letter:font-display first-letter:font-bold first-letter:text-[4.5rem] first-letter:leading-[0.85] first-letter:float-left first-letter:mr-3 first-letter:mt-1 first-letter:text-accent",
+    extra,
+  ]}
+>
+  <slot />
+</p>

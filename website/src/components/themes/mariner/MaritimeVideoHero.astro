@@ -1,0 +1,80 @@
+---
+interface Props {
+  src?: string;
+  poster?: string;
+  class?: string;
+}
+const props = Astro.props as Props;
+const { src, poster, class: extra = "" } = props;
+---
+<div class:list={["relative w-full overflow-hidden", extra]}>
+  {
+    src ? (
+      <video
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        poster={poster}
+        class="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src={src} type="video/mp4" />
+      </video>
+    ) : (
+      <div class="absolute inset-0 bg-gradient-to-b from-bg via-bg-2 to-surface-2" aria-hidden="true">
+        <svg
+          viewBox="0 0 1200 600"
+          preserveAspectRatio="xMidYMax slice"
+          class="absolute inset-0 w-full h-full opacity-30"
+        >
+          <defs>
+            <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="var(--color-accent-warm)" stop-opacity="0.4" />
+              <stop offset="1" stop-color="var(--color-accent-warm)" stop-opacity="0" />
+            </linearGradient>
+            <linearGradient id="wfade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="var(--color-accent)" stop-opacity="0" />
+              <stop offset="1" stop-color="var(--color-accent)" stop-opacity="0.35" />
+            </linearGradient>
+          </defs>
+          <circle cx="900" cy="180" r="80" fill="url(#sun)" />
+          <path d="M0,360 Q300,330 600,360 T1200,360 L1200,600 L0,600 Z" fill="url(#wfade)" />
+          <path
+            d="M0,400 Q300,375 600,400 T1200,400"
+            stroke="var(--color-accent)"
+            stroke-width="1"
+            fill="none"
+            opacity="0.4"
+          />
+          <path
+            d="M0,430 Q300,410 600,430 T1200,430"
+            stroke="var(--color-accent)"
+            stroke-width="0.6"
+            fill="none"
+            opacity="0.3"
+          />
+          <path
+            d="M0,460 Q300,445 600,460 T1200,460"
+            stroke="var(--color-accent)"
+            stroke-width="0.4"
+            fill="none"
+            opacity="0.25"
+          />
+        </svg>
+      </div>
+    )
+  }
+  <div class="absolute inset-0 bg-gradient-to-b from-bg/10 via-transparent to-bg/40 pointer-events-none"></div>
+  <div class="relative">
+    <slot />
+  </div>
+</div>
+<script>
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.querySelectorAll("video").forEach((v) => {
+      v.pause();
+      v.removeAttribute("autoplay");
+    });
+  }
+</script>

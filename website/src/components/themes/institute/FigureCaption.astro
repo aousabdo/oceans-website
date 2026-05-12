@@ -1,0 +1,13 @@
+---
+interface Props {
+  number: string;
+}
+const props = Astro.props as Props;
+const { number } = props;
+---
+<figcaption class="mt-3 text-sm font-serif text-muted italic leading-relaxed">
+  <span class="font-mono not-italic text-[10px] uppercase tracking-widest text-accent mr-2">
+    Fig. {number}
+  </span>
+  <slot />
+</figcaption>
