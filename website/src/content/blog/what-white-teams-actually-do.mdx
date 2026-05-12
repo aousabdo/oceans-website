@@ -1,0 +1,34 @@
+---
+title: What white teams actually do
+date: 2026-03-22
+author: jamie-hayes
+tags: [t-and-e, white-team]
+excerpt: People hear "White Team" and assume it means writing scenarios. That's part of it. The bigger part is preventing the test from becoming a demo.
+draft: false
+---
+
+People hear "White Team" and assume it means writing scenarios. That's part of it. The bigger part is preventing the test from becoming a demo.
+
+When a system goes into operational test, there are roughly three groups in the room. The blue team is the operators using the system as they would in the field. The red team is the threat — adversarial play, simulated attackers, the people whose job is to make things hard. The white team sits between them, running the engagement, recording what happened, making decisions about what's in scope and what isn't, keeping the test honest.
+
+The honest part is the hard part.
+
+## Why operators are biased (and why that's fine)
+
+Operators want to succeed. They've trained on the system, they've helped scope the test, they have personal investment in the outcome. That's appropriate. It's also exactly the bias structure that turns operational tests into validation exercises rather than evaluations. If the white team isn't actively pushing back against the path of least resistance, the test will silently optimize itself toward the favorable scenarios.
+
+Concretely, here's what we do in the room. We watch for vignette drift — when a complication gets minimized because nobody felt like running through it the way the conditions actually called for. We flag scenario reframing — when operators interpret an ambiguous rule of engagement in the system's favor. We keep timing honest, especially around windows where the system was supposed to perform within X seconds and instead took longer. None of these are accusations of bad faith. They're just the normal physics of group decisions under pressure.
+
+## Owning the data
+
+The other thing the white team owns is the data. Every operational test produces a torrent of observations: log data, sensor outputs, operator commentary, video, after-action interviews. Most of it is noise. A small slice of it is the evidence that matters for the assessment. Picking out the right slice — and being able to defend why you picked it — is most of the analysis budget.
+
+A pattern I see often: programs assume the data will speak for itself. It doesn't. Raw test data is ambiguous. Without a structured analysis plan that the white team designed before the test started, you end up with a post-hoc story written to fit the data, which is exactly what the approving authority will sniff out and reject.
+
+## The deliverable isn't the test
+
+The deliverable from a white team isn't the test event. The deliverable is an assessment that says, in writing, what the system did against what it was supposed to do, with the analysis showing how the team got from observation to conclusion. The test event is the input. The assessment is the output. People mix these up all the time.
+
+The least interesting fact about good T&E is that the test happens. The most interesting fact is that two people who didn't run the test can read the assessment afterward and agree on what it means. If that doesn't happen, the test failed regardless of what the data shows.
+
+That's the bar we hold ourselves to.

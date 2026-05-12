@@ -8,11 +8,16 @@ import ServiceIcon from "@components/ServiceIcon.astro";
 import MaritimeVideoHero from "@components/themes/mariner/MaritimeVideoHero.astro";
 import WaveDivider from "@components/themes/mariner/WaveDivider.astro";
 import Compass from "@components/themes/mariner/Compass.astro";
+import BlogPostCard from "@components/BlogPostCard.astro";
 import { getCollection } from "astro:content";
+import { readingTime } from "@lib/format";
 
 const services = (await getCollection("services")).sort((a, b) => a.data.order - b.data.order);
 const cases = (await getCollection("caseStudies")).slice(0, 3);
 const headings = ["N", "NE", "E", "SE"];
+const recentPosts = (await getCollection("blog", ({ data }) => !data.draft))
+  .sort((a, b) => +b.data.date - +a.data.date)
+  .slice(0, 3);
 ---
 <PageLayout title="OCEANS LLC" path="/">
   <!-- DEPTH 01 — HERO -->
@@ -122,6 +127,34 @@ const headings = ["N", "NE", "E", "SE"];
       }
     </div>
   </section>
+
+  <!-- DEPTH 07 — FROM THE JOURNAL -->
+  {recentPosts.length > 0 && (
+    <section class="mx-auto max-w-6xl px-6 py-20">
+      <SectionLabel>⌁&nbsp;&nbsp;from the journal&nbsp;&nbsp;⌁</SectionLabel>
+      <div class="mt-4 flex items-end justify-between gap-8 flex-wrap mb-10">
+        <h2 class="font-display font-light text-3xl md:text-4xl text-fg-strong leading-tight">
+          Notes from the field.
+        </h2>
+        <Button href="/blog" variant="outline" size="sm">Read the journal</Button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-10 md:divide-x md:divide-border-hairline">
+        {recentPosts.map((p, i) => (
+          <div class={i > 0 ? "md:pl-8" : ""}>
+            <BlogPostCard
+              title={p.data.title}
+              date={p.data.date}
+              author={p.data.author}
+              excerpt={p.data.excerpt}
+              readTime={readingTime(p.body ?? "")}
+              href={`/blog/${p.id}`}
+              tags={p.data.tags}
+            />
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
 
   <!-- DEPTH 08 — CTA -->
   <section class="relative bg-surface-2/40 border-t border-border-hairline">

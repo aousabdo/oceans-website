@@ -1,0 +1,32 @@
+---
+title: Where T&E programs actually go wrong
+date: 2026-04-28
+author: daniel-brent
+tags: [t-and-e, methodology]
+excerpt: Most operational test programs don't fail at the test event. They fail in the months before, when the threshold for "done" turns out to mean different things to different people.
+draft: false
+---
+
+Most operational test programs don't fail at the test event. They fail in the months before — usually around month four, when the threshold for "done" turns out to mean different things to the program office, the operators, and the eventual approving authority.
+
+I've watched this pattern play out for three decades now. The first time, I assumed it was bad luck or a particularly difficult system. By the fifth or sixth time you see it, the pattern stops being subtle.
+
+Here's what happens. The program office hands you a set of requirements that look testable. You build a test design. You execute. The data comes back clean. Then somebody senior asks a question the requirements never covered, and suddenly the whole evaluation needs to be re-litigated against the question that was actually important.
+
+The question that was actually important was never written down.
+
+This is the failure mode that costs programs the most time and budget, and it has almost nothing to do with the quality of the testing itself. The testing is usually fine. What's broken is the conversation that should have happened in month one between the program office, the operators, and whoever is going to sign the assessment.
+
+So when we scope an engagement, the first thing we do is push back hard on the requirements. Not because they're poorly written — they're often well written — but because they're often answering a different question than the one the decision-maker actually needs answered. We sit with the operators and ask them what would change their behavior in the field. We sit with the program office and ask them what the approval gate actually needs in writing. Usually those two answers don't quite match, and the requirements were optimized for neither.
+
+## Two specific things that get missed almost every time
+
+**The threshold for "good enough."** Many requirements say "the system shall perform X under conditions Y" without specifying what tolerance is acceptable. A 5% miss rate? 1%? Mission-dependent? Without that number, every test result becomes negotiable.
+
+**The decision the test informs.** Tests should produce evidence for a decision. If you can't write down the decision in one sentence — "we will / will not field this capability at X sites in Y quarter" — then the test result is going to live in PDF purgatory for two budget cycles.
+
+Once those two are written down and agreed to, the rest of T&E is execution. Hard execution, sometimes. The test event is rarely easy. But execution is a domain where engineers have a lot of well-understood tools. What we don't have, as an industry, is enough discipline around the front-end conversation that makes the test event worth running in the first place.
+
+I think this is why so many programs end up with assessment reports that everyone signs and nobody acts on. The reports are technically correct. They just answer a question that turned out to be the wrong question.
+
+When we work on an OT&E now, we spend roughly 30% of the engagement budget on requirements and decision-framing before we touch a single test plan. It feels like a waste at the time. It is the single best ROI move I've ever seen in this work.

@@ -1,0 +1,30 @@
+---
+title: On traceability
+date: 2026-04-15
+author: paul-morrisseau
+tags: [requirements, methodology]
+excerpt: The case for traceability — not as a documentation chore, but as a forcing function for keeping engineering decisions tied to operational reality.
+draft: false
+---
+
+I keep an old print-out from a 2008 IDA review on my wall. It's a requirements traceability matrix for a sensor program that nobody important remembers anymore. The reason I kept it is because of one cell: a requirement near the bottom that traces to nothing. No mission need, no operational gap, no decision. Just a number with a measurement attached, sitting in the spec because somebody added it during a working group and it never got challenged.
+
+That requirement cost the program about $4M to chase. The system performed against it. It didn't matter. Nobody needed it to perform against it.
+
+This is the case for traceability — not as a documentation chore, but as a forcing function for keeping engineering decisions tied to operational reality. When you can draw a clean line from "the Coast Guard needs to detect small craft at 8nm in sea state 4" all the way down to "the sensor shall meet detection probability ≥0.9 under conditions X, Y, Z" — and back up the other direction — you've made everything testable, defensible, and arguable in front of an approving authority.
+
+When you can't draw that line, you've got requirements that exist because of inertia.
+
+I've heard people complain that traceability matrices are bureaucratic. I'd push back. Bureaucracy is following a process whose origin nobody remembers. Traceability is the opposite. It's a discipline that forces you to remember why every choice was made and what changed when conditions shifted.
+
+## The cost of doing it well
+
+Maintaining a live traceability matrix across a 24-month program takes serious work. We've seen programs treat it as a deliverable rather than a tool. Write it once, never update it, hand it to the approver in PDF form, watch it get filed. That's worse than not doing it at all, because it produces the illusion of rigor without any of the function.
+
+The version that actually works is more like a query interface. Somebody asks "why are we still investing in subsystem X?" and you can pull a single thread from operational need down through validated requirement down through architecture decision down through test result and back. If that thread is broken — if the operational need was reframed last quarter and the requirement never got updated — you find out, and you can either kill the subsystem or update the requirement. Either is fine. What's not fine is finding out in year three that the answer to "why" was lost two years ago.
+
+The federal programs we admire most do this naturally. They have program managers who can answer "why" all the way up and down the stack. They aren't slowed down by it. If anything, they move faster, because they don't burn cycles re-litigating decisions that have already been settled with evidence.
+
+The programs we worry about treat traceability as a compliance item. They produce the documentation. They never read it. And then around month 16 the operational need shifts, the requirements never catch up, the architecture is doing the wrong thing for the right reasons, and the program quietly becomes a delivery exercise for hardware nobody is going to ask for.
+
+The matrix on my wall is a reminder that the cheapest thing you can do for a federal program is force every requirement to earn its place.
