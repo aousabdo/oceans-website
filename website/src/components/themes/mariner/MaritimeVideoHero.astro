@@ -3,11 +3,12 @@ interface Props {
   src?: string;
   poster?: string;
   class?: string;
+  minHeight?: string;
 }
 const props = Astro.props as Props;
-const { src, poster, class: extra = "" } = props;
+const { src, poster, class: extra = "", minHeight = "min-h-[640px] md:min-h-[720px]" } = props;
 ---
-<div class:list={["relative w-full overflow-hidden", extra]}>
+<div class:list={["relative w-full overflow-hidden", minHeight, extra]}>
   {
     src ? (
       <video
@@ -66,7 +67,7 @@ const { src, poster, class: extra = "" } = props;
     )
   }
   <div class="absolute inset-0 bg-gradient-to-b from-bg/10 via-transparent to-bg/40 pointer-events-none"></div>
-  <div class="relative">
+  <div class:list={["relative z-10 w-full flex items-center", minHeight]}>
     <slot />
   </div>
 </div>
