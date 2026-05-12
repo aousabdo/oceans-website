@@ -1,0 +1,15 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import Button from "@components/Button.astro";
+---
+<PageLayout title="Not found" description="404">
+  <section class="mx-auto max-w-3xl px-6 pt-32 pb-24 text-center">
+    <p class="font-mono text-[11px] uppercase tracking-widest text-accent">▌ Error 404</p>
+    <h1 class="font-display text-6xl md:text-8xl font-bold text-fg-strong mt-4">Off course.</h1>
+    <p class="mt-6 text-lg text-muted">The page you were looking for doesn't exist or has moved.</p>
+    <div class="mt-8 flex justify-center gap-3 flex-wrap">
+      <Button href="/" variant="primary">Back to home</Button>
+      <Button href="/contact" variant="outline">Tell us what you needed</Button>
+    </div>
+  </section>
+</PageLayout>

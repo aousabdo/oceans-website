@@ -1,10 +1,48 @@
 ---
 import PageLayout from "@layouts/PageLayout.astro";
+import SectionLabel from "@components/SectionLabel.astro";
 ---
 <PageLayout title="Privacy" description="Privacy policy for oceansllc.com.">
-  <section class="mx-auto max-w-3xl px-6 py-32 text-center">
-    <p class="font-mono text-xs uppercase tracking-widest text-accent">▌ Coming soon</p>
-    <h1 class="font-display text-5xl md:text-6xl font-bold text-fg-strong mt-6">Privacy</h1>
-    <p class="mt-6 text-muted leading-relaxed">Privacy policy lands in M14.</p>
-  </section>
+  <article class="mx-auto max-w-2xl px-6 pt-24 pb-24 space-y-6 text-fg leading-relaxed">
+    <SectionLabel>Privacy Policy</SectionLabel>
+    <h1 class="font-display text-4xl font-bold text-fg-strong mt-4">Privacy Policy</h1>
+    <p class="text-sm text-muted">Last updated: 2026-05-12</p>
+
+    <h2 class="font-display text-2xl text-fg-strong">What we collect</h2>
+    <p>
+      When you submit a contact form or job application, we collect the information you provide
+      (name, email, message, optional phone, optional resume PDF). We use Cloudflare Web Analytics
+      for cookieless, aggregate page-view counts.
+    </p>
+
+    <h2 class="font-display text-2xl text-fg-strong">How we use it</h2>
+    <p>
+      Contact form submissions are sent to <a href="mailto:info@oceansllc.com" class="text-accent">info@oceansllc.com</a>.
+      Job applications are sent to <a href="mailto:careers@oceansllc.com" class="text-accent">careers@oceansllc.com</a>
+      along with a link to your resume in Cloudflare R2. We don't use your information for marketing,
+      and we don't sell or share it.
+    </p>
+
+    <h2 class="font-display text-2xl text-fg-strong">Resume storage</h2>
+    <p>
+      Resumes are stored in Cloudflare R2 (private bucket, accessible only via signed URL or to
+      authorized OCEANS personnel). Retained for one year unless you ask us to delete sooner.
+    </p>
+
+    <h2 class="font-display text-2xl text-fg-strong">Your rights</h2>
+    <p>
+      Email <a href="mailto:info@oceansllc.com" class="text-accent">info@oceansllc.com</a> to ask
+      what we have on you, request correction, or request deletion.
+    </p>
+
+    <h2 class="font-display text-2xl text-fg-strong">Third parties</h2>
+    <p>
+      We use Cloudflare (hosting, R2, Turnstile, Analytics) and Resend (transactional email). They
+      process data on our behalf under their respective terms.
+    </p>
+
+    <p class="text-sm text-muted pt-6 border-t border-border-hairline">
+      Draft policy pending review by counsel before launch.
+    </p>
+  </article>
 </PageLayout>
