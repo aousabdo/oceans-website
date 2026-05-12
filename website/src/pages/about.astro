@@ -3,6 +3,12 @@ import PageLayout from "@layouts/PageLayout.astro";
 import SectionLabel from "@components/SectionLabel.astro";
 import Button from "@components/Button.astro";
 import Card from "@components/Card.astro";
+import PullQuote from "@components/PullQuote.astro";
+import { getCollection } from "astro:content";
+
+const founders = (await getCollection("team"))
+  .filter((t) => ["daniel-brent", "paul-morrisseau"].includes(t.data.slug))
+  .sort((a, b) => a.data.order - b.data.order);
 
 const values = [
   {
@@ -50,52 +56,93 @@ const competencies = [
   title="About"
   description="OCEANS LLC was born from a thirty-year friendship and a shared commitment to technical excellence."
 >
-  <section class="mx-auto max-w-3xl px-6 pt-24 pb-12">
-    <SectionLabel>Our Story</SectionLabel>
-    <h1 class="font-display text-5xl md:text-6xl font-bold text-fg-strong mt-4 leading-tight">
+  <!-- MASTHEAD -->
+  <section class="mx-auto max-w-4xl px-6 pt-24 pb-16 text-center">
+    <SectionLabel class="justify-center">Our Story</SectionLabel>
+    <h1 class="font-display text-5xl md:text-7xl font-bold text-fg-strong mt-6 leading-[1.05]">
       Born from a thirty-year<br />friendship.
     </h1>
-  </section>
-
-  <section class="mx-auto max-w-3xl px-6 pb-12 space-y-6 text-lg text-fg leading-relaxed">
-    <p>
+    <p class="mt-8 text-lg md:text-xl text-muted leading-relaxed max-w-2xl mx-auto">
       OCEANS LLC was born from a thirty-year friendship and a shared commitment to technical
-      excellence. Founders Daniel Brent and Paul Morrisseau first met in Jacksonville, Florida,
-      while Daniel was serving in the U.S. Navy and Paul was pursuing his degree in engineering.
-    </p>
-    <p>
-      Their professional paths converged years later at SRI International in St. Petersburg,
-      Florida. After collaborating there for five years, they recognized a unique opportunity to
-      combine their expertise to solve complex technical challenges for the modern world. This
-      vision led to the founding of OCEANS LLC in 2013.
-    </p>
-    <p>
-      Now headquartered back where it all began in Jacksonville, Florida, OCEANS LLC leverages the
-      founders' extensive backgrounds in the government, military, and homeland security sectors.
-      We specialize in bridging the gap between high-level engineering and real-world operational
-      need.
-    </p>
-    <p class="text-fg-strong font-display text-xl pt-4 border-t border-border-hairline">
-      At OCEANS LLC, we don't just build systems — we build on a foundation of trust and decades of
-      proven experience.
+      excellence — between two engineers who decided federal programs deserve better.
     </p>
   </section>
 
-  <section class="mx-auto max-w-6xl px-6 py-12">
-    <SectionLabel>Core competencies</SectionLabel>
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-      {
-        competencies.map((c) => (
-          <Card>
-            <h3 class="font-display text-lg font-bold text-fg-strong">{c.title}</h3>
-            <p class="mt-2 text-sm text-muted leading-relaxed">{c.desc}</p>
-          </Card>
-        ))
-      }
+  <!-- FOUNDER PORTRAITS + ORIGIN STORY -->
+  <section class="mx-auto max-w-6xl px-6 py-16">
+    <div class="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-12 md:gap-16 items-start">
+      <!-- portrait stack -->
+      <div class="flex md:flex-col gap-6">
+        {
+          founders.map((f) => (
+            <div class="text-center">
+              <img
+                src={f.data.portrait}
+                alt={f.data.name}
+                width="160"
+                height="160"
+                loading="lazy"
+                class="w-32 h-32 md:w-40 md:h-40 object-cover rounded-full border-2 border-border-hairline shrink-0"
+              />
+              <div class="mt-3 font-display text-sm font-bold text-fg-strong">{f.data.name}</div>
+              <div class="font-mono text-[9px] uppercase tracking-widest text-muted mt-1">
+                {f.data.role}
+              </div>
+            </div>
+          ))
+        }
+      </div>
+
+      <!-- story -->
+      <div class="space-y-5 text-fg leading-relaxed">
+        <p class="text-lg">
+          Founders <strong class="text-fg-strong">Daniel Brent</strong> and
+          <strong class="text-fg-strong">Paul Morrisseau</strong> first met in Jacksonville, Florida,
+          while Daniel was serving in the U.S. Navy and Paul was pursuing his degree in engineering.
+        </p>
+        <p>
+          Their professional paths converged years later at SRI International in St. Petersburg,
+          Florida. After collaborating there for five years, they recognized a unique opportunity to
+          combine their expertise to solve complex technical challenges for the modern world. This
+          vision led to the founding of OCEANS LLC in 2013.
+        </p>
+        <p>
+          Now headquartered back where it all began in Jacksonville, Florida, OCEANS LLC leverages
+          the founders' extensive backgrounds in the government, military, and homeland security
+          sectors. We specialize in bridging the gap between high-level engineering and real-world
+          operational need.
+        </p>
+      </div>
     </div>
   </section>
 
-  <section class="mx-auto max-w-6xl px-6 py-12">
+  <!-- PULL QUOTE -->
+  <section class="mx-auto max-w-4xl px-6 py-12">
+    <PullQuote attribution="OCEANS LLC, Co-Founders">
+      We don't just build systems — we build on a foundation of trust and decades of proven
+      experience.
+    </PullQuote>
+  </section>
+
+  <!-- CORE COMPETENCIES -->
+  <section class="bg-bg-2 border-y border-border-hairline">
+    <div class="mx-auto max-w-6xl px-6 py-20">
+      <SectionLabel>Core competencies</SectionLabel>
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {
+          competencies.map((c) => (
+            <Card accent>
+              <h3 class="font-display text-lg font-bold text-fg-strong">{c.title}</h3>
+              <p class="mt-2 text-sm text-muted leading-relaxed">{c.desc}</p>
+            </Card>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- CORE VALUES -->
+  <section class="mx-auto max-w-6xl px-6 py-20">
     <SectionLabel>What we hold ourselves to</SectionLabel>
     <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
       {
@@ -110,7 +157,18 @@ const competencies = [
     </div>
   </section>
 
+  <!-- CTA -->
   <section class="mx-auto max-w-3xl px-6 py-24 text-center">
-    <Button href="/team" variant="outline">Meet the team →</Button>
+    <h2 class="font-display text-3xl md:text-4xl font-bold text-fg-strong leading-tight">
+      Meet the people behind OCEANS.
+    </h2>
+    <p class="mt-4 text-muted leading-relaxed">
+      Four leaders — two co-founders plus Test &amp; Evaluation and Portfolio Directors — running
+      programs across federal mission domains.
+    </p>
+    <div class="mt-8 flex justify-center gap-3 flex-wrap">
+      <Button href="/team" variant="primary">See the team</Button>
+      <Button href="/contact" variant="outline">Start a conversation</Button>
+    </div>
   </section>
 </PageLayout>
