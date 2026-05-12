@@ -1,5 +1,5 @@
 ---
-import { ACTIVE_THEME } from "@lib/theme";
+import Logo from "./Logo.astro";
 
 const links = [
   { href: "/services", label: "Services" },
@@ -16,31 +16,11 @@ function isActive(href: string) {
   if (href === "/") return path === "/";
   return path.startsWith(href);
 }
-
-// Light themes use the real logo (white bg blends with cream/sky).
-// Dark Operator theme uses the wave-O glyph (designed for dark backgrounds).
-const useImageLogo = ACTIVE_THEME !== "operator";
 ---
 <nav class="sticky top-0 z-40 backdrop-blur bg-bg/70 border-b border-border-hairline">
   <div class="mx-auto max-w-6xl flex items-center justify-between px-6 h-16">
-    <a href="/" class="flex items-center gap-2" aria-label="OCEANS LLC home">
-      {useImageLogo ? (
-        <img
-          src="/oceans-logo.jpg"
-          alt="OCEANS LLC"
-          height="40"
-          width="55"
-          class="h-10 w-auto"
-          fetchpriority="high"
-        />
-      ) : (
-        <>
-          <span class="inline-flex w-8 h-8 items-center justify-center rounded border border-accent">
-            <span class="font-display text-accent text-sm font-bold">O</span>
-          </span>
-          <span class="font-display tracking-wider text-fg-strong">OCEANS</span>
-        </>
-      )}
+    <a href="/" class="text-fg-strong" aria-label="OCEANS LLC home">
+      <Logo size="md" />
     </a>
     <ul class="hidden md:flex items-center gap-7">
       {

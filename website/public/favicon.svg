@@ -1,6 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#1A2840"/>
-  <text x="50%" y="55%" text-anchor="middle" font-family="Syne, system-ui, sans-serif" font-weight="800" font-size="18" fill="#5BD4FF">O</text>
-  <path d="M2 22 Q8 18 16 22 T30 22" stroke="#5BD4FF" stroke-width="1.2" fill="none" opacity="0.5"/>
-  <path d="M2 26 Q8 23 16 26 T30 26" stroke="#5BD4FF" stroke-width="0.8" fill="none" opacity="0.3"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <clipPath id="fav-ring"><circle cx="50" cy="50" r="38"/></clipPath>
+    <style>
+      :root { color-scheme: light dark; }
+      .ring { stroke: #1A2840; }
+      @media (prefers-color-scheme: dark) {
+        .ring { stroke: #5BD4FF; }
+      }
+    </style>
+  </defs>
+  <circle class="ring" cx="50" cy="50" r="40" fill="none" stroke-width="8"/>
+  <g clip-path="url(#fav-ring)">
+    <path class="ring" d="M 5 52 Q 22 42 38 52 T 70 52 T 102 52" fill="none" stroke-width="8" stroke-linecap="round"/>
+  </g>
 </svg>
