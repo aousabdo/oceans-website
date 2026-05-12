@@ -1,0 +1,27 @@
+---
+interface Metric {
+  label: string;
+  value: string;
+  emphasis?: string;
+}
+interface Props {
+  metrics: Metric[];
+  class?: string;
+}
+const props = Astro.props as Props;
+const { metrics, class: extra = "" } = props;
+---
+<dl class:list={["grid gap-px bg-border-hairline rounded-lg overflow-hidden", extra]}
+    style={`grid-template-columns: repeat(${metrics.length}, minmax(0, 1fr));`}>
+  {
+    metrics.map((m) => (
+      <div class="bg-surface px-6 py-7">
+        <dt class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">{m.label}</dt>
+        <dd class="font-display text-3xl md:text-4xl font-bold text-fg-strong mt-3 leading-none">
+          {m.value}
+          {m.emphasis && <span class="text-accent">{m.emphasis}</span>}
+        </dd>
+      </div>
+    ))
+  }
+</dl>

@@ -1,62 +1,210 @@
 ---
 import PageLayout from "@layouts/PageLayout.astro";
 import SectionLabel from "@components/SectionLabel.astro";
+import Eyebrow from "@components/Eyebrow.astro";
 import Button from "@components/Button.astro";
+import Logo from "@components/Logo.astro";
+import MetricCallout from "@components/MetricCallout.astro";
+import ServiceIcon from "@components/ServiceIcon.astro";
+import { getCollection } from "astro:content";
+
+const services = (await getCollection("services")).sort((a, b) => a.data.order - b.data.order);
+
+const differentiators = [
+  {
+    title: "50+ years of combined experience",
+    desc: "Mission-aligned engineering across Navy, SRI International, DHS S&T, and prime defense programs.",
+  },
+  {
+    title: "Traceability-first methodology",
+    desc: "Every recommendation traces back to a validated mission requirement. Nothing exists in isolation.",
+  },
+  {
+    title: "Quantitative, defensible analysis",
+    desc: "Structured test designs and statistical rigor — not qualitative assertions dressed as evidence.",
+  },
+  {
+    title: "Decision-grade reporting",
+    desc: "Outputs formatted for technical, operational, and executive review simultaneously.",
+  },
+];
+
+const naicsCodes = [
+  { code: "541330", desc: "Engineering Services" },
+  { code: "541715", desc: "Research and Development in the Physical, Engineering, and Life Sciences" },
+  { code: "541512", desc: "Computer Systems Design Services" },
+];
 ---
-<PageLayout title="Capabilities Statement" description="OCEANS LLC capabilities statement.">
-  <section class="mx-auto max-w-3xl px-6 pt-24 pb-12">
-    <SectionLabel>Capabilities Statement</SectionLabel>
-    <h1 class="font-display text-5xl font-bold text-fg-strong mt-4 leading-tight">OCEANS LLC</h1>
-    <p class="mt-6 text-lg text-muted">Systems engineering · Test &amp; evaluation · Mission Data.</p>
-    <p class="mt-2 text-sm text-muted">A small business based in Jacksonville, FL.</p>
-  </section>
-
-  <section class="mx-auto max-w-3xl px-6 pb-12 space-y-10 text-fg leading-relaxed">
-    <div>
-      <h2 class="font-display text-2xl text-fg-strong">Core competencies</h2>
-      <ul class="mt-3 list-disc list-inside space-y-1.5">
-        <li>Requirements development with full traceability</li>
-        <li>Systems engineering and enterprise architecture</li>
-        <li>Research, Development, Test &amp; Evaluation (RDT&amp;E)</li>
-        <li>Mission data, ontologies, and Common Operating Pictures</li>
-      </ul>
-    </div>
-    <div>
-      <h2 class="font-display text-2xl text-fg-strong">Differentiators</h2>
-      <ul class="mt-3 list-disc list-inside space-y-1.5">
-        <li>50+ combined years of mission-aligned engineering</li>
-        <li>Traceability-first methodology</li>
-        <li>Quantitative, defensible analysis</li>
-        <li>Decision-grade reporting</li>
-      </ul>
-    </div>
-    <div>
-      <h2 class="font-display text-2xl text-fg-strong">Federal identifiers</h2>
-      <dl class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-sm">
-        <div class="p-4 border border-border-hairline rounded bg-surface">
-          <dt class="text-[10px] uppercase tracking-widest text-muted">CAGE</dt>
-          <dd class="text-fg-strong mt-2">[TBD]</dd>
+<PageLayout title="Capabilities Statement" description="OCEANS LLC capabilities statement — federal systems engineering, T&E, and mission data.">
+  <!-- DOCUMENT HEADER -->
+  <section class="mx-auto max-w-5xl px-6 pt-20 pb-12 border-b border-border-hairline">
+    <div class="flex items-start justify-between gap-8 flex-wrap">
+      <div>
+        <Eyebrow>Capabilities Statement</Eyebrow>
+        <div class="mt-4 text-fg-strong">
+          <Logo size="lg" />
         </div>
-        <div class="p-4 border border-border-hairline rounded bg-surface">
-          <dt class="text-[10px] uppercase tracking-widest text-muted">UEI</dt>
-          <dd class="text-fg-strong mt-2">[TBD]</dd>
-        </div>
-        <div class="p-4 border border-border-hairline rounded bg-surface">
-          <dt class="text-[10px] uppercase tracking-widest text-muted">NAICS</dt>
-          <dd class="text-fg-strong mt-2">541330 · 541715 · 541512</dd>
-        </div>
-      </dl>
-    </div>
-    <div>
-      <h2 class="font-display text-2xl text-fg-strong">Contact</h2>
-      <address class="mt-3 not-italic">
-        Jacksonville, FL ·
-        <a href="mailto:info@oceansllc.com" class="text-accent">info@oceansllc.com</a>
-      </address>
+        <p class="mt-6 font-display text-2xl md:text-3xl text-fg-strong leading-snug max-w-2xl">
+          Engineering that earns operational trust.
+        </p>
+        <p class="mt-3 text-muted max-w-xl leading-relaxed">
+          Systems engineering, test &amp; evaluation, and mission data — for federal customers who
+          need defensible outcomes.
+        </p>
+      </div>
+      <div class="text-right font-mono text-[10px] uppercase tracking-widest text-muted leading-relaxed">
+        <div>OCEANS LLC</div>
+        <div>Jacksonville, FL</div>
+        <div class="mt-2 text-fg">Small Business</div>
+        <div class="text-fg">Est. 2013</div>
+      </div>
     </div>
   </section>
 
-  <section class="mx-auto max-w-3xl px-6 pb-24 flex justify-center">
-    <Button href="/contact" variant="primary">Start a conversation</Button>
+  <!-- METRICS -->
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <MetricCallout
+      metrics={[
+        { label: "Combined Experience", value: "50", emphasis: "+" },
+        { label: "Year Founded", value: "2013" },
+        { label: "Core Capabilities", value: "4" },
+        { label: "Mission Partners", value: "57", emphasis: "+" },
+      ]}
+    />
+  </section>
+
+  <!-- CORE COMPETENCIES -->
+  <section class="bg-bg-2 border-y border-border-hairline">
+    <div class="mx-auto max-w-5xl px-6 py-16">
+      <SectionLabel>Core competencies</SectionLabel>
+      <h2 class="font-display text-3xl md:text-4xl font-bold text-fg-strong mt-3 leading-tight">
+        Four capabilities, one engagement lifecycle.
+      </h2>
+      <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-4">
+        {
+          services.map((s) => (
+            <article class="bg-surface border border-border-hairline rounded-lg p-6 flex gap-5">
+              <div class="w-12 h-12 rounded-md bg-bg-2 border border-accent/20 grid place-items-center shrink-0">
+                <ServiceIcon slug={s.data.slug} size={26} />
+              </div>
+              <div class="min-w-0">
+                <div class="font-mono text-[10px] uppercase tracking-widest text-accent">{s.data.number}</div>
+                <h3 class="font-display text-lg font-bold text-fg-strong mt-1 leading-snug">{s.data.title}</h3>
+                <p class="mt-2 text-sm text-muted leading-relaxed">{s.data.summary}</p>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- DIFFERENTIATORS -->
+  <section class="mx-auto max-w-5xl px-6 py-16">
+    <SectionLabel>Why OCEANS</SectionLabel>
+    <h2 class="font-display text-3xl md:text-4xl font-bold text-fg-strong mt-3 leading-tight">
+      Differentiators.
+    </h2>
+    <ul class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
+      {
+        differentiators.map((d, i) => (
+          <li class="flex gap-4">
+            <span class="font-display text-2xl font-bold text-accent leading-none shrink-0 mt-1">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <div>
+              <div class="font-display text-lg font-bold text-fg-strong leading-snug">{d.title}</div>
+              <p class="mt-1.5 text-sm text-muted leading-relaxed">{d.desc}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- FEDERAL IDENTIFIERS -->
+  <section class="bg-bg-2 border-y border-border-hairline">
+    <div class="mx-auto max-w-5xl px-6 py-16">
+      <SectionLabel>Federal identifiers</SectionLabel>
+      <div class="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-surface border border-border-hairline rounded-lg p-6">
+          <div class="font-mono text-[10px] uppercase tracking-widest text-muted">CAGE Code</div>
+          <div class="font-display text-2xl font-bold text-fg-strong mt-2 font-mono">[TBD]</div>
+          <p class="mt-2 text-xs text-muted">Commercial and Government Entity</p>
+        </div>
+        <div class="bg-surface border border-border-hairline rounded-lg p-6">
+          <div class="font-mono text-[10px] uppercase tracking-widest text-muted">UEI</div>
+          <div class="font-display text-2xl font-bold text-fg-strong mt-2 font-mono">[TBD]</div>
+          <p class="mt-2 text-xs text-muted">Unique Entity Identifier (SAM.gov)</p>
+        </div>
+        <div class="bg-surface border border-border-hairline rounded-lg p-6">
+          <div class="font-mono text-[10px] uppercase tracking-widest text-muted">Business Size</div>
+          <div class="font-display text-2xl font-bold text-fg-strong mt-2">Small Business</div>
+          <p class="mt-2 text-xs text-muted">Per SBA size standards</p>
+        </div>
+      </div>
+
+      <div class="mt-8 bg-surface border border-border-hairline rounded-lg p-6">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-muted mb-4">NAICS Codes</div>
+        <ul class="space-y-3">
+          {
+            naicsCodes.map((n) => (
+              <li class="flex items-baseline gap-5 pb-3 border-b border-border-hairline last:border-0 last:pb-0">
+                <span class="font-mono text-base text-accent shrink-0 w-16">{n.code}</span>
+                <span class="text-sm text-fg leading-relaxed">{n.desc}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="mx-auto max-w-5xl px-6 py-16">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+      <div>
+        <SectionLabel>Contact</SectionLabel>
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-fg-strong mt-3 leading-tight">
+          Begin a conversation.
+        </h2>
+        <p class="mt-6 text-muted leading-relaxed max-w-md">
+          For inquiries, RFIs, teaming discussions, or capability briefings — we respond within two
+          business days.
+        </p>
+      </div>
+      <div class="bg-surface border border-border-hairline rounded-lg p-8">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-accent mb-4">Direct line</div>
+        <address class="not-italic text-fg leading-relaxed">
+          OCEANS LLC<br />
+          Jacksonville, FL<br />
+          <a href="mailto:info@oceansllc.com" class="text-accent">info@oceansllc.com</a><br />
+          <a
+            href="https://www.linkedin.com/company/o.c.e.a.n.s.-llc"
+            class="text-accent"
+            target="_blank"
+            rel="noopener"
+          >
+            LinkedIn ↗
+          </a>
+        </address>
+        <div class="mt-6 flex gap-2">
+          <Button href="/contact" variant="primary" size="sm">Contact form</Button>
+          <Button href="/experience" variant="outline" size="sm">Past performance</Button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER MARK -->
+  <section class="border-t border-border-hairline">
+    <div class="mx-auto max-w-5xl px-6 py-10 flex items-center justify-between gap-6 flex-wrap">
+      <p class="font-mono text-[10px] uppercase tracking-widest text-muted">
+        OCEANS LLC · Capabilities Statement · {new Date().getFullYear()}
+      </p>
+      <div class="text-fg-strong">
+        <Logo size="sm" variant="mark" />
+      </div>
+    </div>
   </section>
 </PageLayout>

@@ -1,76 +1,190 @@
 ---
 import PageLayout from "@layouts/PageLayout.astro";
 import SectionLabel from "@components/SectionLabel.astro";
+import Eyebrow from "@components/Eyebrow.astro";
 import Tag from "@components/Tag.astro";
 import Button from "@components/Button.astro";
+import Card from "@components/Card.astro";
 import CaseStudyCard from "@components/CaseStudyCard.astro";
+import ServiceIcon from "@components/ServiceIcon.astro";
 import { getCollection } from "astro:content";
 
 export async function getStaticPaths() {
   const services = await getCollection("services");
   const caseStudies = await getCollection("caseStudies");
-  return services.map((s) => ({
-    params: { slug: s.data.slug },
-    props: {
-      service: s.data,
-      related: caseStudies.filter((c) => c.data.capabilities.includes(s.data.slug)),
-    },
-  }));
+  return services.map((s) => {
+    const all = services.sort((a, b) => a.data.order - b.data.order);
+    const idx = all.findIndex((x) => x.data.slug === s.data.slug);
+    return {
+      params: { slug: s.data.slug },
+      props: {
+        service: s.data,
+        related: caseStudies.filter((c) => c.data.capabilities.includes(s.data.slug)),
+        prev: idx > 0 ? all[idx - 1]!.data : null,
+        next: idx < all.length - 1 ? all[idx + 1]!.data : null,
+      },
+    };
+  });
 }
 
-const { service, related } = Astro.props;
+const { service, related, prev, next } = Astro.props;
+
+// Narrative intros per capability — set the stage with substance before the methods list
+const intros: Record<string, string> = {
+  requirements:
+    "Most federal programs don't fail at execution. They fail when requirements drift from the operational need, or when the threshold for 'done' was never measurable in the first place. Requirements development is the slow, careful work that makes the rest of the engagement defensible.",
+  "systems-engineering":
+    "Architecture decisions ripple for a decade. We bind validated requirements to integrated solutions that hold up across cyber, lifecycle, and operational constraints — so the system performs in the field, not just on the spec sheet.",
+  rdte:
+    "Acquisition decisions deserve evidence, not assertion. Our RDT&E practice produces quantitative, defensible reports — the kind that survive operational review, executive scrutiny, and the next budget cycle.",
+  "mission-data":
+    "Common operating pictures collapse when the underlying data model can't represent what the mission actually requires. Ontology-driven architectures let multi-domain awareness scale without the integration tax compounding each year.",
+};
+const intro = intros[service.slug] ?? "";
 ---
 <PageLayout title={service.title} description={service.summary}>
-  <section class="mx-auto max-w-4xl px-6 pt-24 pb-12">
-    <SectionLabel>Capability {service.number}</SectionLabel>
-    <h1 class="font-display text-4xl md:text-5xl font-bold text-fg-strong mt-4 leading-tight">
-      {service.title}
-    </h1>
-    <p class="mt-6 text-lg text-muted leading-relaxed">{service.summary}</p>
-    <div class="mt-6 flex flex-wrap gap-2">
-      {service.tags.map((t: string) => <Tag>{t}</Tag>)}
+  <!-- HERO -->
+  <section class="relative">
+    <div class="mx-auto max-w-5xl px-6 pt-20 pb-12">
+      <div class="flex items-center gap-5">
+        <div class="w-16 h-16 md:w-20 md:h-20 rounded-lg bg-surface border border-accent/20 grid place-items-center shrink-0">
+          <ServiceIcon slug={service.slug} size={40} />
+        </div>
+        <div>
+          <Eyebrow>Capability · {service.number}</Eyebrow>
+          <h1 class="font-display text-4xl md:text-6xl font-bold text-fg-strong mt-2 leading-[1.05]">
+            {service.title}
+          </h1>
+        </div>
+      </div>
+      <p class="mt-8 text-lg md:text-xl text-muted leading-relaxed max-w-3xl">
+        {service.summary}
+      </p>
+      <div class="mt-6 flex flex-wrap gap-2">
+        {service.tags.map((t: string) => <Tag>{t}</Tag>)}
+      </div>
     </div>
   </section>
 
-  <section class="mx-auto max-w-4xl px-6 py-12">
+  <!-- WHY THIS MATTERS -->
+  {intro && (
+    <section class="bg-bg-2 border-y border-border-hairline">
+      <div class="mx-auto max-w-3xl px-6 py-16">
+        <SectionLabel>Why this matters</SectionLabel>
+        <p class="mt-6 font-display text-2xl md:text-3xl text-fg-strong leading-snug">
+          {intro}
+        </p>
+      </div>
+    </section>
+  )}
+
+  <!-- METHODS -->
+  <section class="mx-auto max-w-5xl px-6 py-20">
     <SectionLabel>What this looks like in practice</SectionLabel>
-    <ul class="mt-6 space-y-3">
+    <h2 class="font-display text-3xl md:text-4xl font-bold text-fg-strong mt-4 leading-tight">
+      Methods we apply.
+    </h2>
+    <ol class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-4">
       {
         service.methods.map((m: string, i: number) => (
-          <li class="flex gap-4 p-4 border border-border-hairline rounded bg-surface">
-            <span class="font-mono text-[11px] text-accent tracking-widest">
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <span class="text-fg">{m}</span>
+          <li class="group relative bg-surface border border-border-hairline rounded-lg p-6 transition-all hover:border-accent/40 hover:-translate-y-0.5">
+            <span class="absolute top-0 left-0 right-0 h-px bg-accent scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100" />
+            <div class="flex items-start gap-4">
+              <span class="font-display text-3xl font-bold text-accent leading-none mt-1 shrink-0">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <span class="text-fg leading-relaxed pt-1">{m}</span>
+            </div>
           </li>
         ))
       }
-    </ul>
+    </ol>
   </section>
 
+  <!-- RELATED CASE STUDIES -->
   {
     related.length > 0 && (
-      <section class="mx-auto max-w-6xl px-6 py-12">
-        <SectionLabel>Recent engagements</SectionLabel>
-        <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          {related.map((c) => (
-            <CaseStudyCard
-              client={c.data.client}
-              title={c.data.title}
-              summary={c.data.summary}
-              badges={c.data.badges}
-              href={`/experience/${c.data.slug}`}
-            />
-          ))}
+      <section class="bg-bg-2 border-y border-border-hairline">
+        <div class="mx-auto max-w-6xl px-6 py-20">
+          <div class="flex items-end justify-between gap-8 flex-wrap mb-10">
+            <div>
+              <SectionLabel>Recent engagements</SectionLabel>
+              <h2 class="font-display text-3xl md:text-4xl font-bold text-fg-strong mt-3 leading-tight">
+                Where we've applied it.
+              </h2>
+            </div>
+            <Button href="/experience" variant="outline" size="sm">
+              All past performance
+            </Button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {related.map((c) => (
+              <CaseStudyCard
+                client={c.data.client}
+                title={c.data.title}
+                summary={c.data.summary}
+                badges={c.data.badges}
+                href={`/experience/${c.data.slug}`}
+              />
+            ))}
+          </div>
         </div>
       </section>
     )
   }
 
-  <section class="mx-auto max-w-4xl px-6 py-24 text-center">
-    <h2 class="font-display text-3xl text-fg-strong">Have a program that fits this scope?</h2>
-    <div class="mt-6 flex justify-center">
+  <!-- CTA -->
+  <section class="mx-auto max-w-3xl px-6 py-20 text-center">
+    <h2 class="font-display text-3xl md:text-4xl font-bold text-fg-strong leading-tight">
+      Have a program that fits this scope?
+    </h2>
+    <p class="mt-4 text-muted leading-relaxed">
+      Tell us what you're scoping. We respond within two business days with a candid read on fit
+      and approach.
+    </p>
+    <div class="mt-8 flex justify-center gap-3 flex-wrap">
       <Button href="/contact" variant="primary">Start a conversation</Button>
+      <Button href="/services" variant="outline">All capabilities</Button>
     </div>
   </section>
+
+  <!-- PREV / NEXT NAVIGATION -->
+  {
+    (prev || next) && (
+      <section class="border-t border-border-hairline">
+        <nav class="mx-auto max-w-5xl px-6 py-10 grid grid-cols-2 gap-6">
+          <div>
+            {prev && (
+              <a
+                href={`/services/${prev.slug}`}
+                class="group block bg-surface border border-border-hairline rounded-lg p-5 transition-all hover:border-accent/40"
+              >
+                <div class="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted">
+                  <span>← previous</span>
+                </div>
+                <div class="mt-2 font-display text-base font-bold text-fg-strong group-hover:text-accent transition-colors">
+                  {prev.title}
+                </div>
+              </a>
+            )}
+          </div>
+          <div>
+            {next && (
+              <a
+                href={`/services/${next.slug}`}
+                class="group block bg-surface border border-border-hairline rounded-lg p-5 text-right transition-all hover:border-accent/40"
+              >
+                <div class="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted justify-end">
+                  <span>next →</span>
+                </div>
+                <div class="mt-2 font-display text-base font-bold text-fg-strong group-hover:text-accent transition-colors">
+                  {next.title}
+                </div>
+              </a>
+            )}
+          </div>
+        </nav>
+      </section>
+    )
+  }
 </PageLayout>
