@@ -8,17 +8,17 @@ const values = [
   {
     label: "Core Value",
     title: "Discipline",
-    desc: "Structured methodology, traceability, and measurable criteria — in every engagement.",
+    desc: "Structured methodology, traceability, and measurable criteria. Our work is deliberate, defensible, and repeatable.",
   },
   {
     label: "Core Value",
     title: "Clarity",
-    desc: "Findings and recommendations that work at technical, operational, and executive levels.",
+    desc: "Findings, metrics, and recommendations communicated in ways that support decision-making — technical, operational, and executive.",
   },
   {
     label: "Core Value",
     title: "Integrity",
-    desc: "Objective, defensible results grounded in validated requirements. We own our outcomes.",
+    desc: "Objective, defensible results grounded in validated requirements. We take ownership of outcomes and ensure our work withstands review.",
   },
   {
     label: "Jacksonville, FL",
@@ -26,32 +26,75 @@ const values = [
     desc: "Government · Military · Homeland Security — where it counts most.",
   },
 ];
+
+const competencies = [
+  {
+    title: "Sensor Deployment",
+    desc: "Implementing robust hardware solutions in demanding environments.",
+  },
+  {
+    title: "Enterprise Architecture",
+    desc: "Designing scalable, integrated frameworks for complex organizations.",
+  },
+  {
+    title: "Systems Engineering",
+    desc: "Managing the full lifecycle of multidisciplinary technical projects.",
+  },
+  {
+    title: "Operational Cybersecurity",
+    desc: "Protecting critical infrastructure through proactive defense and transition strategies.",
+  },
+];
 ---
 <PageLayout
   title="About"
-  description="OCEANS LLC was founded in 2013 on a conviction: federal programs deserve rigorous, objective engineering."
+  description="OCEANS LLC was born from a thirty-year friendship and a shared commitment to technical excellence."
 >
   <section class="mx-auto max-w-3xl px-6 pt-24 pb-12">
     <SectionLabel>Our Story</SectionLabel>
     <h1 class="font-display text-5xl md:text-6xl font-bold text-fg-strong mt-4 leading-tight">
-      Built on thirty<br />years of trust.
+      Born from a thirty-year<br />friendship.
     </h1>
   </section>
+
   <section class="mx-auto max-w-3xl px-6 pb-12 space-y-6 text-lg text-fg leading-relaxed">
     <p>
-      OCEANS LLC was founded in 2013 by Daniel Brent and Paul Morrisseau — colleagues who met in
-      Jacksonville when Daniel was serving in the U.S. Navy and later reunited at SRI International
-      in St. Petersburg.
+      OCEANS LLC was born from a thirty-year friendship and a shared commitment to technical
+      excellence. Founders Daniel Brent and Paul Morrisseau first met in Jacksonville, Florida,
+      while Daniel was serving in the U.S. Navy and Paul was pursuing his degree in engineering.
     </p>
     <p>
-      They built the company on a simple conviction: federal programs deserve rigorous, objective
-      engineering — not just confident-sounding reports.
+      Their professional paths converged years later at SRI International in St. Petersburg,
+      Florida. After collaborating there for five years, they recognized a unique opportunity to
+      combine their expertise to solve complex technical challenges for the modern world. This
+      vision led to the founding of OCEANS LLC in 2013.
     </p>
     <p>
-      Headquartered back where it began in Jacksonville, FL, OCEANS bridges high-level engineering
-      discipline with real-world operational need.
+      Now headquartered back where it all began in Jacksonville, Florida, OCEANS LLC leverages the
+      founders' extensive backgrounds in the government, military, and homeland security sectors.
+      We specialize in bridging the gap between high-level engineering and real-world operational
+      need.
+    </p>
+    <p class="text-fg-strong font-display text-xl pt-4 border-t border-border-hairline">
+      At OCEANS LLC, we don't just build systems — we build on a foundation of trust and decades of
+      proven experience.
     </p>
   </section>
+
+  <section class="mx-auto max-w-6xl px-6 py-12">
+    <SectionLabel>Core competencies</SectionLabel>
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+      {
+        competencies.map((c) => (
+          <Card>
+            <h3 class="font-display text-lg font-bold text-fg-strong">{c.title}</h3>
+            <p class="mt-2 text-sm text-muted leading-relaxed">{c.desc}</p>
+          </Card>
+        ))
+      }
+    </div>
+  </section>
+
   <section class="mx-auto max-w-6xl px-6 py-12">
     <SectionLabel>What we hold ourselves to</SectionLabel>
     <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -66,6 +109,7 @@ const values = [
       }
     </div>
   </section>
+
   <section class="mx-auto max-w-3xl px-6 py-24 text-center">
     <Button href="/team" variant="outline">Meet the team →</Button>
   </section>

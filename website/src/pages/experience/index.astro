@@ -4,26 +4,159 @@ import SectionLabel from "@components/SectionLabel.astro";
 import CaseStudyCard from "@components/CaseStudyCard.astro";
 import { getCollection } from "astro:content";
 
-const items = (await getCollection("caseStudies")).sort((a, b) => b.data.year - a.data.year);
+const caseStudies = (await getCollection("caseStudies")).sort((a, b) => b.data.year - a.data.year);
+
+const clientGroups = [
+  {
+    label: "Department of Homeland Security",
+    items: [
+      "U.S. Immigration and Customs Enforcement",
+      "Air and Marine Operations",
+      "U.S. Border Patrol",
+      "Office of Field Operations",
+      "U.S. Secret Service",
+      "U.S. Coast Guard",
+      "Transportation Security Administration",
+      "Federal Air Marshal Service",
+      "Science and Technology Directorate",
+      "Cybersecurity and Infrastructure Security Agency",
+    ],
+  },
+  {
+    label: "Department of War",
+    items: [
+      "Naval Air Systems Command",
+      "U.S. Army North",
+      "Naval Sea Systems Command",
+      "U.S. Northern Command",
+      "Naval Surface Warfare Center",
+      "U.S. Southern Command",
+      "North American Aerospace Defense Command",
+      "U.S. Special Operations Command",
+    ],
+  },
+  {
+    label: "Additional Federal",
+    items: [
+      "Federal Bureau of Investigation",
+      "Department of State",
+      "Drug Enforcement Administration",
+    ],
+  },
+  {
+    label: "International (FVEY & Partners)",
+    items: [
+      "Royal Canadian Mounted Police",
+      "U.K. Royal Navy",
+      "U.K. Defense Intelligence",
+      "U.K. Ministry of Defense",
+      "U.K. Royal Air Force",
+      "U.K. National Protective Security Authority",
+      "Republic of Korea",
+      "España Departamento de Seguridad Nacional",
+      "España Guardia Civil",
+    ],
+  },
+  {
+    label: "Local Law Enforcement",
+    items: [
+      "New Jersey Police Department",
+      "New York Police Department",
+      "Port Authority of New York/New Jersey",
+      "Miami Police Department",
+      "Los Ángeles Police Department",
+    ],
+  },
+  {
+    label: "Organizations, Tribal Nations & Labs",
+    items: [
+      "Lummi Tribe — Puget Sound",
+      "Johns Hopkins Applied Physics Lab",
+      "Alaska Center for Unmanned Aircraft Systems Integration",
+      "National Football League",
+      "Fédération Internationale de Football Association",
+      "Norwegian Cruise Lines",
+    ],
+  },
+  {
+    label: "Transit Authorities",
+    items: [
+      "Metropolitan Transit Authority (NY)",
+      "Sound Transit (Seattle)",
+      "New Jersey Transit",
+      "Washington Metropolitan Area Transit Authority",
+      "Los Ángeles Metro",
+      "Metropolitan Atlanta Rapid Transit Authority",
+      "Chicago Transit Authority",
+      "Bay Area Rapid Transit",
+    ],
+  },
+  {
+    label: "Class I Railroads",
+    items: [
+      "Union Pacific",
+      "CSX",
+      "Norfolk Southern",
+      "Burlington Northern Santa Fe",
+    ],
+  },
+  {
+    label: "Airports",
+    items: [
+      "Los Ángeles International",
+      "Miami International",
+      "Ronald Reagan Washington National",
+    ],
+  },
+];
 ---
-<PageLayout title="Relevant Experience" description="Past performance across federal missions.">
-  <section class="mx-auto max-w-6xl px-6 pt-24 pb-12">
+<PageLayout title="Relevant Experience" description="Past performance across federal, international, state, local, and operational divisions.">
+  <section class="mx-auto max-w-6xl px-6 pt-24 pb-8">
     <SectionLabel>Past Performance</SectionLabel>
     <h1 class="font-display text-5xl md:text-6xl font-bold text-fg-strong mt-4 leading-tight">
       Relevant experience<br />across federal missions
     </h1>
+    <p class="mt-6 text-base text-muted max-w-2xl leading-relaxed">
+      Representative support provided to international, federal, state, local, tribal, territorial,
+      operational, and research divisions. Additional details available upon request consistent
+      with applicable disclosure restrictions.
+    </p>
   </section>
-  <section class="mx-auto max-w-6xl px-6 pb-24">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+  {
+    caseStudies.length > 0 && (
+      <section class="mx-auto max-w-6xl px-6 py-12">
+        <SectionLabel>Selected case studies</SectionLabel>
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          {caseStudies.map((c) => (
+            <CaseStudyCard
+              client={c.data.client}
+              title={c.data.title}
+              summary={c.data.summary}
+              badges={c.data.badges}
+              href={`/experience/${c.data.slug}`}
+            />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="mx-auto max-w-6xl px-6 pb-24 pt-12 border-t border-border-hairline">
+    <SectionLabel>Mission partners</SectionLabel>
+    <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
       {
-        items.map((c) => (
-          <CaseStudyCard
-            client={c.data.client}
-            title={c.data.title}
-            summary={c.data.summary}
-            badges={c.data.badges}
-            href={`/experience/${c.data.slug}`}
-          />
+        clientGroups.map((g) => (
+          <div>
+            <h3 class="font-display text-lg font-bold text-fg-strong border-b border-border-hairline pb-2">
+              {g.label}
+            </h3>
+            <ul class="mt-4 space-y-1.5 text-sm text-muted leading-relaxed">
+              {g.items.map((i) => (
+                <li>{i}</li>
+              ))}
+            </ul>
+          </div>
         ))
       }
     </div>
