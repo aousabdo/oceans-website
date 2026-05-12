@@ -25,11 +25,38 @@ const stack = [
   "CONOPS Development",
 ];
 const pipelineSteps = [
-  { label: "01 · Intake", title: "Mission Need & Scoping", emphasis: true },
-  { label: "02 · Requirements", title: "Structured Requirements Development" },
-  { label: "03 · Architecture", title: "Systems Engineering & Design" },
-  { label: "04 · Evaluation", title: "T&E Execution & Analysis" },
-  { label: "05 · Outcome", title: "Decision-Grade Reporting", emphasis: true },
+  {
+    label: "01 · Intake",
+    title: "Mission Need & Scoping",
+    description:
+      "Surface the real operational gap, the decision it informs, and the threshold for done.",
+    emphasis: true,
+  },
+  {
+    label: "02 · Requirements",
+    title: "Structured Requirements Development",
+    description:
+      "Decompose mission needs into testable requirements with full traceability from intent to threshold.",
+  },
+  {
+    label: "03 · Architecture",
+    title: "Systems Engineering & Design",
+    description:
+      "Bind validated requirements to integrated solutions across cyber, lifecycle, and operational constraints.",
+  },
+  {
+    label: "04 · Evaluation",
+    title: "T&E Execution & Analysis",
+    description:
+      "Run structured tests with quantitative analysis that withstands operational and acquisition review.",
+  },
+  {
+    label: "05 · Outcome",
+    title: "Decision-Grade Reporting",
+    description:
+      "Deliver evidence packages that work at technical, operational, and executive levels — and survive scrutiny.",
+    emphasis: true,
+  },
 ];
 ---
 <PageLayout title="OCEANS LLC" path="/">
@@ -61,10 +88,10 @@ const pipelineSteps = [
         <Button href="/capabilities" variant="outline">Download capabilities statement</Button>
       </div>
     </div>
-    <div class="hidden md:flex absolute right-12 bottom-12 z-10 flex-col gap-7 text-right">
-      <Stat value="50" emphasis="+" label="Years Combined Experience" />
-      <Stat value="2013" label="Founded" />
-      <Stat value="4" emphasis="+" label="Core Service Lines" />
+    <div class="hidden lg:flex absolute right-12 bottom-16 z-10 flex-col gap-8 max-w-[260px]">
+      <Stat value="50" emphasis="+" label="Years Combined Experience" align="right" />
+      <Stat value="2013" label="Founded" align="right" />
+      <Stat value="4" emphasis="+" label="Core Service Lines" align="right" />
     </div>
   </section>
 
@@ -94,6 +121,7 @@ const pipelineSteps = [
               summary={s.data.summary}
               tags={s.data.tags}
               href={`/services/${s.data.slug}`}
+              slug={s.data.slug}
             />
           ))
         }
@@ -102,11 +130,8 @@ const pipelineSteps = [
   </section>
 
   <!-- METHODOLOGY -->
-  <section class="mx-auto max-w-6xl px-6 py-24 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-    <div class="bg-bg-2 border border-border-hairline rounded-lg p-8">
-      <Pipeline steps={pipelineSteps} />
-    </div>
-    <div>
+  <section class="mx-auto max-w-6xl px-6 py-24 grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-16 items-start">
+    <div class="lg:sticky lg:top-24">
       <SectionLabel>Our Methodology</SectionLabel>
       <h2 class="font-display text-4xl md:text-5xl font-bold text-fg-strong mt-4 leading-tight">
         From mission need<br />to defensible outcome.
@@ -116,7 +141,12 @@ const pipelineSteps = [
         recommendation is traceable to a validated requirement and every metric withstands
         technical, operational, and executive review.
       </p>
+      <div class="mt-8 flex items-center gap-3 font-mono text-[10px] uppercase tracking-widest text-muted">
+        <span class="block w-8 h-px bg-accent"></span>
+        Five-phase engagement lifecycle
+      </div>
     </div>
+    <Pipeline steps={pipelineSteps} class="max-w-xl" />
   </section>
 
   <!-- PAST PERFORMANCE -->

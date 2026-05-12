@@ -1,5 +1,6 @@
 ---
 import Tag from "./Tag.astro";
+import ServiceIcon from "./ServiceIcon.astro";
 
 interface Props {
   number: string;
@@ -7,27 +8,49 @@ interface Props {
   summary: string;
   tags?: string[];
   href: string;
+  slug?: string;
 }
 const props = Astro.props as Props;
-const { number, title, summary, tags = [], href } = props;
+const { number, title, summary, tags = [], href, slug } = props;
 ---
 <a
   href={href}
-  class="group block bg-surface border border-border-hairline rounded p-8 transition-all hover:bg-surface-2 hover:border-accent/40 relative overflow-hidden"
+  class="group relative block bg-surface border border-border-hairline rounded-lg p-7 md:p-8 transition-all hover:bg-surface-2 hover:border-accent/40 hover:-translate-y-1 overflow-hidden"
 >
-  <span
-    class="absolute top-0 left-0 right-0 h-px bg-accent scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"
-  ></span>
-  <div class="font-mono text-[11px] tracking-widest text-accent">{number}</div>
-  <h3 class="font-display text-xl font-bold text-fg-strong mt-6 leading-tight">{title}</h3>
-  <p class="mt-3 text-sm text-muted leading-relaxed">{summary}</p>
-  {
-    tags.length > 0 && (
-      <div class="mt-5 flex flex-wrap gap-1.5">
-        {tags.map((t) => (
-          <Tag>{t}</Tag>
-        ))}
-      </div>
-    )
-  }
+  {/* top accent line that scales in on hover */}
+  <span class="absolute top-0 left-0 right-0 h-px bg-accent scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
+
+  {/* faint glow gradient on hover */}
+  <span class="absolute inset-0 bg-gradient-to-br from-accent/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></span>
+
+  <div class="relative">
+    <div class="flex items-start justify-between gap-4">
+      {slug && (
+        <div class="w-12 h-12 rounded-md bg-bg-2 border border-accent/20 flex items-center justify-center shrink-0 transition-colors group-hover:border-accent/40">
+          <ServiceIcon slug={slug} size={24} />
+        </div>
+      )}
+      <span class="font-mono text-xs tracking-[0.18em] text-accent">{number}</span>
+    </div>
+
+    <h3 class="font-display text-xl font-bold text-fg-strong mt-6 leading-tight">
+      {title}
+    </h3>
+    <p class="mt-3 text-sm text-muted leading-relaxed">{summary}</p>
+
+    {
+      tags.length > 0 && (
+        <div class="mt-5 flex flex-wrap gap-1.5">
+          {tags.map((t) => (
+            <Tag>{t}</Tag>
+          ))}
+        </div>
+      )
+    }
+
+    <div class="mt-6 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-accent opacity-0 group-hover:opacity-100 translate-x-[-4px] group-hover:translate-x-0 transition-all">
+      <span>Read more</span>
+      <span>→</span>
+    </div>
+  </div>
 </a>
