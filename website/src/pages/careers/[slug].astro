@@ -1,0 +1,59 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import SectionLabel from "@components/SectionLabel.astro";
+import Button from "@components/Button.astro";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const jobs = await getCollection("jobs");
+  return jobs.map((j) => ({ params: { slug: j.data.slug }, props: { job: j.data } }));
+}
+const { job } = Astro.props;
+---
+<PageLayout title={job.title} description={job.summary}>
+  <section class="mx-auto max-w-3xl px-6 pt-24 pb-8">
+    <SectionLabel>Open role · {job.department}</SectionLabel>
+    <h1 class="font-display text-4xl md:text-5xl font-bold text-fg-strong mt-4 leading-tight">
+      {job.title}
+    </h1>
+    <div class="mt-4 flex gap-3 font-mono text-[10px] uppercase tracking-widest text-muted">
+      <span>{job.level}</span><span>·</span><span>{job.type}</span><span>·</span><span>{job.location}</span>
+    </div>
+    <p class="mt-6 text-lg text-fg leading-relaxed">{job.summary}</p>
+  </section>
+
+  <section class="mx-auto max-w-3xl px-6 py-8 space-y-10 text-fg leading-relaxed">
+    <div>
+      <h2 class="font-display text-2xl text-fg-strong">Responsibilities</h2>
+      <ul class="mt-3 list-disc list-inside space-y-1.5">
+        {job.responsibilities.map((r: string) => <li>{r}</li>)}
+      </ul>
+    </div>
+    <div>
+      <h2 class="font-display text-2xl text-fg-strong">Qualifications</h2>
+      <ul class="mt-3 list-disc list-inside space-y-1.5">
+        {job.qualifications.map((q: string) => <li>{q}</li>)}
+      </ul>
+    </div>
+    {
+      job.bonus.length > 0 && (
+        <div>
+          <h2 class="font-display text-2xl text-fg-strong">Bonus</h2>
+          <ul class="mt-3 list-disc list-inside space-y-1.5">
+            {job.bonus.map((b: string) => <li>{b}</li>)}
+          </ul>
+        </div>
+      )
+    }
+  </section>
+
+  <section class="mx-auto max-w-3xl px-6 py-16 border-t border-border-hairline text-center">
+    <SectionLabel class="justify-center">Apply</SectionLabel>
+    <p class="mt-4 text-muted">For now, apply by email — full upload form lands in M12.</p>
+    <div class="mt-6 flex justify-center">
+      <Button href={`mailto:careers@oceansllc.com?subject=Application — ${job.title}`} variant="primary">
+        Apply via email
+      </Button>
+    </div>
+  </section>
+</PageLayout>

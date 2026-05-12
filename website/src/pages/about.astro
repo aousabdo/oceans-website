@@ -1,12 +1,72 @@
 ---
 import PageLayout from "@layouts/PageLayout.astro";
+import SectionLabel from "@components/SectionLabel.astro";
+import Button from "@components/Button.astro";
+import Card from "@components/Card.astro";
+
+const values = [
+  {
+    label: "Core Value",
+    title: "Discipline",
+    desc: "Structured methodology, traceability, and measurable criteria — in every engagement.",
+  },
+  {
+    label: "Core Value",
+    title: "Clarity",
+    desc: "Findings and recommendations that work at technical, operational, and executive levels.",
+  },
+  {
+    label: "Core Value",
+    title: "Integrity",
+    desc: "Objective, defensible results grounded in validated requirements. We own our outcomes.",
+  },
+  {
+    label: "Jacksonville, FL",
+    title: "Est. 2013",
+    desc: "Government · Military · Homeland Security — where it counts most.",
+  },
+];
 ---
-<PageLayout title="About" description="The story behind OCEANS LLC.">
-  <section class="mx-auto max-w-3xl px-6 py-32 text-center">
-    <p class="font-mono text-xs uppercase tracking-widest text-accent">▌ Coming soon</p>
-    <h1 class="font-display text-5xl md:text-6xl font-bold text-fg-strong mt-6">About</h1>
-    <p class="mt-6 text-muted leading-relaxed">
-      Founded 2013 in Jacksonville, FL. Full story lands in M10.
+<PageLayout
+  title="About"
+  description="OCEANS LLC was founded in 2013 on a conviction: federal programs deserve rigorous, objective engineering."
+>
+  <section class="mx-auto max-w-3xl px-6 pt-24 pb-12">
+    <SectionLabel>Our Story</SectionLabel>
+    <h1 class="font-display text-5xl md:text-6xl font-bold text-fg-strong mt-4 leading-tight">
+      Built on thirty<br />years of trust.
+    </h1>
+  </section>
+  <section class="mx-auto max-w-3xl px-6 pb-12 space-y-6 text-lg text-fg leading-relaxed">
+    <p>
+      OCEANS LLC was founded in 2013 by Daniel Brent and Paul Morrisseau — colleagues who met in
+      Jacksonville when Daniel was serving in the U.S. Navy and later reunited at SRI International
+      in St. Petersburg.
     </p>
+    <p>
+      They built the company on a simple conviction: federal programs deserve rigorous, objective
+      engineering — not just confident-sounding reports.
+    </p>
+    <p>
+      Headquartered back where it began in Jacksonville, FL, OCEANS bridges high-level engineering
+      discipline with real-world operational need.
+    </p>
+  </section>
+  <section class="mx-auto max-w-6xl px-6 py-12">
+    <SectionLabel>What we hold ourselves to</SectionLabel>
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+      {
+        values.map((v) => (
+          <Card>
+            <div class="font-mono text-[9px] uppercase tracking-widest text-accent">{v.label}</div>
+            <h3 class="font-display text-lg font-bold text-fg-strong mt-2">{v.title}</h3>
+            <p class="mt-2 text-sm text-muted leading-relaxed">{v.desc}</p>
+          </Card>
+        ))
+      }
+    </div>
+  </section>
+  <section class="mx-auto max-w-3xl px-6 py-24 text-center">
+    <Button href="/team" variant="outline">Meet the team →</Button>
   </section>
 </PageLayout>

@@ -1,0 +1,13 @@
+order: 4
+slug: mission-data
+number: "04"
+title: Mission Data, COPs & Ontologies
+summary: Ontology-driven data architectures enabling multi-domain awareness, interoperability, and decision-quality operating pictures.
+tags: [Ontologies, COP Validation, Integration]
+methods:
+  - Domain ontology design
+  - Common Operating Picture validation
+  - Multi-domain data integration
+  - Schema and interface definition
+  - Analytic dashboard delivery
+relatedCaseStudies: []

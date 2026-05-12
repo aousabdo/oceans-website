@@ -1,0 +1,57 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import SectionLabel from "@components/SectionLabel.astro";
+import RoleCard from "@components/RoleCard.astro";
+import Button from "@components/Button.astro";
+import { getCollection } from "astro:content";
+
+const open = (await getCollection("jobs"))
+  .filter((j) => j.data.open)
+  .sort((a, b) => +b.data.posted - +a.data.posted);
+---
+<PageLayout title="Careers" description="Open roles at OCEANS LLC.">
+  <section class="mx-auto max-w-4xl px-6 pt-24 pb-12">
+    <SectionLabel>Careers</SectionLabel>
+    <h1 class="font-display text-5xl md:text-6xl font-bold text-fg-strong mt-4 leading-tight">
+      Build rigorous engineering with us.
+    </h1>
+    <p class="mt-6 text-lg text-muted leading-relaxed">
+      We hire engineers who care about defensible work. If that's you and you don't see a fit
+      below, send a general application.
+    </p>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-6 pb-16">
+    <SectionLabel>Open roles</SectionLabel>
+    {
+      open.length === 0 ? (
+        <p class="mt-6 text-muted">No open roles right now — a general application is welcome.</p>
+      ) : (
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {open.map((j) => (
+            <RoleCard
+              title={j.data.title}
+              location={j.data.location}
+              level={j.data.level}
+              type={j.data.type}
+              href={`/careers/${j.data.slug}`}
+            />
+          ))}
+        </div>
+      )
+    }
+  </section>
+
+  <section class="mx-auto max-w-3xl px-6 py-16 border-t border-border-hairline text-center">
+    <SectionLabel class="justify-center">General application</SectionLabel>
+    <p class="mt-4 text-muted">No fit listed? Email us a resume and a short note.</p>
+    <div class="mt-8 flex justify-center">
+      <Button href="mailto:careers@oceansllc.com" variant="primary">
+        Email careers@oceansllc.com
+      </Button>
+    </div>
+    <p class="mt-6 font-mono text-[10px] uppercase tracking-widest text-muted">
+      ▌ inline resume upload lands in M12
+    </p>
+  </section>
+</PageLayout>

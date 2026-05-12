@@ -1,0 +1,37 @@
+---
+import Badge from "./Badge.astro";
+
+interface Props {
+  client: string;
+  title: string;
+  summary: string;
+  badges?: string[];
+  href: string;
+  active?: boolean;
+}
+const props = Astro.props as Props;
+const { client, title, summary, badges = [], href, active = false } = props;
+---
+<a
+  href={href}
+  class="group relative block bg-surface border border-border-hairline rounded p-7 transition-all hover:border-accent/40 hover:-translate-y-1 hover:shadow-lg overflow-hidden"
+>
+  <div
+    class="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+  ></div>
+  <div class="relative">
+    <div class="font-mono text-[10px] uppercase tracking-widest text-accent">{client}</div>
+    <h3 class="font-display text-lg font-bold text-fg-strong mt-3 leading-snug">{title}</h3>
+    <p class="mt-3 text-[13px] text-muted leading-relaxed">{summary}</p>
+    {
+      (badges.length > 0 || active) && (
+        <div class="mt-5 flex flex-wrap gap-1.5">
+          {badges.map((b) => (
+            <Badge>{b}</Badge>
+          ))}
+          {active && <Badge tone="go">Active</Badge>}
+        </div>
+      )
+    }
+  </div>
+</a>

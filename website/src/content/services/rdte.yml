@@ -1,0 +1,13 @@
+order: 3
+slug: rdte
+number: "03"
+title: Research, Development, Test & Evaluation
+summary: Mission-aligned, quantitative RDT&E providing defensible evidence for operational and acquisition decisions.
+tags: [TRL Eval, White Team, Test Plans]
+methods:
+  - Technology Readiness Level assessment
+  - Operational T&E execution
+  - White Team operations
+  - Quantitative analysis and reporting
+  - Decision-grade evidence packaging
+relatedCaseStudies: [dod-c2-ote]

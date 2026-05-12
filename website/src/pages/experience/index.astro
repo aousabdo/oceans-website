@@ -1,0 +1,31 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import SectionLabel from "@components/SectionLabel.astro";
+import CaseStudyCard from "@components/CaseStudyCard.astro";
+import { getCollection } from "astro:content";
+
+const items = (await getCollection("caseStudies")).sort((a, b) => b.data.year - a.data.year);
+---
+<PageLayout title="Relevant Experience" description="Past performance across federal missions.">
+  <section class="mx-auto max-w-6xl px-6 pt-24 pb-12">
+    <SectionLabel>Past Performance</SectionLabel>
+    <h1 class="font-display text-5xl md:text-6xl font-bold text-fg-strong mt-4 leading-tight">
+      Relevant experience<br />across federal missions
+    </h1>
+  </section>
+  <section class="mx-auto max-w-6xl px-6 pb-24">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {
+        items.map((c) => (
+          <CaseStudyCard
+            client={c.data.client}
+            title={c.data.title}
+            summary={c.data.summary}
+            badges={c.data.badges}
+            href={`/experience/${c.data.slug}`}
+          />
+        ))
+      }
+    </div>
+  </section>
+</PageLayout>

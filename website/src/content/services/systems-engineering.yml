@@ -1,0 +1,13 @@
+order: 2
+slug: systems-engineering
+number: "02"
+title: Systems Engineering & Architecture
+summary: End-to-end architecture design connecting validated requirements to secure, scalable, lifecycle-aligned solutions.
+tags: [CONOPS, Cybersecurity, Integration]
+methods:
+  - CONOPS development
+  - System and sub-system architecture
+  - Cybersecurity by design
+  - Integration and transition planning
+  - Lifecycle alignment
+relatedCaseStudies: [dhs-sensor-architecture]

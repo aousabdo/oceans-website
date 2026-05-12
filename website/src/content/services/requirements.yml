@@ -1,0 +1,13 @@
+order: 1
+slug: requirements
+number: "01"
+title: Requirements Development
+summary: Translating mission needs, operational gaps, and stakeholder inputs into structured, testable requirements with full traceability.
+tags: [Gap Analysis, Use Cases, Metrics Mapping]
+methods:
+  - Operational gap analysis
+  - Use-case decomposition
+  - Capability-to-requirement mapping
+  - Performance threshold definition
+  - Traceability matrix construction
+relatedCaseStudies: []

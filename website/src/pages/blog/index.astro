@@ -1,0 +1,37 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import SectionLabel from "@components/SectionLabel.astro";
+import BlogPostCard from "@components/BlogPostCard.astro";
+import { getCollection } from "astro:content";
+import { readingTime } from "@lib/format";
+
+const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
+  (a, b) => +b.data.date - +a.data.date
+);
+---
+<PageLayout title="Journal" description="Notes from the field — engineering, T&E, and mission data.">
+  <section class="mx-auto max-w-3xl px-6 pt-24 pb-12">
+    <SectionLabel>Journal</SectionLabel>
+    <h1 class="font-display text-5xl md:text-6xl font-bold text-fg-strong mt-4 leading-tight">
+      Recent thinking.
+    </h1>
+  </section>
+
+  <section class="mx-auto max-w-3xl px-6 pb-24 space-y-10 divide-y divide-border-hairline">
+    {
+      posts.map((p) => (
+        <div class="pt-10 first:pt-0">
+          <BlogPostCard
+            title={p.data.title}
+            date={p.data.date}
+            author={p.data.author}
+            excerpt={p.data.excerpt}
+            tags={p.data.tags}
+            readTime={readingTime(p.body ?? "")}
+            href={`/blog/${p.id}`}
+          />
+        </div>
+      ))
+    }
+  </section>
+</PageLayout>

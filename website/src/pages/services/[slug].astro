@@ -1,0 +1,76 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import SectionLabel from "@components/SectionLabel.astro";
+import Tag from "@components/Tag.astro";
+import Button from "@components/Button.astro";
+import CaseStudyCard from "@components/CaseStudyCard.astro";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const services = await getCollection("services");
+  const caseStudies = await getCollection("caseStudies");
+  return services.map((s) => ({
+    params: { slug: s.data.slug },
+    props: {
+      service: s.data,
+      related: caseStudies.filter((c) => c.data.capabilities.includes(s.data.slug)),
+    },
+  }));
+}
+
+const { service, related } = Astro.props;
+---
+<PageLayout title={service.title} description={service.summary}>
+  <section class="mx-auto max-w-4xl px-6 pt-24 pb-12">
+    <SectionLabel>Capability {service.number}</SectionLabel>
+    <h1 class="font-display text-4xl md:text-5xl font-bold text-fg-strong mt-4 leading-tight">
+      {service.title}
+    </h1>
+    <p class="mt-6 text-lg text-muted leading-relaxed">{service.summary}</p>
+    <div class="mt-6 flex flex-wrap gap-2">
+      {service.tags.map((t: string) => <Tag>{t}</Tag>)}
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-6 py-12">
+    <SectionLabel>What this looks like in practice</SectionLabel>
+    <ul class="mt-6 space-y-3">
+      {
+        service.methods.map((m: string, i: number) => (
+          <li class="flex gap-4 p-4 border border-border-hairline rounded bg-surface">
+            <span class="font-mono text-[11px] text-accent tracking-widest">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <span class="text-fg">{m}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  {
+    related.length > 0 && (
+      <section class="mx-auto max-w-6xl px-6 py-12">
+        <SectionLabel>Recent engagements</SectionLabel>
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          {related.map((c) => (
+            <CaseStudyCard
+              client={c.data.client}
+              title={c.data.title}
+              summary={c.data.summary}
+              badges={c.data.badges}
+              href={`/experience/${c.data.slug}`}
+            />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="mx-auto max-w-4xl px-6 py-24 text-center">
+    <h2 class="font-display text-3xl text-fg-strong">Have a program that fits this scope?</h2>
+    <div class="mt-6 flex justify-center">
+      <Button href="/contact" variant="primary">Start a conversation</Button>
+    </div>
+  </section>
+</PageLayout>

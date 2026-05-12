@@ -1,0 +1,38 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import SectionLabel from "@components/SectionLabel.astro";
+import ServiceCard from "@components/ServiceCard.astro";
+import { getCollection } from "astro:content";
+
+const services = (await getCollection("services")).sort((a, b) => a.data.order - b.data.order);
+---
+<PageLayout
+  title="Services"
+  description="Four core capabilities — requirements through evaluation."
+>
+  <section class="mx-auto max-w-6xl px-6 pt-24 pb-12">
+    <SectionLabel>Our Services</SectionLabel>
+    <h1 class="font-display text-5xl md:text-6xl font-bold text-fg-strong mt-4 leading-tight">
+      Four core<br />capability areas
+    </h1>
+    <p class="mt-6 text-base text-muted max-w-xl leading-relaxed">
+      Every engagement is scoped to deliver defensible evidence — not just analysis — for
+      operational and acquisition decisions.
+    </p>
+  </section>
+  <section class="mx-auto max-w-6xl px-6 pb-24">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {
+        services.map((s) => (
+          <ServiceCard
+            number={s.data.number}
+            title={s.data.title}
+            summary={s.data.summary}
+            tags={s.data.tags}
+            href={`/services/${s.data.slug}`}
+          />
+        ))
+      }
+    </div>
+  </section>
+</PageLayout>

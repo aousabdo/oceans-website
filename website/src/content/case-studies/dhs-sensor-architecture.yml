@@ -1,0 +1,12 @@
+slug: dhs-sensor-architecture
+client: Department of Homeland Security
+title: Enterprise Architecture & Sensor Integration
+year: 2023
+domain: Homeland Security
+summary: Multi-sensor border surveillance integration architecture with lifecycle cybersecurity.
+challenge: Heterogeneous border-sensor portfolio required a coherent integration architecture and CONOPS.
+approach: Developed integration architectures, CONOPS, and lifecycle cybersecurity documentation across multiple sensor classes.
+outcome: Provided the engineering baseline for sustained multi-sensor operations and downstream procurement.
+metrics: []
+capabilities: [systems-engineering, mission-data]
+badges: [Architecture, Sensor Fusion]

@@ -1,0 +1,12 @@
+slug: dod-c2-ote
+client: Department of Defense
+title: Operational Test & Evaluation — Command & Control Systems
+year: 2024
+domain: Defense / C2
+summary: Structured OT&E program for a multi-domain Command & Control capability.
+challenge: A new multi-domain C2 capability required acquisition-grade operational test evidence under aggressive timeline pressure.
+approach: Designed and executed a structured OT&E program, served as White Team lead, and produced quantitative analysis aligned to validated requirements.
+outcome: Delivered acquisition-grade assessment report supporting downstream milestone decisions.
+metrics: []
+capabilities: [rdte, systems-engineering]
+badges: [T&E, C2, White Team]

@@ -1,12 +1,57 @@
 ---
 import PageLayout from "@layouts/PageLayout.astro";
+import SectionLabel from "@components/SectionLabel.astro";
+import { getCollection } from "astro:content";
+
+const team = (await getCollection("team")).sort((a, b) => a.data.order - b.data.order);
+const leaders = team.filter((t) => t.data.leadership);
+const rest = team.filter((t) => !t.data.leadership);
 ---
-<PageLayout title="Team" description="Leadership and team at OCEANS LLC.">
-  <section class="mx-auto max-w-3xl px-6 py-32 text-center">
-    <p class="font-mono text-xs uppercase tracking-widest text-accent">▌ Coming soon</p>
-    <h1 class="font-display text-5xl md:text-6xl font-bold text-fg-strong mt-6">Team</h1>
-    <p class="mt-6 text-muted leading-relaxed">
-      Daniel Brent &middot; Paul Morrisseau &middot; the rest. Full page lands in M10.
-    </p>
+<PageLayout title="Team" description="Leadership and engineering at OCEANS LLC.">
+  <section class="mx-auto max-w-6xl px-6 pt-24 pb-12">
+    <SectionLabel>Leadership</SectionLabel>
+    <h1 class="font-display text-5xl md:text-6xl font-bold text-fg-strong mt-4 leading-tight">
+      The people behind OCEANS.
+    </h1>
   </section>
+
+  <section class="mx-auto max-w-6xl px-6 pb-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {
+        leaders.map((m) => (
+          <article class="bg-surface border border-border-hairline rounded p-8">
+            <div class="font-mono text-[10px] uppercase tracking-widest text-accent">
+              {m.data.role}
+            </div>
+            <h2 class="font-display text-2xl font-bold text-fg-strong mt-3">{m.data.name}</h2>
+            <p class="mt-4 text-fg leading-relaxed">{m.data.bio}</p>
+            {m.data.email && (
+              <a href={`mailto:${m.data.email}`} class="mt-4 inline-block font-mono text-xs text-accent">
+                {m.data.email}
+              </a>
+            )}
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {
+    rest.length > 0 && (
+      <section class="mx-auto max-w-6xl px-6 pb-24">
+        <SectionLabel>Team</SectionLabel>
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          {rest.map((m) => (
+            <article class="bg-surface border border-border-hairline rounded p-6">
+              <div class="font-display text-lg font-bold text-fg-strong">{m.data.name}</div>
+              <div class="font-mono text-[10px] uppercase tracking-widest text-muted mt-1">
+                {m.data.role}
+              </div>
+              <p class="mt-3 text-sm text-muted leading-relaxed">{m.data.bio}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    )
+  }
 </PageLayout>
