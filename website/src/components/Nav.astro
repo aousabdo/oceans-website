@@ -1,0 +1,85 @@
+---
+const links = [
+  { href: "/services", label: "Services" },
+  { href: "/experience", label: "Experience" },
+  { href: "/about", label: "About" },
+  { href: "/team", label: "Team" },
+  { href: "/careers", label: "Careers" },
+  { href: "/blog", label: "Blog" },
+  { href: "/contact", label: "Contact" },
+];
+
+const path = Astro.url.pathname;
+function isActive(href: string) {
+  if (href === "/") return path === "/";
+  return path.startsWith(href);
+}
+---
+<nav class="sticky top-0 z-40 backdrop-blur bg-bg/70 border-b border-border-hairline">
+  <div class="mx-auto max-w-6xl flex items-center justify-between px-6 h-16">
+    <a href="/" class="flex items-center gap-2" aria-label="OCEANS LLC home">
+      <span class="inline-flex w-8 h-8 items-center justify-center rounded border border-accent">
+        <span class="font-display text-accent text-sm font-bold">O</span>
+      </span>
+      <span class="font-display tracking-wider text-fg-strong">OCEANS</span>
+    </a>
+    <ul class="hidden md:flex items-center gap-7">
+      {
+        links.map((l) => (
+          <li>
+            <a
+              href={l.href}
+              aria-current={isActive(l.href) ? "page" : undefined}
+              class:list={[
+                "font-mono text-xs uppercase tracking-widest transition-colors",
+                isActive(l.href) ? "text-fg-strong" : "text-muted hover:text-fg-strong",
+              ]}
+            >
+              {l.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <a
+      href="/contact"
+      class="hidden md:inline-block font-mono text-[11px] uppercase tracking-widest border border-accent text-accent px-4 py-2 rounded hover:bg-accent hover:text-bg transition-colors"
+    >
+      Get In Touch
+    </a>
+    <button id="nav-toggle" class="md:hidden text-fg-strong p-2" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M4 7h16M4 12h16M4 17h16"></path>
+      </svg>
+    </button>
+  </div>
+  <div id="nav-drawer" hidden class="md:hidden border-t border-border-hairline bg-bg">
+    <ul class="px-6 py-4 flex flex-col gap-3">
+      {
+        links.map((l) => (
+          <li>
+            <a href={l.href} class="font-mono text-sm uppercase tracking-wider text-fg">
+              {l.label}
+            </a>
+          </li>
+        ))
+      }
+      <li>
+        <a href="/contact" class="font-mono text-sm uppercase tracking-wider text-accent">
+          Get In Touch
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+<script>
+  const toggle = document.getElementById("nav-toggle");
+  const drawer = document.getElementById("nav-drawer");
+  toggle?.addEventListener("click", () => {
+    if (!drawer) return;
+    const open = !drawer.hasAttribute("hidden");
+    if (open) drawer.setAttribute("hidden", "");
+    else drawer.removeAttribute("hidden");
+    toggle.setAttribute("aria-label", open ? "Open menu" : "Close menu");
+  });
+</script>

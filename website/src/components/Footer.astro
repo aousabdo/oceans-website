@@ -1,0 +1,82 @@
+---
+const year = new Date().getFullYear();
+const cols = [
+  {
+    title: "Services",
+    links: [
+      { href: "/services/requirements", label: "Requirements Development" },
+      { href: "/services/systems-engineering", label: "Systems Engineering" },
+      { href: "/services/rdte", label: "RDT&E" },
+      { href: "/services/mission-data", label: "Mission Data & COPs" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { href: "/about", label: "About" },
+      { href: "/team", label: "Leadership" },
+      { href: "/experience", label: "Past Performance" },
+      { href: "/careers", label: "Careers" },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      { href: "/capabilities", label: "Capabilities Statement" },
+      { href: "/blog", label: "Blog" },
+      { href: "/privacy", label: "Privacy" },
+      { href: "/terms", label: "Terms" },
+    ],
+  },
+];
+---
+<footer class="border-t border-border-hairline bg-bg-2 mt-24">
+  <div class="mx-auto max-w-6xl px-6 py-16">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+      <div class="md:col-span-1">
+        <div class="font-display text-xl tracking-wider text-fg-strong">OCEANS LLC</div>
+        <p class="mt-3 text-sm text-muted leading-relaxed max-w-xs">
+          Systems engineering, test &amp; evaluation, and mission data solutions for federal
+          customers who need defensible outcomes.
+        </p>
+        <address class="mt-4 not-italic font-mono text-xs leading-relaxed text-muted">
+          Jacksonville, FL<br />
+          <a href="mailto:info@oceansllc.com" class="text-accent">info@oceansllc.com</a><br />
+          727-455-9383<br />
+          <a
+            href="https://www.linkedin.com/company/oceans-llc"
+            class="text-accent"
+            target="_blank"
+            rel="noopener"
+          >
+            LinkedIn ↗
+          </a>
+        </address>
+      </div>
+      {
+        cols.map((c) => (
+          <div>
+            <div class="font-mono text-[10px] uppercase tracking-widest text-accent">{c.title}</div>
+            <ul class="mt-5 space-y-2">
+              {c.links.map((l) => (
+                <li>
+                  <a href={l.href} class="text-sm text-muted hover:text-fg-strong transition-colors">
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+    <div class="mt-12 pt-6 border-t border-border-hairline flex items-center justify-between">
+      <p class="font-mono text-xs text-muted">
+        © {year} <span class="text-fg">OCEANS LLC</span>. All rights reserved.
+      </p>
+      <p class="font-mono text-[10px] uppercase tracking-wider text-muted">
+        CAGE · NAICS · UEI on capabilities statement
+      </p>
+    </div>
+  </div>
+</footer>

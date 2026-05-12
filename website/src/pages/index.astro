@@ -1,31 +1,51 @@
 ---
-import "../styles/global.css";
-import { ACTIVE_THEME } from "../lib/theme";
+import PageLayout from "@layouts/PageLayout.astro";
+import { ACTIVE_THEME } from "@lib/theme";
 ---
+<PageLayout title="OCEANS LLC" path="/">
+  <section class="mx-auto max-w-6xl px-6 pt-24 pb-16">
+    <p class="font-mono text-xs uppercase tracking-widest text-accent flex items-center gap-3">
+      <span class="block w-10 h-px bg-accent"></span>
+      Theme — {ACTIVE_THEME}
+    </p>
+    <h1 class="font-display text-5xl md:text-7xl font-bold text-fg-strong mt-6 leading-[1.04] max-w-4xl">
+      Engineering that earns operational trust.
+    </h1>
+    <p class="font-sans text-lg text-muted mt-8 max-w-xl leading-relaxed">
+      OCEANS LLC delivers systems engineering, enterprise architecture, and rigorous test &amp; evaluation
+      that translate federal mission needs into defensible, decision-ready outcomes.
+    </p>
+    <div class="mt-10 flex flex-wrap gap-3">
+      <a
+        href="/services"
+        class="inline-flex items-center justify-center font-mono text-xs uppercase tracking-widest bg-accent text-bg px-6 py-3 rounded transition-all hover:brightness-110"
+      >
+        Explore capabilities
+      </a>
+      <a
+        href="/contact"
+        class="inline-flex items-center justify-center font-mono text-xs uppercase tracking-widest border border-accent text-accent px-6 py-3 rounded transition-all hover:bg-accent hover:text-bg"
+      >
+        Start a conversation
+      </a>
+    </div>
+  </section>
 
-<html lang="en" data-theme={ACTIVE_THEME}>
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    <title>OCEANS LLC — theme: {ACTIVE_THEME}</title>
-  </head>
-  <body>
-    <main class="min-h-screen p-12 max-w-6xl mx-auto">
-      <p class="font-mono text-xs uppercase tracking-widest text-accent">▌ Theme — {ACTIVE_THEME}</p>
-      <h1 class="font-display text-5xl md:text-7xl font-bold text-fg-strong mt-4 leading-[1.04]">
-        Engineering that earns operational trust.
-      </h1>
-      <p class="font-sans text-base text-muted mt-6 max-w-xl leading-relaxed">
-        Systems engineering, test &amp; evaluation, and mission data solutions for federal customers who need defensible outcomes.
-      </p>
-      <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-2">
-        <div class="aspect-square rounded bg-bg"></div>
-        <div class="aspect-square rounded bg-surface"></div>
-        <div class="aspect-square rounded bg-accent"></div>
-        <div class="aspect-square rounded bg-muted"></div>
+  <section class="mx-auto max-w-6xl px-6 py-16 border-t border-border-hairline">
+    <p class="font-mono text-[10px] uppercase tracking-widest text-accent">▌ Token palette</p>
+    <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-2">
+      <div class="aspect-square rounded bg-bg border border-border-hairline grid place-items-center">
+        <span class="font-mono text-[9px] text-muted">bg</span>
       </div>
-    </main>
-  </body>
-</html>
+      <div class="aspect-square rounded bg-surface grid place-items-center">
+        <span class="font-mono text-[9px] text-muted">surface</span>
+      </div>
+      <div class="aspect-square rounded bg-accent grid place-items-center">
+        <span class="font-mono text-[9px] text-bg">accent</span>
+      </div>
+      <div class="aspect-square rounded bg-muted grid place-items-center">
+        <span class="font-mono text-[9px] text-bg">muted</span>
+      </div>
+    </div>
+  </section>
+</PageLayout>
