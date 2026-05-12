@@ -112,6 +112,26 @@
   }
 }
 
+/* ─────────────────────────────────────────────────────────────────
+   Scroll-reveal — fades + slides any element marked [data-reveal]
+   into view as it enters the viewport. JS in BaseLayout flags
+   below-the-fold sections; above-the-fold stays visible by default.
+───────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+  }
+  [data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
