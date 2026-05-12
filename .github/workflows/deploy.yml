@@ -1,0 +1,38 @@
+name: Deploy
+on:
+  push:
+    branches: [main, "theme/operator", "theme/institute", "theme/mariner"]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: website } }
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: website/package-lock.json
+      - run: npm ci
+      - name: Determine theme
+        id: theme
+        run: |
+          case "${GITHUB_REF_NAME}" in
+            theme/operator)  echo "theme=operator"  >> $GITHUB_OUTPUT ;;
+            theme/institute) echo "theme=institute" >> $GITHUB_OUTPUT ;;
+            theme/mariner)   echo "theme=mariner"   >> $GITHUB_OUTPUT ;;
+            *)               echo "theme=operator"  >> $GITHUB_OUTPUT ;;
+          esac
+      - name: Build
+        run: PUBLIC_THEME=${{ steps.theme.outputs.theme }} npm run build
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: oceans-website
+          directory: website/dist
+          branch: ${{ github.ref_name }}

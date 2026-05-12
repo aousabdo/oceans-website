@@ -1,0 +1,23 @@
+name: CI
+on:
+  push: { branches: ["**"] }
+  pull_request: { branches: [main] }
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: website } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: website/package-lock.json
+      - run: npm ci
+      - run: npm run check
+      - run: npm run test
+      - name: Build (all themes)
+        run: |
+          PUBLIC_THEME=operator npm run build
+          PUBLIC_THEME=institute npm run build
+          PUBLIC_THEME=mariner npm run build

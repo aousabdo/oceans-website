@@ -2,6 +2,8 @@
 import PageLayout from "@layouts/PageLayout.astro";
 import SectionLabel from "@components/SectionLabel.astro";
 import Button from "@components/Button.astro";
+import { jobPostingLd } from "@lib/schema";
+import { SITE_URL } from "@lib/seo";
 import { getCollection } from "astro:content";
 
 export async function getStaticPaths() {
@@ -9,8 +11,17 @@ export async function getStaticPaths() {
   return jobs.map((j) => ({ params: { slug: j.data.slug }, props: { job: j.data } }));
 }
 const { job } = Astro.props;
+const ld = jobPostingLd({
+  title: job.title,
+  description: job.summary,
+  datePosted: job.posted,
+  location: job.location,
+  employmentType: job.type,
+  url: new URL(`/careers/${job.slug}`, SITE_URL).toString(),
+});
 ---
 <PageLayout title={job.title} description={job.summary}>
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} />
   <section class="mx-auto max-w-3xl px-6 pt-24 pb-8">
     <SectionLabel>Open role · {job.department}</SectionLabel>
     <h1 class="font-display text-4xl md:text-5xl font-bold text-fg-strong mt-4 leading-tight">

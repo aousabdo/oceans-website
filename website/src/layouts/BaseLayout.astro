@@ -2,6 +2,7 @@
 import "@styles/global.css";
 import { ACTIVE_THEME } from "@lib/theme";
 import { buildSeo, type SeoInput } from "@lib/seo";
+import { organizationLd } from "@lib/schema";
 
 interface Props extends Omit<SeoInput, "path"> {
   path?: string;
@@ -47,6 +48,8 @@ const fontHrefs: Record<typeof ACTIVE_THEME, string> = {
     <meta name="twitter:title" content={seo.title} />
     <meta name="twitter:description" content={seo.description} />
     <meta name="twitter:image" content={seo.image} />
+    <link rel="alternate" type="application/rss+xml" title="OCEANS Journal" href="/rss.xml" />
+    <script type="application/ld+json" set:html={JSON.stringify(organizationLd())} />
   </head>
   <body class="min-h-screen flex flex-col">
     <a

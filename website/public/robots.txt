@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://www.oceansllc.com/sitemap-index.xml
