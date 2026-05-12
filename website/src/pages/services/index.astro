@@ -1,39 +1,97 @@
 ---
 import PageLayout from "@layouts/PageLayout.astro";
 import SectionLabel from "@components/SectionLabel.astro";
+import Eyebrow from "@components/Eyebrow.astro";
 import ServiceCard from "@components/ServiceCard.astro";
+import Pipeline from "@components/Pipeline.astro";
+import Button from "@components/Button.astro";
 import { getCollection } from "astro:content";
 
 const services = (await getCollection("services")).sort((a, b) => a.data.order - b.data.order);
+
+const pipelineSteps = [
+  { label: "01 · Intake", title: "Mission Need & Scoping", description: "Surface the real operational gap, the decision it informs, and the threshold for done.", emphasis: true },
+  { label: "02 · Requirements", title: "Structured Requirements Development", description: "Decompose mission needs into testable requirements with full traceability from intent to threshold." },
+  { label: "03 · Architecture", title: "Systems Engineering & Design", description: "Bind validated requirements to integrated solutions across cyber, lifecycle, and operational constraints." },
+  { label: "04 · Evaluation", title: "T&E Execution & Analysis", description: "Run structured tests with quantitative analysis that withstands operational and acquisition review." },
+  { label: "05 · Outcome", title: "Decision-Grade Reporting", description: "Deliver evidence packages that work at technical, operational, and executive levels — and survive scrutiny.", emphasis: true },
+];
 ---
-<PageLayout
-  title="Services"
-  description="Four core capabilities — requirements through evaluation."
->
-  <section class="mx-auto max-w-6xl px-6 pt-24 pb-12">
-    <SectionLabel>Our Services</SectionLabel>
-    <h1 class="font-display text-5xl md:text-6xl font-bold text-fg-strong mt-4 leading-tight">
-      Four core<br />capability areas
+<PageLayout title="Services" description="Four core capabilities — requirements through evaluation.">
+  <!-- HERO -->
+  <section class="mx-auto max-w-5xl px-6 pt-20 pb-12">
+    <Eyebrow>Our Services</Eyebrow>
+    <h1 class="font-display text-5xl md:text-7xl font-bold text-fg-strong mt-4 leading-[1.05]">
+      Four core capabilities,<br />one engagement lifecycle.
     </h1>
-    <p class="mt-6 text-base text-muted max-w-xl leading-relaxed">
+    <p class="mt-8 text-lg md:text-xl text-muted leading-relaxed max-w-3xl">
       Every engagement is scoped to deliver defensible evidence — not just analysis — for
-      operational and acquisition decisions.
+      operational and acquisition decisions. Each capability stands alone, but they work best in
+      sequence: requirements feed architecture, architecture is tested against requirements,
+      evaluation produces decision-grade outputs, mission data ties it all together.
     </p>
   </section>
-  <section class="mx-auto max-w-6xl px-6 pb-24">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {
-        services.map((s) => (
-          <ServiceCard
-            number={s.data.number}
-            title={s.data.title}
-            summary={s.data.summary}
-            tags={s.data.tags}
-            href={`/services/${s.data.slug}`}
-            slug={s.data.slug}
-          />
-        ))
-      }
+
+  <!-- CAPABILITIES GRID -->
+  <section class="bg-bg-2 border-y border-border-hairline">
+    <div class="mx-auto max-w-6xl px-6 py-20">
+      <SectionLabel>Capabilities</SectionLabel>
+      <h2 class="font-display text-3xl md:text-4xl font-bold text-fg-strong mt-3 leading-tight">
+        Pick the entry point. We can scope just one or the whole lifecycle.
+      </h2>
+      <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-4">
+        {
+          services.map((s) => (
+            <ServiceCard
+              number={s.data.number}
+              title={s.data.title}
+              summary={s.data.summary}
+              tags={s.data.tags}
+              href={`/services/${s.data.slug}`}
+              slug={s.data.slug}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- METHODOLOGY -->
+  <section class="mx-auto max-w-6xl px-6 py-20 grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-12 items-start">
+    <div class="lg:sticky lg:top-24">
+      <SectionLabel>How we work</SectionLabel>
+      <h2 class="font-display text-3xl md:text-4xl font-bold text-fg-strong mt-3 leading-tight">
+        Five phases from mission need to defensible outcome.
+      </h2>
+      <p class="mt-6 text-muted leading-relaxed">
+        Every engagement runs through this lifecycle — even single-capability scopes. We don't hand
+        off a report and walk away. Every recommendation is traceable to a validated requirement
+        and every metric withstands technical, operational, and executive review.
+      </p>
+      <div class="mt-8">
+        <Button href="/contact" variant="outline" size="sm">
+          Scope an engagement
+        </Button>
+      </div>
+    </div>
+    <Pipeline steps={pipelineSteps} class="max-w-xl" />
+  </section>
+
+  <!-- CTA -->
+  <section class="bg-surface border-y border-border-hairline">
+    <div class="mx-auto max-w-5xl px-6 py-16 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-10 items-center">
+      <div>
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-fg-strong leading-tight">
+          Have a program that needs rigorous engineering?
+        </h2>
+        <p class="mt-4 text-muted leading-relaxed max-w-xl">
+          We respond within two business days with a candid read on fit and approach.
+        </p>
+      </div>
+      <div class="flex flex-col gap-3 shrink-0">
+        <Button href="/contact" variant="primary">Start a conversation</Button>
+        <Button href="/experience" variant="outline" size="sm">Past performance</Button>
+      </div>
     </div>
   </section>
 </PageLayout>
