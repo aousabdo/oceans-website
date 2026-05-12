@@ -1,51 +1,182 @@
 ---
 import PageLayout from "@layouts/PageLayout.astro";
+import Button from "@components/Button.astro";
+import Card from "@components/Card.astro";
+import SectionLabel from "@components/SectionLabel.astro";
+import Eyebrow from "@components/Eyebrow.astro";
+import Stat from "@components/Stat.astro";
+import Tag from "@components/Tag.astro";
+import Badge from "@components/Badge.astro";
+import PullQuote from "@components/PullQuote.astro";
 import { ACTIVE_THEME } from "@lib/theme";
+
+const capabilities = [
+  {
+    number: "01",
+    title: "Requirements Development",
+    summary:
+      "Translating mission needs, operational gaps, and stakeholder inputs into structured, testable requirements with full traceability.",
+    tags: ["Gap Analysis", "Use Cases", "Metrics Mapping"],
+  },
+  {
+    number: "02",
+    title: "Systems Engineering & Architecture",
+    summary:
+      "End-to-end architecture connecting validated requirements to secure, scalable, lifecycle-aligned solutions.",
+    tags: ["CONOPS", "Cybersecurity", "Integration"],
+  },
+  {
+    number: "03",
+    title: "Research, Development, Test & Evaluation",
+    summary:
+      "50+ years of mission-aligned, quantitative RDT&E providing defensible evidence for operational and acquisition decisions.",
+    tags: ["TRL Eval", "White Team", "Test Plans"],
+  },
+  {
+    number: "04",
+    title: "Mission Data, COPs & Ontologies",
+    summary:
+      "Ontology-driven architectures enabling multi-domain awareness, interoperability, and decision-quality operating pictures.",
+    tags: ["Ontologies", "COP Validation", "Integration"],
+  },
+];
 ---
 <PageLayout title="OCEANS LLC" path="/">
-  <section class="mx-auto max-w-6xl px-6 pt-24 pb-16">
-    <p class="font-mono text-xs uppercase tracking-widest text-accent flex items-center gap-3">
+  <!-- HERO -->
+  <section class="relative mx-auto max-w-6xl px-6 pt-24 pb-16">
+    <Eyebrow class="flex items-center gap-3">
       <span class="block w-10 h-px bg-accent"></span>
-      Theme — {ACTIVE_THEME}
-    </p>
+      Systems Engineering · T&amp;E · Mission Data
+    </Eyebrow>
     <h1 class="font-display text-5xl md:text-7xl font-bold text-fg-strong mt-6 leading-[1.04] max-w-4xl">
       Engineering that earns operational trust.
     </h1>
     <p class="font-sans text-lg text-muted mt-8 max-w-xl leading-relaxed">
-      OCEANS LLC delivers systems engineering, enterprise architecture, and rigorous test &amp; evaluation
-      that translate federal mission needs into defensible, decision-ready outcomes.
+      OCEANS LLC delivers systems engineering, enterprise architecture, and rigorous test &amp;
+      evaluation that translate federal mission needs into defensible, decision-ready outcomes.
     </p>
     <div class="mt-10 flex flex-wrap gap-3">
-      <a
-        href="/services"
-        class="inline-flex items-center justify-center font-mono text-xs uppercase tracking-widest bg-accent text-bg px-6 py-3 rounded transition-all hover:brightness-110"
-      >
-        Explore capabilities
-      </a>
-      <a
-        href="/contact"
-        class="inline-flex items-center justify-center font-mono text-xs uppercase tracking-widest border border-accent text-accent px-6 py-3 rounded transition-all hover:bg-accent hover:text-bg"
-      >
-        Start a conversation
-      </a>
+      <Button href="/services" variant="primary">Explore capabilities</Button>
+      <Button href="/capabilities" variant="outline">Download capabilities statement</Button>
+    </div>
+
+    <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 pt-12 border-t border-border-hairline">
+      <Stat value="50" emphasis="+" label="Years Combined Experience" />
+      <Stat value="2013" label="Founded" />
+      <Stat value="4" emphasis="+" label="Core Service Lines" />
+      <Stat value="3" label="Federal Domains" />
     </div>
   </section>
 
-  <section class="mx-auto max-w-6xl px-6 py-16 border-t border-border-hairline">
-    <p class="font-mono text-[10px] uppercase tracking-widest text-accent">▌ Token palette</p>
-    <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-2">
-      <div class="aspect-square rounded bg-bg border border-border-hairline grid place-items-center">
-        <span class="font-mono text-[9px] text-muted">bg</span>
+  <!-- CAPABILITIES -->
+  <section class="bg-bg-2 border-y border-border-hairline">
+    <div class="mx-auto max-w-6xl px-6 py-24">
+      <div class="flex items-end justify-between gap-12 flex-wrap">
+        <div>
+          <SectionLabel>Our Services</SectionLabel>
+          <h2 class="font-display text-4xl md:text-5xl font-bold text-fg-strong mt-4 leading-tight">
+            Four core<br />capability areas
+          </h2>
+        </div>
+        <p class="text-muted max-w-sm leading-relaxed">
+          Every engagement delivers defensible evidence — not just analysis — for operational and
+          acquisition decisions.
+        </p>
       </div>
-      <div class="aspect-square rounded bg-surface grid place-items-center">
-        <span class="font-mono text-[9px] text-muted">surface</span>
-      </div>
-      <div class="aspect-square rounded bg-accent grid place-items-center">
-        <span class="font-mono text-[9px] text-bg">accent</span>
-      </div>
-      <div class="aspect-square rounded bg-muted grid place-items-center">
-        <span class="font-mono text-[9px] text-bg">muted</span>
+      <div class="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {
+          capabilities.map((c) => (
+            <Card href={`/services`} accent class="group relative overflow-hidden">
+              <span class="absolute top-0 left-0 right-0 h-px bg-accent scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100" />
+              <div class="font-mono text-[11px] tracking-widest text-accent">{c.number}</div>
+              <h3 class="font-display text-lg font-bold text-fg-strong mt-6 leading-tight">
+                {c.title}
+              </h3>
+              <p class="mt-3 text-sm text-muted leading-relaxed">{c.summary}</p>
+              <div class="mt-5 flex flex-wrap gap-1.5">
+                {c.tags.map((t) => (
+                  <Tag>{t}</Tag>
+                ))}
+              </div>
+            </Card>
+          ))
+        }
       </div>
     </div>
   </section>
+
+  <!-- PULL QUOTE -->
+  <section class="mx-auto max-w-3xl px-6 py-24">
+    <SectionLabel>The OCEANS approach</SectionLabel>
+    <PullQuote attribution="Daniel Brent & Paul Morrisseau, Co-Founders">
+      Federal programs deserve rigorous, objective engineering — not just confident-sounding
+      reports.
+    </PullQuote>
+  </section>
+
+  <!-- STATUS BADGES (component demo) -->
+  <section class="bg-bg-2 border-y border-border-hairline">
+    <div class="mx-auto max-w-6xl px-6 py-16">
+      <SectionLabel>Current engagements</SectionLabel>
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <div class="font-mono text-[10px] uppercase tracking-widest text-accent">Department of Defense</div>
+          <h3 class="font-display text-lg font-bold text-fg-strong mt-3 leading-snug">
+            OT&amp;E — Command &amp; Control
+          </h3>
+          <div class="mt-4 flex flex-wrap gap-1.5">
+            <Badge>T&amp;E</Badge>
+            <Badge>C2</Badge>
+            <Badge tone="go">Active</Badge>
+          </div>
+        </Card>
+        <Card>
+          <div class="font-mono text-[10px] uppercase tracking-widest text-accent">Department of Homeland Security</div>
+          <h3 class="font-display text-lg font-bold text-fg-strong mt-3 leading-snug">
+            Sensor Architecture
+          </h3>
+          <div class="mt-4 flex flex-wrap gap-1.5">
+            <Badge>Architecture</Badge>
+            <Badge>Sensor Fusion</Badge>
+            <Badge tone="warn">In review</Badge>
+          </div>
+        </Card>
+        <Card>
+          <div class="font-mono text-[10px] uppercase tracking-widest text-accent">Federal Program Office</div>
+          <h3 class="font-display text-lg font-bold text-fg-strong mt-3 leading-snug">
+            COP Validation
+          </h3>
+          <div class="mt-4 flex flex-wrap gap-1.5">
+            <Badge>Ontologies</Badge>
+            <Badge>COP</Badge>
+            <Badge tone="go">Active</Badge>
+          </div>
+        </Card>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BAND -->
+  <section class="mx-auto max-w-6xl px-6 py-24">
+    <div class="border border-border-hairline rounded-lg bg-surface p-12 flex flex-col md:flex-row items-center justify-between gap-8">
+      <div>
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-fg-strong leading-tight">
+          Ready to bring rigor to your program?
+        </h2>
+        <p class="mt-4 text-muted max-w-md leading-relaxed">
+          Whether you're scoping a T&amp;E effort, need architecture support, or want to understand
+          how OCEANS can support your acquisition — start with a conversation.
+        </p>
+      </div>
+      <div class="flex flex-col gap-3 shrink-0">
+        <Button href="/contact" variant="primary">Schedule a conversation</Button>
+        <Button href="/capabilities" variant="outline" size="sm">Capabilities ↓</Button>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEV: theme label -->
+  <p class="mx-auto max-w-6xl px-6 pb-12 font-mono text-[10px] uppercase tracking-widest text-muted">
+    ▌ dev · active theme: <span class="text-accent">{ACTIVE_THEME}</span>
+  </p>
 </PageLayout>

@@ -1,0 +1,10 @@
+---
+interface Props {
+  class?: string;
+}
+const { class: extra = "" } = Astro.props;
+---
+<div class:list={["flex items-center gap-3", extra]}>
+  <span class="block w-6 h-px bg-accent"></span>
+  <span class="font-mono text-[10px] uppercase tracking-[0.22em] text-accent"><slot /></span>
+</div>

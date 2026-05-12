@@ -1,0 +1,15 @@
+---
+interface Props {
+  value: string;
+  label: string;
+  emphasis?: string;
+}
+const { value, label, emphasis } = Astro.props;
+---
+<div>
+  <div class="font-display text-4xl font-bold text-fg-strong leading-none">
+    {value}
+    {emphasis && <span class="text-accent">{emphasis}</span>}
+  </div>
+  <div class="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted">{label}</div>
+</div>

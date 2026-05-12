@@ -1,0 +1,25 @@
+---
+interface Props {
+  as?: "article" | "div" | "li";
+  href?: string;
+  accent?: boolean;
+  class?: string;
+}
+const props = Astro.props as Props;
+const { as = "div", href, accent = false, class: extra = "" } = props;
+const baseCls = [
+  "block rounded border bg-surface border-border-hairline p-6 transition-all",
+  accent && "hover:border-accent",
+  href && "hover:-translate-y-0.5 hover:shadow-lg",
+  extra,
+];
+---
+{href ? (
+  <a href={href} class:list={baseCls}><slot /></a>
+) : as === "article" ? (
+  <article class:list={baseCls}><slot /></article>
+) : as === "li" ? (
+  <li class:list={baseCls}><slot /></li>
+) : (
+  <div class:list={baseCls}><slot /></div>
+)}
