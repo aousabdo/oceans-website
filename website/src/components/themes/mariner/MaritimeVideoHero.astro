@@ -30,10 +30,11 @@ const { src, poster, class: extra = "", minHeight = "min-h-[640px] md:min-h-[720
           class="absolute inset-0 w-full h-full"
         >
           <defs>
-            <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="var(--color-accent-warm)" stop-opacity="0.45" />
-              <stop offset="1" stop-color="var(--color-accent-warm)" stop-opacity="0" />
-            </linearGradient>
+            <radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0" stop-color="var(--color-accent-2)" stop-opacity="0.55" />
+              <stop offset="0.6" stop-color="var(--color-accent-2)" stop-opacity="0.15" />
+              <stop offset="1" stop-color="var(--color-accent-2)" stop-opacity="0" />
+            </radialGradient>
             <linearGradient id="wfade" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="var(--color-accent)" stop-opacity="0" />
               <stop offset="1" stop-color="var(--color-accent)" stop-opacity="0.35" />
@@ -44,9 +45,9 @@ const { src, poster, class: extra = "", minHeight = "min-h-[640px] md:min-h-[720
             </linearGradient>
           </defs>
 
-          {/* sun-glow upper-right */}
-          <circle cx="900" cy="180" r="100" fill="url(#sun)" opacity="0.7" />
-          <circle cx="900" cy="180" r="36" fill="var(--color-accent-warm)" opacity="0.18" />
+          {/* Atmospheric sun-light upper-right — soft sky-blue glow, no warm tan
+              (warm-tan brass on light sky background read as out-of-place beige) */}
+          <ellipse cx="940" cy="160" rx="240" ry="140" fill="url(#sun)" />
 
           {/* far-horizon haze */}
           <rect x="0" y="320" width="1200" height="40" fill="url(#depth)" opacity="0.4" />

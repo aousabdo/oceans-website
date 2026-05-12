@@ -46,17 +46,18 @@ const headings = ["N", "NE", "E", "SE"];
         width="2400"
         height="1595"
       />
-      {/* gradient overlay to keep text readable */}
-      <div class="absolute inset-0 bg-gradient-to-b from-bg/60 via-bg/30 to-bg/70"></div>
+      {/* soft edge-to-edge wash so the photo recedes a bit */}
+      <div class="absolute inset-0 bg-bg/35"></div>
+      {/* centered backdrop-blur panel holds the text — photo stays visible around it */}
       <div class="absolute inset-0 flex items-center justify-center px-6">
-        <div class="text-center max-w-3xl">
+        <div class="relative bg-bg/80 backdrop-blur-md rounded-2xl px-8 py-12 md:px-16 md:py-16 max-w-3xl text-center border border-fg-strong/10 shadow-[0_20px_60px_-15px_rgba(6,26,48,0.35)]">
           <p class="font-serif italic text-accent tracking-[0.2em] text-xs">
             ⌁&nbsp;&nbsp;what we make possible&nbsp;&nbsp;⌁
           </p>
-          <h2 class="font-display font-light text-3xl md:text-5xl text-fg-strong mt-6 leading-tight drop-shadow-sm">
+          <h2 class="font-display font-light text-3xl md:text-5xl text-fg-strong mt-6 leading-tight">
             Missions that depend on engineering they can defend.
           </h2>
-          <p class="mt-6 font-serif italic text-base md:text-lg text-muted leading-relaxed max-w-2xl mx-auto">
+          <p class="mt-6 font-serif italic text-base md:text-lg text-fg leading-relaxed max-w-2xl mx-auto">
             From requirements through evaluation — every metric defensible, every architecture
             traceable, every decision survives review.
           </p>

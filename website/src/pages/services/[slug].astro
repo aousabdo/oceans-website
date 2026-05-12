@@ -12,19 +12,20 @@ import { getCollection } from "astro:content";
 export async function getStaticPaths() {
   const services = await getCollection("services");
   const caseStudies = await getCollection("caseStudies");
-  return services.map((s) => {
-    const all = services.sort((a, b) => a.data.order - b.data.order);
-    const idx = all.findIndex((x) => x.data.slug === s.data.slug);
-    return {
-      params: { slug: s.data.slug },
-      props: {
-        service: s.data,
-        related: caseStudies.filter((c) => c.data.capabilities.includes(s.data.slug)),
-        prev: idx > 0 ? all[idx - 1]!.data : null,
-        next: idx < all.length - 1 ? all[idx + 1]!.data : null,
-      },
-    };
-  });
+  // Sort ONCE up-front into a stable, independent array. Previously this used
+  // `services.sort(...)` inside the .map() callback, which mutates `services`
+  // in place — that caused the iteration to skip an entry, dropping the
+  // `requirements` route from the build.
+  const all = [...services].sort((a, b) => a.data.order - b.data.order);
+  return all.map((s, idx) => ({
+    params: { slug: s.data.slug },
+    props: {
+      service: s.data,
+      related: caseStudies.filter((c) => c.data.capabilities.includes(s.data.slug)),
+      prev: idx > 0 ? all[idx - 1]!.data : null,
+      next: idx < all.length - 1 ? all[idx + 1]!.data : null,
+    },
+  }));
 }
 
 const { service, related, prev, next } = Astro.props;
