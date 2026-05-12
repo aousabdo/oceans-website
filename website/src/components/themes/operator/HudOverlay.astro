@@ -1,0 +1,60 @@
+---
+// A small tactical HUD overlay for the Operator hero — animated mock telemetry
+// in monospace. Placed absolute inside the hero section.
+---
+<div
+  class="hidden md:block absolute top-6 right-6 z-20 pointer-events-none font-mono text-[10px] leading-relaxed text-accent/80 tabular-nums"
+  aria-hidden="true"
+>
+  <div class="border border-accent/20 rounded-md bg-bg-2/60 backdrop-blur-sm p-3 min-w-[200px]">
+    <div class="flex items-center justify-between border-b border-accent/15 pb-2 mb-2">
+      <span class="text-fg-strong/80 tracking-widest">SYS · MISSION_DATA</span>
+      <span class="flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-accent-go animate-pulse"></span>
+        <span class="text-accent-go">ONLINE</span>
+      </span>
+    </div>
+    <div class="flex justify-between"><span class="opacity-60">LAT</span><span data-hud-lat>30.3322° N</span></div>
+    <div class="flex justify-between"><span class="opacity-60">LON</span><span data-hud-lon>81.6557° W</span></div>
+    <div class="flex justify-between"><span class="opacity-60">UTC</span><span data-hud-utc>—</span></div>
+    <div class="flex justify-between"><span class="opacity-60">SIG</span>
+      <span class="flex items-center gap-0.5" data-hud-bars>
+        <span class="w-0.5 h-1.5 bg-accent"></span>
+        <span class="w-0.5 h-2 bg-accent"></span>
+        <span class="w-0.5 h-2.5 bg-accent"></span>
+        <span class="w-0.5 h-3 bg-accent"></span>
+        <span class="w-0.5 h-3.5 bg-accent/40"></span>
+      </span>
+    </div>
+    <div class="mt-2 pt-2 border-t border-accent/15 flex justify-between text-[9px] opacity-70">
+      <span>JACKSONVILLE · FL</span>
+      <span data-hud-uptime>UP 00:00</span>
+    </div>
+  </div>
+</div>
+<script>
+  // Animate UTC clock + uptime counter; flicker the signal bars subtly
+  const utcEl = document.querySelector<HTMLElement>("[data-hud-utc]");
+  const upEl = document.querySelector<HTMLElement>("[data-hud-uptime]");
+  const bars = document.querySelector<HTMLElement>("[data-hud-bars]");
+  if (utcEl && upEl) {
+    const start = Date.now();
+    const fmt2 = (n: number) => String(n).padStart(2, "0");
+    const tick = () => {
+      const now = new Date();
+      utcEl.textContent =
+        `${fmt2(now.getUTCHours())}:${fmt2(now.getUTCMinutes())}:${fmt2(now.getUTCSeconds())}Z`;
+      const elapsed = Math.floor((Date.now() - start) / 1000);
+      upEl.textContent = `UP ${fmt2(Math.floor(elapsed / 60))}:${fmt2(elapsed % 60)}`;
+      if (bars && Math.random() < 0.18) {
+        const children = Array.from(bars.children) as HTMLElement[];
+        children.forEach((c, i) => {
+          const lit = i < 3 + Math.floor(Math.random() * 2);
+          c.style.opacity = lit ? "1" : "0.4";
+        });
+      }
+      requestAnimationFrame(() => setTimeout(tick, 250));
+    };
+    tick();
+  }
+</script>

@@ -1,0 +1,23 @@
+---
+// Editorial flourishes for the Institute masthead — an oversized decorative
+// quotation mark in the background, plus an optional paper-grain texture.
+---
+<div class="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+  {/* oversized decorative quote */}
+  <span class="absolute right-6 md:right-16 top-4 md:top-10 select-none text-[14rem] md:text-[20rem] leading-none font-serif text-accent/[0.07] font-bold">
+    &ldquo;
+  </span>
+
+  {/* subtle paper-grain (SVG noise filter overlay) */}
+  <svg class="absolute inset-0 w-full h-full opacity-[0.04] mix-blend-multiply" xmlns="http://www.w3.org/2000/svg">
+    <filter id="paper">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" />
+      <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" />
+    </filter>
+    <rect width="100%" height="100%" filter="url(#paper)" />
+  </svg>
+
+  {/* margin hairline rules left + right */}
+  <span class="hidden lg:block absolute left-8 top-12 bottom-12 w-px bg-accent/15"></span>
+  <span class="hidden lg:block absolute right-8 top-12 bottom-12 w-px bg-accent/15"></span>
+</div>

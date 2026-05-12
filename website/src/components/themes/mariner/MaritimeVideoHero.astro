@@ -27,50 +27,78 @@ const { src, poster, class: extra = "", minHeight = "min-h-[640px] md:min-h-[720
         <svg
           viewBox="0 0 1200 600"
           preserveAspectRatio="xMidYMax slice"
-          class="absolute inset-0 w-full h-full opacity-30"
+          class="absolute inset-0 w-full h-full"
         >
           <defs>
             <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="var(--color-accent-warm)" stop-opacity="0.4" />
+              <stop offset="0" stop-color="var(--color-accent-warm)" stop-opacity="0.45" />
               <stop offset="1" stop-color="var(--color-accent-warm)" stop-opacity="0" />
             </linearGradient>
             <linearGradient id="wfade" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="var(--color-accent)" stop-opacity="0" />
               <stop offset="1" stop-color="var(--color-accent)" stop-opacity="0.35" />
             </linearGradient>
+            <linearGradient id="depth" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="var(--color-accent-2)" stop-opacity="0" />
+              <stop offset="1" stop-color="var(--color-accent)" stop-opacity="0.18" />
+            </linearGradient>
           </defs>
-          <circle cx="900" cy="180" r="80" fill="url(#sun)" />
-          <path d="M0,360 Q300,330 600,360 T1200,360 L1200,600 L0,600 Z" fill="url(#wfade)" />
-          <path
-            d="M0,400 Q300,375 600,400 T1200,400"
-            stroke="var(--color-accent)"
-            stroke-width="1"
-            fill="none"
-            opacity="0.4"
-          />
-          <path
-            d="M0,430 Q300,410 600,430 T1200,430"
-            stroke="var(--color-accent)"
-            stroke-width="0.6"
-            fill="none"
-            opacity="0.3"
-          />
-          <path
-            d="M0,460 Q300,445 600,460 T1200,460"
-            stroke="var(--color-accent)"
-            stroke-width="0.4"
-            fill="none"
-            opacity="0.25"
-          />
+
+          {/* sun-glow upper-right */}
+          <circle cx="900" cy="180" r="100" fill="url(#sun)" opacity="0.7" />
+          <circle cx="900" cy="180" r="36" fill="var(--color-accent-warm)" opacity="0.18" />
+
+          {/* far-horizon haze */}
+          <rect x="0" y="320" width="1200" height="40" fill="url(#depth)" opacity="0.4" />
+
+          {/* receding shore — back layer */}
+          <path d="M0,360 Q300,330 600,360 T1200,360 L1200,600 L0,600 Z" fill="url(#wfade)" opacity="0.6" />
+
+          {/* receding wave layers, fewer in back, more in front */}
+          <g class="mar-wave-back">
+            <path d="M0,400 Q300,375 600,400 T1200,400" stroke="var(--color-accent)" stroke-width="1.1" fill="none" opacity="0.42" />
+          </g>
+          <g class="mar-wave-mid">
+            <path d="M0,440 Q300,418 600,440 T1200,440" stroke="var(--color-accent)" stroke-width="0.9" fill="none" opacity="0.34" />
+            <path d="M0,470 Q300,452 600,470 T1200,470" stroke="var(--color-accent)" stroke-width="0.7" fill="none" opacity="0.28" />
+          </g>
+          <g class="mar-wave-fore">
+            <path d="M0,510 Q300,492 600,510 T1200,510" stroke="var(--color-accent)" stroke-width="0.6" fill="none" opacity="0.22" />
+            <path d="M0,545 Q300,528 600,545 T1200,545" stroke="var(--color-accent)" stroke-width="0.5" fill="none" opacity="0.18" />
+            <path d="M0,580 Q300,565 600,580 T1200,580" stroke="var(--color-accent)" stroke-width="0.4" fill="none" opacity="0.15" />
+          </g>
         </svg>
+
+        {/* coordinate marks at the edges — feels like a navigation chart */}
+        <div class="hidden md:block absolute inset-0 pointer-events-none" aria-hidden="true">
+          <span class="absolute top-4 left-1/2 -translate-x-1/2 font-serif italic text-accent/40 text-xs tracking-[0.4em]">N</span>
+          <span class="absolute bottom-4 left-1/2 -translate-x-1/2 font-serif italic text-accent/40 text-xs tracking-[0.4em]">S</span>
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 font-serif italic text-accent/40 text-xs tracking-[0.4em]">W</span>
+          <span class="absolute right-4 top-1/2 -translate-y-1/2 font-serif italic text-accent/40 text-xs tracking-[0.4em]">E</span>
+        </div>
       </div>
     )
   }
+  {/* subtle bottom vignette to anchor text */}
   <div class="absolute inset-0 bg-gradient-to-b from-bg/10 via-transparent to-bg/40 pointer-events-none"></div>
+
+  {/* slot content (centered vertically by flex) */}
   <div class:list={["relative z-10 w-full flex items-center", minHeight]}>
     <slot />
   </div>
 </div>
+<style>
+  .mar-wave-back { animation: mar-drift 18s ease-in-out infinite alternate; }
+  .mar-wave-mid  { animation: mar-drift 14s ease-in-out infinite alternate-reverse; }
+  .mar-wave-fore { animation: mar-drift 10s ease-in-out infinite alternate; }
+  @keyframes mar-drift {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-30px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mar-wave-back, .mar-wave-mid, .mar-wave-fore { animation: none; }
+  }
+</style>
 <script>
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     document.querySelectorAll("video").forEach((v) => {

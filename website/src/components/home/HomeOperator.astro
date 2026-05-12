@@ -9,6 +9,7 @@ import CaseStudyCard from "@components/CaseStudyCard.astro";
 import Pipeline from "@components/Pipeline.astro";
 import ParticleHeroCanvas from "@components/themes/operator/ParticleHeroCanvas.astro";
 import CustomCursor from "@components/themes/operator/CustomCursor.astro";
+import HudOverlay from "@components/themes/operator/HudOverlay.astro";
 import MarqueeStrip from "@components/themes/operator/MarqueeStrip.astro";
 import { getCollection } from "astro:content";
 
@@ -65,6 +66,7 @@ const pipelineSteps = [
   <!-- HERO -->
   <section class="relative min-h-[640px] md:min-h-[720px] flex items-center overflow-hidden">
     <ParticleHeroCanvas />
+    <HudOverlay />
     <div class="relative z-10 mx-auto max-w-6xl px-6 w-full py-24">
       <Eyebrow class="flex items-center gap-3">
         <span class="block w-10 h-px bg-accent"></span>

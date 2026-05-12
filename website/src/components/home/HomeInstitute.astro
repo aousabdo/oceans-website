@@ -7,6 +7,7 @@ import Pipeline from "@components/Pipeline.astro";
 import BlogPostCard from "@components/BlogPostCard.astro";
 import DropCap from "@components/themes/institute/DropCap.astro";
 import FigureCaption from "@components/themes/institute/FigureCaption.astro";
+import MastheadOrnament from "@components/themes/institute/MastheadOrnament.astro";
 import { getCollection } from "astro:content";
 import { readingTime } from "@lib/format";
 
@@ -28,8 +29,9 @@ const pipelineSteps = [
 ---
 <PageLayout title="OCEANS LLC" path="/">
   <!-- MASTHEAD -->
-  <section class="border-b border-border-hairline">
-    <div class="mx-auto max-w-5xl px-6 pt-20 pb-12">
+  <section class="relative border-b border-border-hairline overflow-hidden">
+    <MastheadOrnament />
+    <div class="relative mx-auto max-w-5xl px-6 pt-20 pb-12">
       <p class="font-serif text-sm italic text-muted">— Vol. 1 · Jacksonville, Florida · Est. 2013</p>
       <h1 class="font-display text-5xl md:text-7xl font-semibold text-fg-strong mt-6 leading-[1.05]">
         Rigorous engineering for federal missions
