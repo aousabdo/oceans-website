@@ -35,14 +35,34 @@ const headings = ["N", "NE", "E", "SE"];
 
   <WaveDivider />
 
-  <!-- DEPTH 02 -->
-  <section class="mx-auto max-w-3xl px-6 py-24 text-center">
-    <p class="font-serif italic text-accent tracking-[0.2em] text-xs">
-      ⌁&nbsp;&nbsp;what we make possible&nbsp;&nbsp;⌁
-    </p>
-    <h2 class="font-display font-light text-4xl md:text-5xl text-fg-strong mt-6 leading-tight">
-      Missions that depend on engineering they can defend.
-    </h2>
+  <!-- DEPTH 02 — full-bleed feature image -->
+  <section class="relative">
+    <div class="relative h-[420px] md:h-[520px] overflow-hidden">
+      <img
+        src="/img/mariner/ocean-surface.jpg"
+        alt="Ocean surface at dusk"
+        class="absolute inset-0 w-full h-full object-cover"
+        loading="lazy"
+        width="2400"
+        height="1595"
+      />
+      {/* gradient overlay to keep text readable */}
+      <div class="absolute inset-0 bg-gradient-to-b from-bg/60 via-bg/30 to-bg/70"></div>
+      <div class="absolute inset-0 flex items-center justify-center px-6">
+        <div class="text-center max-w-3xl">
+          <p class="font-serif italic text-accent tracking-[0.2em] text-xs">
+            ⌁&nbsp;&nbsp;what we make possible&nbsp;&nbsp;⌁
+          </p>
+          <h2 class="font-display font-light text-3xl md:text-5xl text-fg-strong mt-6 leading-tight drop-shadow-sm">
+            Missions that depend on engineering they can defend.
+          </h2>
+          <p class="mt-6 font-serif italic text-base md:text-lg text-muted leading-relaxed max-w-2xl mx-auto">
+            From requirements through evaluation — every metric defensible, every architecture
+            traceable, every decision survives review.
+          </p>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- DEPTH 03 — CAPABILITIES AS COMPASS HEADINGS -->
