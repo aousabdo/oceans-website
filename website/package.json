@@ -9,7 +9,14 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "check": "astro check && tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "lint": "eslint . --ext .ts,.tsx,.astro",
+    "format": "prettier --write \"**/*.{ts,tsx,astro,md,mdx,json,css}\"",
+    "pages:dev": "wrangler pages dev dist --compatibility-date=2026-01-01"
   },
   "dependencies": {
     "@astrojs/mdx": "^5.0.4",
@@ -17,5 +24,21 @@
     "@tailwindcss/vite": "^4.3.0",
     "astro": "^6.3.1",
     "tailwindcss": "^4.3.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@cloudflare/workers-types": "^4.20260511.1",
+    "@playwright/test": "^1.60.0",
+    "@typescript-eslint/eslint-plugin": "^8.59.3",
+    "@typescript-eslint/parser": "^8.59.3",
+    "@vitest/coverage-v8": "^4.1.6",
+    "astro-eslint-parser": "^1.4.0",
+    "eslint": "^10.3.0",
+    "eslint-plugin-astro": "^1.7.0",
+    "miniflare": "^4.20260507.1",
+    "prettier": "^3.8.3",
+    "prettier-plugin-astro": "^0.14.1",
+    "vitest": "^4.1.6",
+    "wrangler": "^4.90.0"
   }
 }
