@@ -1,5 +1,8 @@
 ---
+import { ACTIVE_THEME } from "@lib/theme";
+
 const year = new Date().getFullYear();
+const useImageLogo = ACTIVE_THEME !== "operator";
 const cols = [
   {
     title: "Services",
@@ -34,7 +37,18 @@ const cols = [
   <div class="mx-auto max-w-6xl px-6 py-16">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
       <div class="md:col-span-1">
-        <div class="font-display text-xl tracking-wider text-fg-strong">OCEANS LLC</div>
+        {useImageLogo ? (
+          <img
+            src="/oceans-logo.jpg"
+            alt="OCEANS LLC"
+            height="56"
+            width="76"
+            class="h-14 w-auto"
+            loading="lazy"
+          />
+        ) : (
+          <div class="font-display text-xl tracking-wider text-fg-strong">OCEANS LLC</div>
+        )}
         <p class="mt-3 text-sm text-muted leading-relaxed max-w-xs">
           Systems engineering, test &amp; evaluation, and mission data solutions for federal
           customers who need defensible outcomes.
