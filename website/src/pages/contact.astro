@@ -2,6 +2,9 @@
 import PageLayout from "@layouts/PageLayout.astro";
 import SectionLabel from "@components/SectionLabel.astro";
 import Button from "@components/Button.astro";
+import Form from "@components/Form.astro";
+import FormField from "@components/FormField.astro";
+import Turnstile from "@components/Turnstile.astro";
 ---
 <PageLayout title="Contact" description="Start a conversation with OCEANS LLC.">
   <section class="mx-auto max-w-6xl px-6 pt-24 pb-12">
@@ -42,25 +45,55 @@ import Button from "@components/Button.astro";
           <li>UEI: <span class="text-fg">[TBD]</span></li>
         </ul>
       </div>
+      <div>
+        <div class="font-mono text-[10px] uppercase tracking-widest text-accent">Response time</div>
+        <p class="mt-3 text-sm text-muted leading-relaxed">
+          We read every inquiry and reply within two business days. For urgent matters, email is
+          fastest.
+        </p>
+      </div>
     </aside>
 
-    <div class="md:col-span-3 bg-surface border border-border-hairline rounded-lg p-10">
-      <SectionLabel>Email is best for now</SectionLabel>
-      <p class="mt-6 text-fg leading-relaxed">
-        Write to us directly — we read everything that comes into
-        <a href="mailto:info@oceansllc.com" class="text-accent">info@oceansllc.com</a> and reply
-        within two business days. An in-page contact form lands once the backend is provisioned;
-        until then, email is best.
-      </p>
-      <div class="mt-8 flex flex-wrap gap-3">
-        <Button href="mailto:info@oceansllc.com?subject=Engagement inquiry" variant="primary">
-          Email info@oceansllc.com
-        </Button>
-        <Button href="/capabilities" variant="outline">View capabilities statement</Button>
+    <div class="md:col-span-3">
+      <div class="bg-surface border border-border-hairline rounded-lg p-8 md:p-10">
+        <SectionLabel>Write to us</SectionLabel>
+        <p class="mt-4 text-fg leading-relaxed">
+          Fill in the form below or email
+          <a href="mailto:info@oceansllc.com" class="text-accent">info@oceansllc.com</a> directly —
+          either way the message lands in the same inbox.
+        </p>
+
+        <Form action="/api/contact" class="mt-8 max-w-none">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField name="firstName" label="First name" required autocomplete="given-name" />
+            <FormField name="lastName" label="Last name" required autocomplete="family-name" />
+          </div>
+          <FormField name="email" label="Email" type="email" required autocomplete="email" />
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField name="phone" label="Phone (optional)" type="tel" autocomplete="tel" />
+            <FormField
+              name="organization"
+              label="Organization (optional)"
+              autocomplete="organization"
+            />
+          </div>
+          <FormField
+            name="subject"
+            label="Subject (e.g. T&E, Architecture, RFI)"
+            placeholder="Inquiry"
+          />
+          <FormField
+            name="message"
+            label="Message"
+            type="textarea"
+            required
+            rows={6}
+            placeholder="Tell us what you're working on…"
+          />
+          <Turnstile />
+          <Button type="submit" variant="primary">Send message</Button>
+        </Form>
       </div>
-      <p class="mt-8 font-mono text-[10px] uppercase tracking-widest text-muted">
-        ▌ inline form with anti-spam lands in M11
-      </p>
     </div>
   </section>
 </PageLayout>

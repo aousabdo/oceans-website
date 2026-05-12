@@ -1,0 +1,13 @@
+---
+interface Props {
+  siteKey?: string;
+}
+const props = Astro.props as Props;
+// Default to Cloudflare's always-pass test sitekey so the form works
+// out-of-the-box. Set PUBLIC_TURNSTILE_SITE_KEY in Cloudflare Pages env
+// to your real sitekey before launch.
+const key =
+  props.siteKey ?? import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "1x00000000000000000000AA";
+---
+<div class="cf-turnstile" data-sitekey={key} data-theme="auto"></div>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>

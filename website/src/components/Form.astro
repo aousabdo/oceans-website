@@ -1,0 +1,72 @@
+---
+interface Props {
+  action: string;
+  method?: "POST";
+  enctype?: string;
+  class?: string;
+  successText?: string;
+}
+const props = Astro.props as Props;
+const {
+  action,
+  method = "POST",
+  enctype,
+  class: extra = "",
+  successText = "Thanks for submitting! We will be in touch soon.",
+} = props;
+---
+<form
+  action={action}
+  method={method}
+  enctype={enctype}
+  class:list={["space-y-5 max-w-xl", extra]}
+  data-form
+  data-success-text={successText}
+>
+  <slot />
+  <div
+    data-form-success
+    hidden
+    class="font-mono text-xs uppercase tracking-widest text-accent-go p-3 border border-accent-go/40 rounded"
+  >
+    {successText}
+  </div>
+  <div
+    data-form-error
+    hidden
+    class="font-mono text-xs uppercase tracking-widest text-accent-critical p-3 border border-accent-critical/40 rounded"
+  >
+    Something went wrong. Please try again, or email info@oceansllc.com directly.
+  </div>
+</form>
+<script>
+  for (const form of document.querySelectorAll<HTMLFormElement>("[data-form]")) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const ok = form.querySelector<HTMLElement>("[data-form-success]");
+      const err = form.querySelector<HTMLElement>("[data-form-error]");
+      const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+      ok?.setAttribute("hidden", "");
+      err?.setAttribute("hidden", "");
+      if (submit) {
+        submit.disabled = true;
+        submit.dataset.originalText = submit.dataset.originalText ?? submit.textContent ?? "";
+        submit.textContent = "Sending…";
+      }
+      try {
+        const res = await fetch(form.action, { method: "POST", body: new FormData(form) });
+        if (!res.ok) throw new Error(String(res.status));
+        form.reset();
+        ok?.removeAttribute("hidden");
+        ok?.scrollIntoView({ behavior: "smooth", block: "center" });
+      } catch {
+        err?.removeAttribute("hidden");
+      } finally {
+        if (submit) {
+          submit.disabled = false;
+          submit.textContent = submit.dataset.originalText ?? "Send";
+        }
+      }
+    });
+  }
+</script>

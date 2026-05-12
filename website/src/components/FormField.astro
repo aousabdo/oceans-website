@@ -1,0 +1,54 @@
+---
+interface Props {
+  name: string;
+  label: string;
+  type?: "text" | "email" | "tel" | "url" | "textarea";
+  required?: boolean;
+  rows?: number;
+  placeholder?: string;
+  autocomplete?: string;
+  defaultValue?: string;
+}
+const props = Astro.props as Props;
+const {
+  name,
+  label,
+  type = "text",
+  required = false,
+  rows = 4,
+  placeholder,
+  autocomplete,
+  defaultValue,
+} = props;
+const id = `field-${name}`;
+const baseInput =
+  "block w-full bg-bg-2 border border-border-hairline rounded px-3 py-2.5 text-fg placeholder:text-muted/60 focus:outline-none focus:border-accent transition-colors";
+---
+<label for={id} class="block">
+  <span class="font-mono text-[10px] uppercase tracking-widest text-muted">
+    {label}{required && <span class="text-accent-critical ml-0.5" aria-hidden="true">*</span>}
+  </span>
+  {
+    type === "textarea" ? (
+      <textarea
+        id={id}
+        name={name}
+        rows={rows}
+        required={required}
+        placeholder={placeholder}
+        class={`${baseInput} mt-2 resize-y`}
+      >{defaultValue}</textarea>
+    ) : (
+      <input
+        id={id}
+        name={name}
+        type={type}
+        required={required}
+        placeholder={placeholder}
+        autocomplete={autocomplete}
+        value={defaultValue}
+        class={`${baseInput} mt-2`}
+      />
+    )
+  }
+</label>
