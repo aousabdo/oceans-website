@@ -7,7 +7,7 @@ export function organizationLd() {
     name: SITE_NAME,
     url: SITE_URL,
     logo: `${SITE_URL}/og-default.png`,
-    sameAs: ["https://www.linkedin.com/company/oceans-llc"],
+    sameAs: ["https://www.linkedin.com/company/o.c.e.a.n.s.-llc"],
     address: {
       "@type": "PostalAddress",
       addressLocality: "Jacksonville",

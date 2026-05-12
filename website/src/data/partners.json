@@ -1,0 +1,287 @@
+[
+  {
+    "section": "Department of Homeland Security",
+    "agency": "U.S. Immigration and Customs Enforcement",
+    "logo": "/partners/u-s-immigration-and-customs-enforcement.jpg"
+  },
+  {
+    "section": "Department of Homeland Security",
+    "agency": "Air and Marine Operations",
+    "logo": "/partners/air-and-marine-operations.png"
+  },
+  {
+    "section": "Department of Homeland Security",
+    "agency": "U.S. Border Patrol",
+    "logo": "/partners/u-s-border-patrol.png"
+  },
+  {
+    "section": "Department of Homeland Security",
+    "agency": "Office of Field Operations",
+    "logo": "/partners/office-of-field-operations.png"
+  },
+  {
+    "section": "Department of Homeland Security",
+    "agency": "U.S. Secret Service",
+    "logo": "/partners/u-s-secret-service.png"
+  },
+  {
+    "section": "Department of Homeland Security",
+    "agency": "U.S. Coast Guard",
+    "logo": "/partners/u-s-coast-guard.png"
+  },
+  {
+    "section": "Department of Homeland Security",
+    "agency": "Transportation Security Administration",
+    "logo": "/partners/transportation-security-administration.jpg"
+  },
+  {
+    "section": "Department of Homeland Security",
+    "agency": "Federal Air Marshall Service",
+    "logo": "/partners/federal-air-marshall-service.webp"
+  },
+  {
+    "section": "Department of Homeland Security",
+    "agency": "Science and Technology",
+    "logo": "/partners/science-and-technology.webp"
+  },
+  {
+    "section": "Department of Homeland Security",
+    "agency": "Cybersecurity and Infrastructure Security Agency",
+    "logo": "/partners/cybersecurity-and-infrastructure-security-agency.png"
+  },
+  {
+    "section": "Department of War",
+    "agency": "Naval Air Systems Command",
+    "logo": "/partners/naval-air-systems-command.png"
+  },
+  {
+    "section": "Department of War",
+    "agency": "U.S. Army North",
+    "logo": "/partners/u-s-army-north.png"
+  },
+  {
+    "section": "Department of War",
+    "agency": "Naval Sea Systems Command",
+    "logo": "/partners/naval-sea-systems-command.jpg"
+  },
+  {
+    "section": "Department of War",
+    "agency": "U.S. Northern Command",
+    "logo": "/partners/u-s-northern-command.png"
+  },
+  {
+    "section": "Department of War",
+    "agency": "Naval Surface Warfare Center",
+    "logo": "/partners/naval-surface-warfare-center.jpeg"
+  },
+  {
+    "section": "Department of War",
+    "agency": "U.S. Southern Command",
+    "logo": "/partners/u-s-southern-command.png"
+  },
+  {
+    "section": "Department of War",
+    "agency": "North American Aerospace Defense Command",
+    "logo": "/partners/north-american-aerospace-defense-command.png"
+  },
+  {
+    "section": "Department of War",
+    "agency": "U.S. Special Operations Command",
+    "logo": "/partners/u-s-special-operations-command.png"
+  },
+  {
+    "section": "Additional Federal Entities",
+    "agency": "Federal Bureau of Investigation",
+    "logo": "/partners/federal-bureau-of-investigation.png"
+  },
+  {
+    "section": "Additional Federal Entities",
+    "agency": "Department of State",
+    "logo": "/partners/department-of-state.png"
+  },
+  {
+    "section": "Additional Federal Entities",
+    "agency": "Drug Enforcement Administration",
+    "logo": "/partners/drug-enforcement-administration.png"
+  },
+  {
+    "section": "International Entities",
+    "agency": "Royal Canadian Mounted Police",
+    "logo": "/partners/royal-canadian-mounted-police.png"
+  },
+  {
+    "section": "International Entities",
+    "agency": "U.K. Royal Navy",
+    "logo": "/partners/u-k-royal-navy.png"
+  },
+  {
+    "section": "International Entities",
+    "agency": "FVEY",
+    "logo": "/partners/fvey.png"
+  },
+  {
+    "section": "International Entities",
+    "agency": "U.K. Defense Intelligence",
+    "logo": "/partners/u-k-defense-intelligence.png"
+  },
+  {
+    "section": "International Entities",
+    "agency": "U.K. Ministry of Defense",
+    "logo": "/partners/u-k-ministry-of-defense.png"
+  },
+  {
+    "section": "International Entities",
+    "agency": "Republic of Korea",
+    "logo": "/partners/republic-of-korea.png"
+  },
+  {
+    "section": "International Entities",
+    "agency": "U.K. National Protective Security Authority",
+    "logo": "/partners/u-k-national-protective-security-authority.jpeg"
+  },
+  {
+    "section": "International Entities",
+    "agency": "Espana Departamento de Seguridad Nacional",
+    "logo": "/partners/espana-departamento-de-seguridad-nacional.1f4aa2_80fb5bc865994f779d5088eef99a87c3_mv2_png_242x242_Logotipo_del_Departamento_de_Seguridad_Nacional_de_Espa_C3_B1a__2025"
+  },
+  {
+    "section": "International Entities",
+    "agency": "U.K. Royal Air Force",
+    "logo": "/partners/u-k-royal-air-force.png"
+  },
+  {
+    "section": "International Entities",
+    "agency": "Espana Guardia Civil",
+    "logo": "/partners/espana-guardia-civil.png"
+  },
+  {
+    "section": "Local Law Enforcement",
+    "agency": "New Jersey Police Department",
+    "logo": "/partners/new-jersey-police-department.png"
+  },
+  {
+    "section": "Local Law Enforcement",
+    "agency": "New York Police Department",
+    "logo": "/partners/new-york-police-department.png"
+  },
+  {
+    "section": "Local Law Enforcement",
+    "agency": "Port Authority of New York/New Jersey",
+    "logo": "/partners/port-authority-of-new-york-new-jersey.png"
+  },
+  {
+    "section": "Local Law Enforcement",
+    "agency": "Miami Police Department",
+    "logo": "/partners/miami-police-department.png"
+  },
+  {
+    "section": "Local Law Enforcement",
+    "agency": "Los \u00c1ngeles Police Department",
+    "logo": "/partners/los-ngeles-police-department.png"
+  },
+  {
+    "section": "Organizations, Local Entities, National Labs",
+    "agency": "Lummi Tribe - Puget Sound",
+    "logo": "/partners/lummi-tribe-puget-sound.png"
+  },
+  {
+    "section": "Organizations, Local Entities, National Labs",
+    "agency": "National Football League",
+    "logo": "/partners/national-football-league.png"
+  },
+  {
+    "section": "Organizations, Local Entities, National Labs",
+    "agency": "F\u00e9d\u00e9ration Internationale de Football Association",
+    "logo": "/partners/f-d-ration-internationale-de-football-association.png"
+  },
+  {
+    "section": "Organizations, Local Entities, National Labs",
+    "agency": "Norwegian Cruise Lines",
+    "logo": "/partners/norwegian-cruise-lines.jpg"
+  },
+  {
+    "section": "Organizations, Local Entities, National Labs",
+    "agency": "Alaska Center for Unmanned Aircraft Systems Integration",
+    "logo": "/partners/alaska-center-for-unmanned-aircraft-systems-integration.png"
+  },
+  {
+    "section": "Organizations, Local Entities, National Labs",
+    "agency": "Johns Hopkins Applied Physics Lab",
+    "logo": "/partners/johns-hopkins-applied-physics-lab.jpeg"
+  },
+  {
+    "section": "Transit",
+    "agency": "Metropolitan Transit Authority",
+    "logo": "/partners/metropolitan-transit-authority.png"
+  },
+  {
+    "section": "Transit",
+    "agency": "Seattle Sound Transit",
+    "logo": "/partners/seattle-sound-transit.png"
+  },
+  {
+    "section": "Transit",
+    "agency": "New Jersey Transit",
+    "logo": "/partners/new-jersey-transit.webp"
+  },
+  {
+    "section": "Transit",
+    "agency": "Washington Metropolitan Area Transit Authority",
+    "logo": "/partners/washington-metropolitan-area-transit-authority.png"
+  },
+  {
+    "section": "Transit",
+    "agency": "Los \u00c1ngeles Metro",
+    "logo": "/partners/los-ngeles-metro.png"
+  },
+  {
+    "section": "Transit",
+    "agency": "Metropolitan Atlanta Rapid Transit Authority",
+    "logo": "/partners/metropolitan-atlanta-rapid-transit-authority.webp"
+  },
+  {
+    "section": "Transit",
+    "agency": "Chicago Transit Authority",
+    "logo": "/partners/chicago-transit-authority.png"
+  },
+  {
+    "section": "Transit",
+    "agency": "Union Pacific Railroad Company",
+    "logo": "/partners/union-pacific-railroad-company.png"
+  },
+  {
+    "section": "Transit",
+    "agency": "CSX Railroad",
+    "logo": "/partners/csx-railroad.webp"
+  },
+  {
+    "section": "Transit",
+    "agency": "Norfolk Southern Railway",
+    "logo": "/partners/norfolk-southern-railway.png"
+  },
+  {
+    "section": "Transit",
+    "agency": "Bay Area Rapid Transit",
+    "logo": "/partners/bay-area-rapid-transit.png"
+  },
+  {
+    "section": "Transit",
+    "agency": "Burlington Northern Santa Fe Railway",
+    "logo": "/partners/burlington-northern-santa-fe-railway.webp"
+  },
+  {
+    "section": "Airports",
+    "agency": "Los \u00c1ngeles International Airport",
+    "logo": "/partners/los-ngeles-international-airport.jpg"
+  },
+  {
+    "section": "Airports",
+    "agency": "Miami International Airport",
+    "logo": "/partners/miami-international-airport.png"
+  },
+  {
+    "section": "Airports",
+    "agency": "Ronald Reagan Washington National Airport",
+    "logo": "/partners/ronald-reagan-washington-national-airport.avif"
+  }
+]

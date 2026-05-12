@@ -16,9 +16,16 @@ import Button from "@components/Button.astro";
       <div>
         <div class="font-mono text-[10px] uppercase tracking-widest text-accent">Address</div>
         <address class="not-italic mt-3 text-fg leading-relaxed">
-          Jacksonville, FL 32099<br />
+          Jacksonville, FL<br />
           <a href="mailto:info@oceansllc.com" class="text-accent">info@oceansllc.com</a><br />
-          727-455-9383
+          <a
+            href="https://www.linkedin.com/company/o.c.e.a.n.s.-llc"
+            class="text-accent"
+            target="_blank"
+            rel="noopener"
+          >
+            LinkedIn ↗
+          </a>
         </address>
       </div>
       <div>
@@ -40,9 +47,10 @@ import Button from "@components/Button.astro";
     <div class="md:col-span-3 bg-surface border border-border-hairline rounded-lg p-10">
       <SectionLabel>Email is best for now</SectionLabel>
       <p class="mt-6 text-fg leading-relaxed">
-        We'll have an in-page contact form here once the backend lands. Until then, write to us
-        directly — we read everything that comes into <a href="mailto:info@oceansllc.com" class="text-accent">info@oceansllc.com</a>
-        and reply within two business days.
+        Write to us directly — we read everything that comes into
+        <a href="mailto:info@oceansllc.com" class="text-accent">info@oceansllc.com</a> and reply
+        within two business days. An in-page contact form lands once the backend is provisioned;
+        until then, email is best.
       </p>
       <div class="mt-8 flex flex-wrap gap-3">
         <Button href="mailto:info@oceansllc.com?subject=Engagement inquiry" variant="primary">

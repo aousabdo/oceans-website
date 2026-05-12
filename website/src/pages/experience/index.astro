@@ -2,115 +2,40 @@
 import PageLayout from "@layouts/PageLayout.astro";
 import SectionLabel from "@components/SectionLabel.astro";
 import CaseStudyCard from "@components/CaseStudyCard.astro";
+import partnersData from "@/data/partners.json";
 import { getCollection } from "astro:content";
 
+interface Partner { section: string; agency: string; logo: string | null }
+const partners = partnersData as Partner[];
 const caseStudies = (await getCollection("caseStudies")).sort((a, b) => b.data.year - a.data.year);
 
-const clientGroups = [
-  {
-    label: "Department of Homeland Security",
-    items: [
-      "U.S. Immigration and Customs Enforcement",
-      "Air and Marine Operations",
-      "U.S. Border Patrol",
-      "Office of Field Operations",
-      "U.S. Secret Service",
-      "U.S. Coast Guard",
-      "Transportation Security Administration",
-      "Federal Air Marshal Service",
-      "Science and Technology Directorate",
-      "Cybersecurity and Infrastructure Security Agency",
-    ],
-  },
-  {
-    label: "Department of War",
-    items: [
-      "Naval Air Systems Command",
-      "U.S. Army North",
-      "Naval Sea Systems Command",
-      "U.S. Northern Command",
-      "Naval Surface Warfare Center",
-      "U.S. Southern Command",
-      "North American Aerospace Defense Command",
-      "U.S. Special Operations Command",
-    ],
-  },
-  {
-    label: "Additional Federal",
-    items: [
-      "Federal Bureau of Investigation",
-      "Department of State",
-      "Drug Enforcement Administration",
-    ],
-  },
-  {
-    label: "International (FVEY & Partners)",
-    items: [
-      "Royal Canadian Mounted Police",
-      "U.K. Royal Navy",
-      "U.K. Defense Intelligence",
-      "U.K. Ministry of Defense",
-      "U.K. Royal Air Force",
-      "U.K. National Protective Security Authority",
-      "Republic of Korea",
-      "España Departamento de Seguridad Nacional",
-      "España Guardia Civil",
-    ],
-  },
-  {
-    label: "Local Law Enforcement",
-    items: [
-      "New Jersey Police Department",
-      "New York Police Department",
-      "Port Authority of New York/New Jersey",
-      "Miami Police Department",
-      "Los Ángeles Police Department",
-    ],
-  },
-  {
-    label: "Organizations, Tribal Nations & Labs",
-    items: [
-      "Lummi Tribe — Puget Sound",
-      "Johns Hopkins Applied Physics Lab",
-      "Alaska Center for Unmanned Aircraft Systems Integration",
-      "National Football League",
-      "Fédération Internationale de Football Association",
-      "Norwegian Cruise Lines",
-    ],
-  },
-  {
-    label: "Transit Authorities",
-    items: [
-      "Metropolitan Transit Authority (NY)",
-      "Sound Transit (Seattle)",
-      "New Jersey Transit",
-      "Washington Metropolitan Area Transit Authority",
-      "Los Ángeles Metro",
-      "Metropolitan Atlanta Rapid Transit Authority",
-      "Chicago Transit Authority",
-      "Bay Area Rapid Transit",
-    ],
-  },
-  {
-    label: "Class I Railroads",
-    items: [
-      "Union Pacific",
-      "CSX",
-      "Norfolk Southern",
-      "Burlington Northern Santa Fe",
-    ],
-  },
-  {
-    label: "Airports",
-    items: [
-      "Los Ángeles International",
-      "Miami International",
-      "Ronald Reagan Washington National",
-    ],
-  },
+// Friendly section ordering + display names
+const sectionOrder = [
+  "Department of Homeland Security",
+  "Department of War",
+  "Additional Federal Entities",
+  "International Entities",
+  "Local Law Enforcement",
+  "Organizations, Local Entities, National Labs",
+  "Transit",
+  "Airports",
 ];
+const sectionDisplay: Record<string, string> = {
+  "Additional Federal Entities": "Additional Federal",
+  "International Entities": "International (FVEY & Partners)",
+  "Organizations, Local Entities, National Labs": "Organizations, Tribal Nations & Labs",
+  "Transit": "Transit & Class I Railroads",
+};
+
+const groups = sectionOrder.map((sec) => ({
+  label: sectionDisplay[sec] ?? sec,
+  items: partners.filter((p) => p.section === sec),
+}));
 ---
-<PageLayout title="Relevant Experience" description="Past performance across federal, international, state, local, and operational divisions.">
+<PageLayout
+  title="Relevant Experience"
+  description="Past performance across federal, international, state, local, tribal, territorial, operational, and research divisions."
+>
   <section class="mx-auto max-w-6xl px-6 pt-24 pb-8">
     <SectionLabel>Past Performance</SectionLabel>
     <h1 class="font-display text-5xl md:text-6xl font-bold text-fg-strong mt-4 leading-tight">
@@ -144,16 +69,34 @@ const clientGroups = [
 
   <section class="mx-auto max-w-6xl px-6 pb-24 pt-12 border-t border-border-hairline">
     <SectionLabel>Mission partners</SectionLabel>
-    <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+    <div class="mt-10 space-y-16">
       {
-        clientGroups.map((g) => (
+        groups.map((g) => (
           <div>
-            <h3 class="font-display text-lg font-bold text-fg-strong border-b border-border-hairline pb-2">
+            <h2 class="font-display text-2xl font-bold text-fg-strong border-b border-border-hairline pb-3 mb-6">
               {g.label}
-            </h3>
-            <ul class="mt-4 space-y-1.5 text-sm text-muted leading-relaxed">
-              {g.items.map((i) => (
-                <li>{i}</li>
+            </h2>
+            <ul class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-8">
+              {g.items.map((p) => (
+                <li class="flex flex-col items-center text-center gap-3">
+                  {p.logo ? (
+                    <div class="w-20 h-20 md:w-24 md:h-24 bg-surface border border-border-hairline rounded-md flex items-center justify-center p-2 shrink-0">
+                      <img
+                        src={p.logo}
+                        alt={p.agency}
+                        loading="lazy"
+                        width="96"
+                        height="96"
+                        class="max-w-full max-h-full object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <div class="w-20 h-20 md:w-24 md:h-24 bg-surface border border-border-hairline rounded-md flex items-center justify-center text-muted font-mono text-[10px]">
+                      —
+                    </div>
+                  )}
+                  <span class="text-[11px] md:text-xs text-muted leading-tight">{p.agency}</span>
+                </li>
               ))}
             </ul>
           </div>
