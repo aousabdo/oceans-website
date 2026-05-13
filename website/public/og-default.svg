@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1A2840"/>
+      <stop offset="0.6" stop-color="#14223A"/>
+      <stop offset="1" stop-color="#0F1A2F"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.78" cy="0.32" r="0.5">
+      <stop offset="0" stop-color="#5BD4FF" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#5BD4FF" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="ring-clip"><circle cx="120" cy="120" r="44"/></clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- Background wave field, very subtle -->
+  <g opacity="0.10" stroke="#5BD4FF" fill="none" stroke-width="1">
+    <path d="M0 480 Q 200 460 400 480 T 800 480 T 1200 480"/>
+    <path d="M0 520 Q 200 500 400 520 T 800 520 T 1200 520" opacity="0.7"/>
+    <path d="M0 560 Q 200 540 400 560 T 800 560 T 1200 560" opacity="0.5"/>
+    <path d="M0 600 Q 200 580 400 600 T 800 600 T 1200 600" opacity="0.3"/>
+  </g>
+
+  <!-- Logo: wave-O ring + OCEANS wordmark, top-left -->
+  <g transform="translate(80 80)">
+    <!-- ring -->
+    <circle cx="40" cy="40" r="40" fill="none" stroke="#5BD4FF" stroke-width="4"/>
+    <!-- wave inside, clipped -->
+    <clipPath id="og-ring-clip"><circle cx="40" cy="40" r="38"/></clipPath>
+    <g clip-path="url(#og-ring-clip)">
+      <path d="M 0 42 Q 18 32 30 42 T 56 42 T 84 42" fill="none" stroke="#5BD4FF" stroke-width="4" stroke-linecap="round"/>
+    </g>
+    <!-- wordmark -->
+    <text x="100" y="52" font-family="'Syne', sans-serif" font-weight="800" font-size="44" fill="#F8FBFF" letter-spacing="0.16em">CEANS</text>
+  </g>
+
+  <!-- Eyebrow -->
+  <text x="80" y="290" font-family="ui-monospace, monospace" font-size="20" fill="#5BD4FF" letter-spacing="0.22em">▌ SYSTEMS ENGINEERING · T&amp;E · MISSION DATA</text>
+
+  <!-- Main headline -->
+  <text x="80" y="380" font-family="'Syne', sans-serif" font-weight="700" font-size="76" fill="#F8FBFF" letter-spacing="-0.01em">Engineering that</text>
+  <text x="80" y="460" font-family="'Syne', sans-serif" font-weight="700" font-size="76" fill="#F8FBFF" letter-spacing="-0.01em">earns
+    <tspan font-style="italic" fill="none" stroke="#5BD4FF" stroke-width="1.5">operational</tspan>
+    trust.
+  </text>
+
+  <!-- Footer line -->
+  <line x1="80" y1="540" x2="160" y2="540" stroke="#5BD4FF" stroke-width="2"/>
+  <text x="80" y="575" font-family="ui-monospace, monospace" font-size="18" fill="#9AB4D0" letter-spacing="0.12em">OCEANS LLC  ·  JACKSONVILLE, FL  ·  EST. 2013</text>
+
+  <!-- Right-side decorative wave-O hero element -->
+  <g transform="translate(900 200)">
+    <circle cx="0" cy="0" r="160" fill="none" stroke="#5BD4FF" stroke-width="3" opacity="0.5"/>
+    <clipPath id="og-big-clip"><circle cx="0" cy="0" r="152"/></clipPath>
+    <g clip-path="url(#og-big-clip)">
+      <path d="M -180 12 Q -90 -22 0 12 T 180 12" fill="none" stroke="#5BD4FF" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+    </g>
+  </g>
+</svg>

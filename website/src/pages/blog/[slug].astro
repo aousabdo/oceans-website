@@ -1,6 +1,7 @@
 ---
 import PageLayout from "@layouts/PageLayout.astro";
 import Button from "@components/Button.astro";
+import ReadingProgress from "@components/ReadingProgress.astro";
 import { formatDate, readingTime } from "@lib/format";
 import { articleLd } from "@lib/schema";
 import { SITE_URL } from "@lib/seo";
@@ -36,6 +37,7 @@ const ld = articleLd({
 ---
 <PageLayout title={post.data.title} description={post.data.excerpt} type="article">
   <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+  <ReadingProgress target="main" />
 
   <!-- BACK LINK -->
   <div class="mx-auto max-w-3xl px-6 pt-12">

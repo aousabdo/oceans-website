@@ -1,0 +1,44 @@
+---
+title: What kills programs in month 12
+date: 2026-05-05
+author: paul-morrisseau
+tags: [program-management, methodology]
+excerpt: It's almost never the technology. It's the slow, unglamorous failure of the conversation that should have happened in month one.
+draft: false
+---
+
+It's almost never the technology. I want to say that up front because the post-mortem culture in federal acquisition keeps pretending otherwise.
+
+A program gets to month 12. The schedule has slipped twice. The cost is over baseline by 18%. Somebody asks the question — what went wrong — and the answer comes back as a parade of technical issues. Interface incompatibilities. Sensor performance under conditions nobody anticipated. A vendor delivery delay.
+
+Those things are real. They are also downstream.
+
+In my experience, the upstream failure is almost always the same: in month one, three different stakeholder groups had three different ideas about what success meant, and nobody forced the conversation that would have reconciled them. The technology choices that look catastrophic in month 12 looked perfectly reasonable in month three, because each group was optimizing for a slightly different version of the goal.
+
+## The three groups
+
+There's the program office, who is held accountable for cost and schedule and is therefore biased toward solutions that minimize both.
+
+There's the operators, who will eventually use the system in the field and are biased toward solutions that don't surprise them under operational stress.
+
+There's the approving authority, who has to sign off on fielding and is biased toward evidence packages that survive scrutiny across three layers of review.
+
+If those three groups don't sit in a room together early — and I mean an actual room, not a SharePoint folder with comments — they will silently fork the requirements into three parallel versions, each of which is internally consistent. The system will be built to satisfy some weighted average of all three, which is to say, none of them.
+
+## The signs
+
+You can see this failure starting if you know what to look for. The clearest signal is when the same question gets answered differently by different people. "What's the threshold for acceptable false-alarm rate?" gets four answers, all confident, none aligned. Or: "What does the assessment need to demonstrate?" gets a list of capabilities from the program office and a list of operational conditions from the operators and they don't match.
+
+When that happens in month three, you can still fix it. Schedule a workshop. Write the agreement down. Get all three groups to sign it. It will feel like a delay. It is the opposite of a delay.
+
+When the same misalignment surfaces in month nine, it's too late. By then the architecture decisions have been made, the contracts have been written, the testing strategy has been scoped. Unwinding any of that triggers a re-baseline that nobody wants.
+
+## What we do
+
+When we scope an OT&E engagement, the first deliverable isn't a test plan. It's a one-page document that says, in plain English, what success looks like — and who signed it.
+
+That document is boring. It's also the most leveraged single artifact in the whole engagement.
+
+I keep a folder of these from every program we've supported. Reading them five years later, you can predict which programs delivered something useful and which ones quietly delivered something that got fielded and forgotten. The successful programs almost always had crisp, narrow, agreed-upon success criteria written down by month three. The failed ones had broad, fuzzy, "we'll figure it out as we go" language that everyone could nod at without committing to.
+
+The technology was downstream. The conversation was upstream. And the conversation is where the program lived or died.

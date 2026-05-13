@@ -1,0 +1,54 @@
+---
+title: What we look for in operational requirements
+date: 2026-05-12
+author: daniel-brent
+tags: [requirements, methodology]
+excerpt: Five questions we ask before we'll agree a requirement is testable. None of them are about the technology.
+draft: false
+---
+
+When we sit down with a program office to review requirements, there are five questions we ask. None of them are about the technology. All of them are about whether the requirement is actually testable in a way that produces a defensible decision.
+
+If a requirement can't survive these five questions, we won't take it into a test plan. We'll send it back for rework — sometimes to the operators, sometimes to the program office, sometimes to whoever wrote it down the first time without thinking it through.
+
+## 1. What decision does this inform?
+
+If the answer is "we want to know if the system works," that's not a decision. That's an aspiration.
+
+A real answer sounds like: "we will field this capability at three CONUS sites in FY27, or we will rebaseline." Or: "we will recommend procurement quantity adjustment based on observed performance." A decision has consequences. It changes what happens next.
+
+If a requirement doesn't trace to a decision with consequences, it's a wish.
+
+## 2. What's the threshold for acceptable?
+
+Many requirements say "the system shall demonstrate X." Demonstrate to what level? Pass at 51%? At 95%? Mission-dependent? Conditional on environment?
+
+Without a number, the test result is negotiable, which means it's not really a test. It's a demonstration. Demonstrations are useful for marketing. They are not useful for acquisition decisions.
+
+## 3. Who agreed to this number?
+
+This is the question people forget. Even if the threshold is written down, if it was written down by one person and never signed off by the program office, the operators, AND whoever will eventually approve the assessment — it's not stable. The number will move once the data comes back if anyone in the chain didn't actually buy in.
+
+The number has to be signed. Three signatures, minimum. Date them.
+
+## 4. What conditions does this apply under?
+
+A requirement that reads "detection probability ≥ 0.9" is not a requirement. A requirement that reads "detection probability ≥ 0.9, against target class X, in sea state 3 or below, at 8 nautical miles, in daylight" is a requirement.
+
+Conditions matter because they bound the claim. A system that performs at 0.9 in sea state 3 may perform at 0.4 in sea state 5. Whether that matters depends on the operational envelope the system will actually be deployed into. If the conditions aren't specified, the test result will be ambiguous.
+
+## 5. How will we know we measured it correctly?
+
+This is the meta-question. How will the test design produce data that supports the claim being tested? What's the measurement methodology? What's the sampling plan? What confidence interval is the program willing to accept?
+
+If the requirement is "detection probability ≥ 0.9" but the test runs three trials, you can't claim 0.9 with any reasonable confidence. You need either more trials or you need to redefine the requirement to match what's actually testable in the budget.
+
+This conversation should happen before the test plan is approved, not after the data is collected.
+
+## What this looks like in practice
+
+When we work on requirements review with a federal customer, we usually find that one in three requirements fails at least one of the five questions. Sometimes the failure is small — a missing condition that's obvious in context. Sometimes it's catastrophic — the requirement traces to no decision and no threshold, and it's been sitting in the spec for six months while engineering has been chasing it.
+
+The fix is almost always cheap when we catch it in month two. The fix is brutally expensive when somebody else catches it in month nine.
+
+The five questions are not magic. They are not new. They are the kind of disciplined thinking that good program managers have always done. We just happen to write them down and force the conversation when the program office wants to skip ahead to execution.

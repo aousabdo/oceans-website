@@ -1,0 +1,40 @@
+---
+title: Why most common operating pictures fail their first test
+date: 2026-05-09
+author: momena-ali
+tags: [mission-data, cop, ontologies]
+excerpt: The pixels look right. The integration tests pass. Then an operator asks a question the data model can't represent — and the whole thing collapses.
+draft: false
+---
+
+The pixels look right. The integration tests pass. The vendor delivers a demo that wins applause. Then an operator asks a question the data model can't represent, and the whole thing collapses.
+
+This is the pattern I see across most COP validation efforts. The system was built to render a picture. It wasn't built to answer the questions an operator will actually ask of it under pressure.
+
+A COP — common operating picture — is supposed to give a shared situational awareness across roles. The chief sees what the watch sees. The interagency partner sees what the host nation sees. Coordination happens because everyone's looking at the same thing, ideally with the same understanding of what they're looking at.
+
+The "ideally" is doing a lot of work in that sentence.
+
+## Where it breaks
+
+The break almost always happens at the boundary between two domains. A maritime sensor feed defines "vessel" one way. The intelligence partner defines "vessel" another way. The C2 system that ingests both flattens them into a single object class because the data model only has one slot for things-that-float. Two minutes later an analyst asks "show me only the small craft inside the 12-mile boundary" and the system can't answer the question — not because the data isn't there, but because the data model lost the distinction during ingestion.
+
+This is what we mean when we talk about ontology-driven architectures. It's not abstract. It's "your data model needs to preserve the distinctions your operators care about," and most data models don't because they were designed to optimize ingestion throughput rather than operational fidelity.
+
+## A specific failure
+
+I worked on a validation last year where the COP could display 14 different vehicle types and route them through 9 different rules of engagement. On paper, this was state of the art. In a 72-hour exercise, operators stopped using 11 of the 14 categories because the ROE engine couldn't actually distinguish between them under realistic timing. The system collapsed everything to "vehicle of interest" and kicked the decision back to a human, which is exactly the situation a COP is supposed to prevent.
+
+The vendor blamed the operators. The operators blamed the vendor. Both were wrong. The ontology mapped from sensor classification to ROE category had been designed by engineers who'd never run an exercise. The categories that mattered operationally weren't the categories the data model exposed.
+
+## What ontology-driven means
+
+When we say ontology-driven, we mean: the data model is designed against the operational question, not the input format. You start by asking "what decisions will this system inform?" and work backwards from there to figure out which distinctions in the world need to be preserved.
+
+This sounds obvious. It is not how most COPs are built.
+
+Most are built input-out: sensor feeds dictate what gets ingested, integration logic dictates how feeds are merged, and the user interface gets whatever falls out the other end. The result is a system that can answer the questions the engineers found interesting, not the questions the operators need answered.
+
+The way you fix this — and the only way I've seen actually work — is to bring the operators into the data model conversation in month one, not month nine. They'll tell you what categories they reason in. You'll tell them what's technically feasible. The two won't fully align, and the negotiation that follows is the data model. Skip it, and you build a COP that demos well and fails its first exercise.
+
+The most interesting fact about good COPs is that operators trust them. The least interesting fact is that they display things.
