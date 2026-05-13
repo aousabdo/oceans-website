@@ -1,0 +1,451 @@
+---
+/**
+ * /scope — Engagement Calculator
+ *
+ * Interactive tool: visitor picks (engagement type, scope, stage, posture)
+ * and gets a structured, realistic-looking engagement plan in return —
+ * duration, team composition, deliverables, first 90 days. Output is
+ * computed client-side from a pre-defined matrix.
+ *
+ * "Schedule a scoping call" CTA links to /contact with subject + message
+ * pre-filled from the selections.
+ */
+import PageLayout from "@layouts/PageLayout.astro";
+import SectionLabel from "@components/SectionLabel.astro";
+import Eyebrow from "@components/Eyebrow.astro";
+
+interface QuestionOption {
+  value: string;
+  label: string;
+  description?: string;
+}
+interface Question {
+  id: string;
+  label: string;
+  options: QuestionOption[];
+}
+
+const questions: Question[] = [
+  {
+    id: "type",
+    label: "What kind of engagement?",
+    options: [
+      { value: "requirements", label: "Requirements Development", description: "Translate mission needs into structured, testable requirements." },
+      { value: "se", label: "Systems Engineering", description: "Architecture, integration, lifecycle cyber across subsystems." },
+      { value: "rdte", label: "RDT&E", description: "Research, development, operational test & evaluation." },
+      { value: "missiondata", label: "Mission Data", description: "Ontology, schema, Common Operating Picture, data products." },
+    ],
+  },
+  {
+    id: "scope",
+    label: "What's the scope?",
+    options: [
+      { value: "single", label: "Single capability", description: "One subsystem, sensor class, or mission thread." },
+      { value: "multi", label: "Multi-capability", description: "A coordinated set across two or more subsystems." },
+      { value: "program", label: "Program-wide", description: "Full program-of-record across organizations." },
+    ],
+  },
+  {
+    id: "stage",
+    label: "What stage are you in?",
+    options: [
+      { value: "prerfp", label: "Pre-RFP", description: "Concept refinement, gap analysis, draft strategy." },
+      { value: "active", label: "Active acquisition", description: "RFP awarded, milestones approaching, deliverables in flight." },
+      { value: "sustainment", label: "Sustainment", description: "Fielded capability, block upgrades, refresh planning." },
+      { value: "rebaseline", label: "Re-baseline", description: "Off-schedule, off-cost, or off-spec — needs a reset." },
+    ],
+  },
+  {
+    id: "posture",
+    label: "What's the posture?",
+    options: [
+      { value: "standard", label: "Standard pace", description: "Disciplined cadence, full methodology, deep documentation." },
+      { value: "accelerated", label: "Accelerated", description: "Compressed milestones; selective depth on critical paths." },
+      { value: "surge", label: "Surge (90-day)", description: "Short intervention to unblock a specific decision." },
+    ],
+  },
+];
+---
+
+<PageLayout
+  title="Scope an Engagement"
+  description="Pick what kind of work you need, what scope, and what posture — and see what a real OCEANS engagement would look like."
+>
+  <!-- HERO -->
+  <section class="mx-auto max-w-5xl px-6 pt-20 pb-10">
+    <Eyebrow>Engagement Calculator</Eyebrow>
+    <h1 class="font-display text-5xl md:text-7xl font-bold text-fg-strong mt-4 leading-[1.05]">
+      Scope an engagement.
+    </h1>
+    <p class="mt-8 text-lg md:text-xl text-muted leading-relaxed max-w-3xl">
+      Four questions. Tells you what a real OCEANS engagement would look like —
+      duration, team composition, first deliverables, and how the first 90 days
+      run. Honest ranges, not sales math.
+    </p>
+  </section>
+
+  <!-- QUESTIONS -->
+  <section class="mx-auto max-w-5xl px-6 pb-12 space-y-10" id="scope-questions">
+    {
+      questions.map((q, qi) => (
+        <fieldset class="space-y-4">
+          <legend class="flex items-baseline gap-4 mb-3">
+            <span class="font-display text-3xl font-bold text-accent leading-none">{String(qi + 1).padStart(2, "0")}</span>
+            <span class="font-display text-xl md:text-2xl font-bold text-fg-strong leading-tight">{q.label}</span>
+          </legend>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {q.options.map((o) => (
+              <label class="scope-opt group cursor-pointer block bg-surface border border-border-hairline rounded-lg p-4 transition-all hover:border-accent/50">
+                <input
+                  type="radio"
+                  name={q.id}
+                  value={o.value}
+                  class="peer sr-only"
+                />
+                <span class="block peer-checked:[&_.dot]:bg-accent peer-checked:[&_.ring]:border-accent">
+                  <span class="flex items-start gap-3">
+                    <span class="ring mt-1 w-4 h-4 rounded-full border-2 border-border-hairline grid place-items-center shrink-0">
+                      <span class="dot w-2 h-2 rounded-full bg-transparent"></span>
+                    </span>
+                    <span class="flex-1 min-w-0">
+                      <span class="block font-display text-sm md:text-base font-bold text-fg-strong leading-snug">{o.label}</span>
+                      {o.description && (
+                        <span class="block mt-1 text-[12px] md:text-sm text-muted leading-relaxed">{o.description}</span>
+                      )}
+                    </span>
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ))
+    }
+  </section>
+
+  <!-- OUTPUT PANEL -->
+  <section class="bg-bg-2 border-y border-border-hairline">
+    <div class="mx-auto max-w-5xl px-6 py-16">
+      {/* Empty state */}
+      <div id="scope-empty" class="text-center">
+        <SectionLabel>Engagement preview</SectionLabel>
+        <h2 class="font-display text-2xl md:text-3xl font-bold text-fg-strong mt-3 leading-tight">
+          Make four selections above.
+        </h2>
+        <p class="mt-3 text-muted max-w-xl mx-auto leading-relaxed">
+          As you pick options, we'll show what the engagement actually looks like —
+          duration, team, deliverables. Nothing is sent anywhere until you decide
+          to start a conversation.
+        </p>
+      </div>
+
+      {/* Result panel — hidden until all four selected. aria-live so screen
+          readers announce the engagement preview when it appears. */}
+      <div id="scope-result" class="hidden" aria-live="polite" aria-atomic="true">
+        <div class="flex items-end justify-between gap-6 flex-wrap mb-8">
+          <div>
+            <SectionLabel>Engagement preview</SectionLabel>
+            <h2 class="font-display text-2xl md:text-4xl font-bold text-fg-strong mt-3 leading-tight">
+              Here's what this engagement looks like.
+            </h2>
+            <p class="mt-2 font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
+              ▌ Illustrative · Tuned per the four selections above
+            </p>
+          </div>
+          <button
+            id="scope-reset"
+            class="font-mono text-[10px] uppercase tracking-widest text-muted hover:text-fg-strong transition-colors"
+          >
+            ↻ Reset choices
+          </button>
+        </div>
+
+        {/* Hero stats */}
+        <dl class="grid grid-cols-2 md:grid-cols-4 gap-px bg-border-hairline rounded-lg overflow-hidden">
+          <div class="bg-surface px-6 py-7">
+            <dt class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Duration</dt>
+            <dd class="font-display text-3xl md:text-4xl font-bold text-fg-strong mt-3 leading-none tabular-nums" id="out-duration">—</dd>
+          </div>
+          <div class="bg-surface px-6 py-7">
+            <dt class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Core team</dt>
+            <dd class="font-display text-3xl md:text-4xl font-bold text-fg-strong mt-3 leading-none tabular-nums" id="out-team-count">—</dd>
+          </div>
+          <div class="bg-surface px-6 py-7">
+            <dt class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Key deliverables</dt>
+            <dd class="font-display text-3xl md:text-4xl font-bold text-fg-strong mt-3 leading-none tabular-nums" id="out-deliv-count">—</dd>
+          </div>
+          <div class="bg-surface px-6 py-7">
+            <dt class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">First milestone</dt>
+            <dd class="font-display text-lg md:text-xl font-bold text-fg-strong mt-3 leading-tight" id="out-first-milestone">—</dd>
+          </div>
+        </dl>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          {/* Team */}
+          <div class="bg-surface border border-border-hairline rounded-lg p-6">
+            <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">▌ Team composition</div>
+            <h3 class="font-display text-lg font-bold text-fg-strong mt-1">Who would be on this</h3>
+            <ul class="mt-4 space-y-2" id="out-team-list"></ul>
+          </div>
+
+          {/* Deliverables */}
+          <div class="bg-surface border border-border-hairline rounded-lg p-6">
+            <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">▌ Key deliverables</div>
+            <h3 class="font-display text-lg font-bold text-fg-strong mt-1">What you'd get</h3>
+            <ul class="mt-4 space-y-2" id="out-deliv-list"></ul>
+          </div>
+        </div>
+
+        {/* 90-day roadmap */}
+        <div class="bg-surface border border-border-hairline rounded-lg p-6 mt-6">
+          <div class="flex items-baseline justify-between gap-4 flex-wrap">
+            <div>
+              <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">▌ First 90 days</div>
+              <h3 class="font-display text-lg font-bold text-fg-strong mt-1">How we'd open</h3>
+            </div>
+            <span class="font-mono text-[10px] uppercase tracking-widest text-muted">3 phases · 30 days each</span>
+          </div>
+          <ol class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4" id="out-roadmap"></ol>
+        </div>
+
+        {/* CTA */}
+        <div class="mt-10 bg-surface border border-accent/40 rounded-lg p-8 text-center">
+          <h3 class="font-display text-2xl md:text-3xl font-bold text-fg-strong leading-tight">
+            Ready to scope this for real?
+          </h3>
+          <p class="mt-3 text-muted leading-relaxed max-w-xl mx-auto">
+            We'll start with a 30-minute call to confirm the scope, run a sanity
+            check on the assumptions, and tell you honestly if we're the right fit.
+          </p>
+          <div class="mt-6 flex justify-center gap-3 flex-wrap">
+            <a
+              id="out-cta-link"
+              href="/contact"
+              class="inline-flex items-center justify-center font-mono text-xs uppercase tracking-widest bg-accent text-bg px-6 py-3 rounded transition-all hover:brightness-110"
+            >
+              Schedule a scoping call
+            </a>
+            <a
+              href="/capabilities"
+              class="inline-flex items-center justify-center font-mono text-xs uppercase tracking-widest border border-border-hairline text-fg px-6 py-3 rounded transition-all hover:border-accent hover:text-accent"
+            >
+              Capabilities statement
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Disclaimer */}
+      <p class="mt-8 text-center text-[11px] text-muted leading-relaxed max-w-2xl mx-auto">
+        Ranges and team compositions reflect typical OCEANS engagements with similar
+        characteristics. Your actual scope will depend on validated requirements,
+        contract vehicle, security posture, and the specific stakeholders involved.
+      </p>
+    </div>
+  </section>
+</PageLayout>
+
+<script is:inline>
+  (function () {
+    // ── Configuration matrix ──────────────────────────────────
+    const BASE_DURATION = {
+      requirements: [6, 9],
+      se: [12, 18],
+      rdte: [14, 20],
+      missiondata: [9, 14],
+    };
+    const SCOPE_MULT = { single: 1.0, multi: 1.4, program: 1.8 };
+    const STAGE_DELTA = { prerfp: 2, active: 0, sustainment: -2, rebaseline: 1 };
+    const POSTURE_MULT = { standard: 1.0, accelerated: 0.75, surge: null };
+
+    const TEAMS = {
+      requirements: ["Lead requirements engineer", "Operational analyst", "Use-case lead"],
+      se: ["Lead systems architect", "Integration engineer", "Integration engineer", "Lifecycle cybersecurity lead"],
+      rdte: ["Lead test designer", "Mission-thread analyst", "White Team lead", "Data analyst"],
+      missiondata: ["Lead ontologist", "Schema engineer", "COP / visualization designer", "Acceptance criteria lead"],
+    };
+    const SCOPE_TEAM_ADD = {
+      single: [],
+      multi: ["Program manager", "Additional integration engineer"],
+      program: ["Program manager", "Additional integration engineer", "Additional cybersecurity engineer", "Stakeholder liaison"],
+    };
+
+    const DELIVERABLES = {
+      requirements: ["Operational gap analysis", "Use-case decomposition document", "Capability-to-requirement mapping", "Traceability matrix (live, queryable)", "Performance threshold definitions"],
+      se: ["Integration architecture document", "Concept of Operations (CONOPS)", "Interface specifications", "Lifecycle cybersecurity overlay (NIST 800-53)", "Procurement-ready baseline"],
+      rdte: ["MOE/MOP framework", "Test plan (signed before execution)", "Mission-thread test cards", "Quantitative assessment report", "Findings backlog with traceability"],
+      missiondata: ["Ontology specification", "Schema mapping document", "COP design with operational distinctions preserved", "Acceptance criteria with thresholds", "Lifecycle data governance plan"],
+    };
+    const STAGE_DELIV_ADD = {
+      prerfp: ["Draft acquisition strategy outline"],
+      active: ["Inherited-baseline gap analysis"],
+      sustainment: ["Block-upgrade impact assessment"],
+      rebaseline: ["Root-cause analysis report", "Recovery plan with milestones"],
+    };
+
+    const ROADMAPS = {
+      prerfp: [
+        { phase: "Days 1–30", title: "Stakeholder alignment", desc: "Three-way alignment workshop: program office, operators, approving authority. One-page success agreement signed." },
+        { phase: "Days 31–60", title: "Mission gap document", desc: "Decompose validated needs into mission threads; map gaps against current capability." },
+        { phase: "Days 61–90", title: "Draft acquisition path", desc: "Recommended strategy with TRL assessment, DOTMLPF-P analysis, and risk register." },
+      ],
+      active: [
+        { phase: "Days 1–30", title: "Inherit + audit", desc: "Walk the inherited baseline. Identify requirements that won't survive operational scrutiny." },
+        { phase: "Days 31–60", title: "Framework lock", desc: "Negotiate MOE/MOP framework and thresholds. Get the success agreement signed." },
+        { phase: "Days 61–90", title: "First deliverable draft", desc: "Working draft of the first contract deliverable, reviewed with stakeholders before formal submission." },
+      ],
+      sustainment: [
+        { phase: "Days 1–30", title: "Inventory audit", desc: "What's actually deployed vs. what the records say. Resolve discrepancies." },
+        { phase: "Days 31–60", title: "Findings backlog", desc: "Document gaps between fielded capability and current mission need; prioritize by operational impact." },
+        { phase: "Days 61–90", title: "Block-upgrade proposal", desc: "Scoped recommendation for the next block upgrade with cost and schedule estimate." },
+      ],
+      rebaseline: [
+        { phase: "Days 1–30", title: "Stop-gap controls", desc: "Identify what's actively failing and put short-term controls in place. Stabilize before redesigning." },
+        { phase: "Days 31–60", title: "Root-cause analysis", desc: "Trace failures back to upstream decisions — usually requirements drift or stakeholder misalignment." },
+        { phase: "Days 61–90", title: "Recovery plan", desc: "Restructured engagement plan with revised milestones, scope, and success criteria. Re-baseline approval package." },
+      ],
+    };
+
+    const FIRST_MILESTONE = {
+      prerfp: "Success agreement",
+      active: "Framework lock",
+      sustainment: "Inventory audit",
+      rebaseline: "Stop-gap controls",
+    };
+
+    // ── State ─────────────────────────────────────────────────
+    const choices = { type: null, scope: null, stage: null, posture: null };
+
+    // ── DOM ───────────────────────────────────────────────────
+    const empty = document.getElementById("scope-empty");
+    const result = document.getElementById("scope-result");
+    const outDuration = document.getElementById("out-duration");
+    const outTeamCount = document.getElementById("out-team-count");
+    const outDelivCount = document.getElementById("out-deliv-count");
+    const outFirstMilestone = document.getElementById("out-first-milestone");
+    const outTeamList = document.getElementById("out-team-list");
+    const outDelivList = document.getElementById("out-deliv-list");
+    const outRoadmap = document.getElementById("out-roadmap");
+    const outCta = document.getElementById("out-cta-link");
+
+    function setSelectedStyle() {
+      document.querySelectorAll(".scope-opt").forEach((label) => {
+        const input = label.querySelector('input[type="radio"]');
+        if (input && input.checked) {
+          label.classList.add("border-accent");
+          label.classList.add("bg-accent/5");
+        } else {
+          label.classList.remove("border-accent");
+          label.classList.remove("bg-accent/5");
+        }
+      });
+    }
+
+    function compute() {
+      const { type, scope, stage, posture } = choices;
+      if (!type || !scope || !stage || !posture) return null;
+
+      const base = BASE_DURATION[type];
+      const scopeMult = SCOPE_MULT[scope];
+      const stageDelta = STAGE_DELTA[stage];
+      let durLabel;
+      if (posture === "surge") {
+        durLabel = "3 months";
+      } else {
+        const postureMult = POSTURE_MULT[posture];
+        const lo = Math.max(1, Math.round((base[0] * scopeMult + stageDelta) * postureMult));
+        const hi = Math.max(lo + 1, Math.round((base[1] * scopeMult + stageDelta) * postureMult));
+        durLabel = `${lo}–${hi} months`;
+      }
+
+      const team = [...TEAMS[type], ...SCOPE_TEAM_ADD[scope]];
+      const deliverables = [...DELIVERABLES[type], ...STAGE_DELIV_ADD[stage]];
+      const roadmap = ROADMAPS[stage];
+      const firstMilestone = FIRST_MILESTONE[stage];
+
+      return { durLabel, team, deliverables, roadmap, firstMilestone };
+    }
+
+    function labelFor(qId, value) {
+      const groups = {
+        type: { requirements: "Requirements", se: "Systems Engineering", rdte: "RDT&E", missiondata: "Mission Data" },
+        scope: { single: "Single capability", multi: "Multi-capability", program: "Program-wide" },
+        stage: { prerfp: "Pre-RFP", active: "Active acquisition", sustainment: "Sustainment", rebaseline: "Re-baseline" },
+        posture: { standard: "Standard pace", accelerated: "Accelerated", surge: "Surge (90-day)" },
+      };
+      return groups[qId][value] || value;
+    }
+
+    function render() {
+      const out = compute();
+      if (!out) {
+        empty.classList.remove("hidden");
+        result.classList.add("hidden");
+        return;
+      }
+      empty.classList.add("hidden");
+      result.classList.remove("hidden");
+
+      outDuration.textContent = out.durLabel;
+      outTeamCount.textContent = String(out.team.length);
+      outDelivCount.textContent = String(out.deliverables.length);
+      outFirstMilestone.textContent = out.firstMilestone;
+
+      outTeamList.innerHTML = out.team
+        .map((r) => `<li class="flex items-start gap-3"><span class="inline-block w-1.5 h-1.5 rounded-full bg-accent mt-2.5 shrink-0"></span><span class="text-sm md:text-base text-fg leading-relaxed">${r}</span></li>`)
+        .join("");
+      outDelivList.innerHTML = out.deliverables
+        .map((d) => `<li class="flex items-start gap-3"><span class="inline-block w-1.5 h-1.5 rounded-full bg-accent mt-2.5 shrink-0"></span><span class="text-sm md:text-base text-fg leading-relaxed">${d}</span></li>`)
+        .join("");
+      outRoadmap.innerHTML = out.roadmap
+        .map(
+          (p, i) => `
+        <li class="bg-bg-2 border border-border-hairline rounded-md p-4">
+          <div class="font-mono text-[10px] uppercase tracking-widest text-accent">${p.phase}</div>
+          <div class="mt-2 font-display text-base font-bold text-fg-strong">${p.title}</div>
+          <p class="mt-2 text-[13px] text-muted leading-relaxed">${p.desc}</p>
+        </li>`
+        )
+        .join("");
+
+      // Build pre-filled contact link
+      const summary = [
+        labelFor("type", choices.type),
+        labelFor("scope", choices.scope),
+        labelFor("stage", choices.stage),
+        labelFor("posture", choices.posture),
+      ];
+      const subject = `Scope: ${summary.join(" · ")}`;
+      const message =
+        `I used the Engagement Calculator with these selections:\n\n` +
+        ` • Type: ${labelFor("type", choices.type)}\n` +
+        ` • Scope: ${labelFor("scope", choices.scope)}\n` +
+        ` • Stage: ${labelFor("stage", choices.stage)}\n` +
+        ` • Posture: ${labelFor("posture", choices.posture)}\n\n` +
+        `Suggested engagement: ${out.durLabel}, ~${out.team.length} core roles, ${out.deliverables.length} key deliverables.\n\n` +
+        `Happy to talk through whether this fits our actual program.`;
+      const params = new URLSearchParams({ subject, message });
+      outCta.setAttribute("href", `/contact?${params.toString()}`);
+    }
+
+    // ── Wire up radios ────────────────────────────────────────
+    document.querySelectorAll('input[type="radio"]').forEach((r) => {
+      r.addEventListener("change", () => {
+        if (choices.hasOwnProperty(r.name)) {
+          choices[r.name] = r.value;
+          setSelectedStyle();
+          render();
+        }
+      });
+    });
+
+    // ── Reset ──────────────────────────────────────────────────
+    document.getElementById("scope-reset")?.addEventListener("click", () => {
+      Object.keys(choices).forEach((k) => (choices[k] = null));
+      document.querySelectorAll('input[type="radio"]').forEach((r) => (r.checked = false));
+      setSelectedStyle();
+      render();
+      document.getElementById("scope-questions")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  })();
+</script>

@@ -1,0 +1,279 @@
+---
+/**
+ * CommandPalette — ⌘K / Ctrl+K site search.
+ *
+ * Lazy-loads /search-index.json on first open. Fuzzy-matches title +
+ * summary + keywords, groups results by kind, keyboard-navigable
+ * (↑ ↓ Enter, Esc).
+ */
+---
+<!-- Modal -->
+<div
+  id="cmdk-modal"
+  hidden
+  class="fixed inset-0 z-[60] grid place-items-start pt-[10vh] px-4"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Site search"
+>
+  <div id="cmdk-backdrop" class="absolute inset-0 bg-bg/80 backdrop-blur-sm"></div>
+
+  <div class="relative w-full max-w-xl bg-surface border border-border-hairline rounded-lg shadow-2xl overflow-hidden">
+    <div class="flex items-center gap-3 px-5 py-4 border-b border-border-hairline">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="text-muted" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        id="cmdk-input"
+        type="text"
+        placeholder="Search services, terms, case studies, posts…"
+        autocomplete="off"
+        spellcheck="false"
+        class="flex-1 bg-transparent text-fg-strong placeholder:text-muted focus:outline-none font-display text-base"
+        aria-label="Search query"
+        aria-autocomplete="list"
+        aria-controls="cmdk-results"
+      />
+      <kbd class="font-mono text-[9px] uppercase tracking-widest text-muted border border-border-hairline rounded px-1.5 py-0.5">Esc</kbd>
+    </div>
+
+    <ul
+      id="cmdk-results"
+      class="max-h-[60vh] overflow-y-auto py-1"
+      role="listbox"
+    ></ul>
+
+    <div class="flex items-center justify-between gap-3 px-5 py-2.5 border-t border-border-hairline bg-bg-2">
+      <span class="font-mono text-[10px] uppercase tracking-widest text-muted">
+        <kbd class="border border-border-hairline rounded px-1 py-0">↑</kbd>
+        <kbd class="border border-border-hairline rounded px-1 py-0">↓</kbd>
+        navigate · <kbd class="border border-border-hairline rounded px-1 py-0">↵</kbd> open
+      </span>
+      <span class="font-mono text-[10px] uppercase tracking-widest text-accent" id="cmdk-count">—</span>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    // Trigger lives in the nav (CommandPaletteTrigger). We listen for any
+    // element with [data-cmdk-trigger] so themes can add their own variants.
+    const triggers = document.querySelectorAll("[data-cmdk-trigger]");
+    const modal = document.getElementById("cmdk-modal");
+    const backdrop = document.getElementById("cmdk-backdrop");
+    const input = document.getElementById("cmdk-input");
+    const list = document.getElementById("cmdk-results");
+    const count = document.getElementById("cmdk-count");
+
+    /** @type {Array<{title: string, url: string, kind: string, summary?: string, keywords?: string}>} */
+    let index = [];
+    let loaded = false;
+    let selectedIdx = 0;
+    /** @type {Array<{ entry: any, score: number }>} */
+    let results = [];
+
+    async function loadIndex() {
+      if (loaded) return;
+      try {
+        const r = await fetch("/search-index.json");
+        index = await r.json();
+        loaded = true;
+      } catch (e) {
+        console.error("Search index failed to load", e);
+      }
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+      );
+    }
+
+    function highlight(text, query) {
+      if (!query) return escapeHtml(text);
+      const safe = escapeHtml(text);
+      // case-insensitive substring highlight; multi-word: highlight each token
+      const tokens = query
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((t) => t.length > 0);
+      let out = safe;
+      tokens.forEach((t) => {
+        // escape regex specials
+        const escaped = t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        out = out.replace(
+          new RegExp(`(${escaped})`, "ig"),
+          '<mark class="bg-accent/30 text-fg-strong rounded-sm">$1</mark>'
+        );
+      });
+      return out;
+    }
+
+    function scoreEntry(entry, query) {
+      if (!query) return 1;
+      const q = query.toLowerCase();
+      const haystack = `${entry.title} ${entry.summary || ""} ${entry.keywords || ""}`.toLowerCase();
+      const title = entry.title.toLowerCase();
+
+      // Hard miss
+      if (!haystack.includes(q.split(" ")[0])) {
+        // Try multi-word AND match
+        const tokens = q.split(/\s+/).filter(Boolean);
+        if (!tokens.every((t) => haystack.includes(t))) return 0;
+      }
+
+      let score = 0;
+      if (title === q) score += 1000;
+      if (title.startsWith(q)) score += 200;
+      if (title.includes(q)) score += 100;
+
+      // Sum of token positions — earlier = better
+      const tokens = q.split(/\s+/).filter(Boolean);
+      tokens.forEach((t) => {
+        const i = haystack.indexOf(t);
+        if (i >= 0) score += Math.max(0, 50 - i);
+      });
+
+      // Kind weight
+      const KIND_BOOST = {
+        Service: 12,
+        Page: 10,
+        "Case study": 8,
+        Glossary: 6,
+        Journal: 5,
+        Team: 3,
+        "Open role": 3,
+      };
+      score += KIND_BOOST[entry.kind] || 0;
+      return score;
+    }
+
+    function search(query) {
+      if (!loaded) return [];
+      const scored = index
+        .map((e) => ({ entry: e, score: scoreEntry(e, query) }))
+        .filter((r) => r.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 20);
+      return scored;
+    }
+
+    function render() {
+      const q = input.value.trim();
+      results = search(q);
+      selectedIdx = 0;
+
+      if (!loaded) {
+        list.innerHTML = '<li class="px-5 py-6 text-muted text-sm">Loading…</li>';
+        count.textContent = "—";
+        return;
+      }
+      if (results.length === 0) {
+        list.innerHTML = q
+          ? `<li class="px-5 py-6 text-muted text-sm">No matches for <span class="text-fg-strong">"${escapeHtml(q)}"</span></li>`
+          : '<li class="px-5 py-6 text-muted text-sm">Type to search across services, terms, case studies, journal entries, team members…</li>';
+        count.textContent = "0";
+        return;
+      }
+      count.textContent = String(results.length);
+
+      list.innerHTML = results
+        .map(({ entry }, i) => {
+          const isSelected = i === selectedIdx;
+          return `
+          <li role="option" aria-selected="${isSelected}">
+            <a
+              href="${entry.url}"
+              data-cmdk-item="${i}"
+              class="block px-5 py-3 border-l-2 transition-colors ${isSelected ? "bg-accent/10 border-accent" : "border-transparent hover:bg-bg-2"}"
+            >
+              <div class="flex items-center gap-3">
+                <span class="font-mono text-[9px] uppercase tracking-widest text-accent shrink-0">${entry.kind}</span>
+                <span class="font-display text-sm font-bold text-fg-strong">${highlight(entry.title, q)}</span>
+              </div>
+              ${entry.summary ? `<p class="mt-1 text-[12px] text-muted leading-relaxed line-clamp-1">${highlight(entry.summary, q)}</p>` : ""}
+            </a>
+          </li>`;
+        })
+        .join("");
+    }
+
+    function moveSelection(delta) {
+      if (results.length === 0) return;
+      selectedIdx = (selectedIdx + delta + results.length) % results.length;
+      list.querySelectorAll("[data-cmdk-item]").forEach((el, i) => {
+        if (i === selectedIdx) {
+          el.classList.add("bg-accent/10", "border-accent");
+          el.classList.remove("border-transparent");
+          el.parentElement?.setAttribute("aria-selected", "true");
+          el.scrollIntoView({ block: "nearest" });
+        } else {
+          el.classList.remove("bg-accent/10", "border-accent");
+          el.classList.add("border-transparent");
+          el.parentElement?.setAttribute("aria-selected", "false");
+        }
+      });
+    }
+
+    function open() {
+      modal?.removeAttribute("hidden");
+      document.body.style.overflow = "hidden";
+      input.value = "";
+      render();
+      setTimeout(() => input?.focus(), 0);
+      loadIndex().then(() => render());
+    }
+    function close() {
+      modal?.setAttribute("hidden", "");
+      document.body.style.overflow = "";
+    }
+
+    triggers.forEach((t) => t.addEventListener("click", open));
+    backdrop?.addEventListener("click", close);
+
+    document.addEventListener("keydown", (e) => {
+      // ⌘K / Ctrl+K to open
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        if (modal?.hasAttribute("hidden")) open();
+        else close();
+        return;
+      }
+      // / to open (when not focused in an input)
+      if (
+        e.key === "/" &&
+        !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName || "")
+      ) {
+        if (modal?.hasAttribute("hidden")) {
+          e.preventDefault();
+          open();
+        }
+        return;
+      }
+      if (modal?.hasAttribute("hidden")) return;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        close();
+        return;
+      }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        moveSelection(1);
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        moveSelection(-1);
+        return;
+      }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const link = list.querySelector(`[data-cmdk-item="${selectedIdx}"]`);
+        if (link) (link).click();
+      }
+    });
+
+    input?.addEventListener("input", render);
+  })();
+</script>

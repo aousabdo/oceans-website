@@ -4,6 +4,7 @@ import { ACTIVE_THEME } from "@lib/theme";
 import { buildSeo, type SeoInput } from "@lib/seo";
 import { organizationLd, websiteLd } from "@lib/schema";
 import BackToTop from "@components/BackToTop.astro";
+import CommandPalette from "@components/CommandPalette.astro";
 
 interface Props extends Omit<SeoInput, "path"> {
   path?: string;
@@ -26,29 +27,46 @@ const fontHrefs: Record<typeof ACTIVE_THEME, string> = {
   mariner:
     "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap",
 };
+
+// theme-color matches the page <body> background per theme (used by mobile
+// browsers to tint the status bar / toolbar).
+const themeColors: Record<typeof ACTIVE_THEME, string> = {
+  operator: "#0F1A2F",   // deep navy
+  institute: "#F8F8F5",  // warm off-white
+  mariner: "#E8F0F5",    // pale sky
+};
 ---
 <!doctype html>
 <html lang="en" data-theme={ACTIVE_THEME}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content={themeColors[ACTIVE_THEME]} />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
     <title>{seo.title}</title>
     <meta name="description" content={seo.description} />
     <link rel="canonical" href={seo.url} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/og-default.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href={fontHrefs[ACTIVE_THEME]} />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:title" content={seo.title} />
     <meta property="og:description" content={seo.description} />
     <meta property="og:type" content={seo.type} />
     <meta property="og:url" content={seo.url} />
     <meta property="og:image" content={seo.image} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${seo.siteName} — ${seo.title}`} />
     <meta property="og:site_name" content={seo.siteName} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={seo.title} />
     <meta name="twitter:description" content={seo.description} />
     <meta name="twitter:image" content={seo.image} />
+    <meta name="twitter:image:alt" content={`${seo.siteName} — ${seo.title}`} />
     <link rel="alternate" type="application/rss+xml" title="OCEANS Journal" href="/rss.xml" />
     <script type="application/ld+json" set:html={JSON.stringify(organizationLd())} />
     <script type="application/ld+json" set:html={JSON.stringify(websiteLd())} />
@@ -66,6 +84,7 @@ const fontHrefs: Record<typeof ACTIVE_THEME, string> = {
     </main>
     <slot name="footer" />
     <BackToTop />
+    <CommandPalette />
     <script is:inline>
       // Scroll-reveal — flag below-the-fold sections, animate them in on view.
       (function () {

@@ -96,4 +96,21 @@ import Turnstile from "@components/Turnstile.astro";
       </div>
     </div>
   </section>
+
+  <script is:inline>
+    // Pre-fill subject + message from URL params (used by /scope Engagement Calculator)
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const subject = params.get("subject");
+      const message = params.get("message");
+      if (subject) {
+        const el = document.querySelector('input[name="subject"], textarea[name="subject"]');
+        if (el) el.value = subject;
+      }
+      if (message) {
+        const el = document.querySelector('textarea[name="message"]');
+        if (el) el.value = message;
+      }
+    })();
+  </script>
 </PageLayout>
