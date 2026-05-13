@@ -49,6 +49,7 @@ const TOP_PAGES: IndexEntry[] = [
   { title: "Careers", url: "/careers", kind: "Page", summary: "Open roles and how to apply." },
   { title: "Journal", url: "/blog", kind: "Page", summary: "Practitioner notes on T&E, requirements, and federal engineering.", keywords: "blog articles writing" },
   { title: "Glossary", url: "/glossary", kind: "Page", summary: "Federal-engineering terms defined plainly.", keywords: "definitions terms vocabulary" },
+  { title: "FAQ", url: "/faq", kind: "Page", summary: "Procurement, compliance, how-we-engage, and capabilities questions.", keywords: "questions answers cage uei naics clearance cmmc nda contract vehicles" },
   { title: "Contact", url: "/contact", kind: "Page", summary: "Start a conversation with OCEANS." },
   { title: "Privacy", url: "/privacy", kind: "Page" },
   { title: "Terms", url: "/terms", kind: "Page" },

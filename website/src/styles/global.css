@@ -178,3 +178,107 @@
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   Print stylesheet.
+   Designed for federal procurement officers who actually print
+   capabilities statements, case studies, and FAQ pages. Strips
+   navigation, sticky elements, animations, and dark theme tinting;
+   pulls text to black-on-white; reveals URLs after links so the
+   reader can find them later.
+───────────────────────────────────────────────────────────────── */
+@media print {
+  /* Force light, readable defaults regardless of active theme */
+  :root,
+  [data-theme] {
+    --color-bg: #ffffff;
+    --color-bg-2: #ffffff;
+    --color-surface: #ffffff;
+    --color-surface-2: #ffffff;
+    --color-fg: #000000;
+    --color-fg-strong: #000000;
+    --color-muted: #444444;
+    --color-accent: #000000;
+    --color-border-hairline: #888888;
+  }
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt;
+    line-height: 1.45;
+  }
+  body * {
+    cursor: auto !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Strip non-content chrome */
+  nav,
+  footer,
+  #sticky-cta,
+  #cmdk-modal,
+  #cmdk-trigger,
+  [data-cmdk-trigger],
+  [id="back-to-top"],
+  [aria-label="Back to top"],
+  [data-section-divider],
+  .pmap-pulse,
+  [data-newsletter-root] {
+    display: none !important;
+  }
+
+  /* Compact metric callouts so they fit on a page */
+  dl[class*="grid"] dd {
+    font-size: 16pt !important;
+    margin-top: 4pt !important;
+  }
+  dl[class*="grid"] dt {
+    font-size: 8pt !important;
+  }
+
+  /* Headings */
+  h1 { font-size: 22pt; margin: 0 0 8pt; page-break-after: avoid; }
+  h2 { font-size: 14pt; margin: 16pt 0 6pt; page-break-after: avoid; }
+  h3 { font-size: 12pt; margin: 12pt 0 4pt; page-break-after: avoid; }
+
+  /* Links — reveal URL after the text, except for internal anchors */
+  a[href^="http"]:not(.no-print-url)::after,
+  a[href^="mailto:"]:not(.no-print-url)::after {
+    content: " (" attr(href) ") ";
+    font-size: 9pt;
+    color: #555;
+    word-break: break-all;
+  }
+  a[href^="/"]::after {
+    content: " (oceansllc.com" attr(href) ") ";
+    font-size: 9pt;
+    color: #555;
+  }
+  a { color: #000; text-decoration: underline; }
+
+  /* Sections shouldn't break awkwardly */
+  section, article, dt, dd, li { page-break-inside: avoid; }
+  img { max-width: 100% !important; height: auto !important; }
+  svg { max-width: 100%; }
+
+  /* Hide hover states on partner tooltips, dropdowns, etc. */
+  .partner-tooltip { display: none !important; }
+
+  /* Add a print-only header to every page */
+  body::before {
+    content: "OCEANS LLC · Jacksonville, FL · oceansllc.com · info@oceansllc.com";
+    display: block;
+    font-family: ui-monospace, monospace;
+    font-size: 8pt;
+    color: #444;
+    border-bottom: 1px solid #888;
+    padding-bottom: 6pt;
+    margin-bottom: 12pt;
+  }
+
+  /* Page margins */
+  @page {
+    margin: 0.75in;
+  }
+}

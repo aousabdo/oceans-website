@@ -1,0 +1,242 @@
+---
+/**
+ * /faq — common questions federal customers (and partners) ask before
+ * engaging OCEANS. Plain language. No hedging.
+ *
+ * Grouped into sections; each FAQ is a <details> for native disclosure
+ * UX + keyboard accessibility + no-JS support. The first in each group
+ * defaults to open.
+ */
+import PageLayout from "@layouts/PageLayout.astro";
+import SectionLabel from "@components/SectionLabel.astro";
+import Eyebrow from "@components/Eyebrow.astro";
+import Button from "@components/Button.astro";
+
+interface QA {
+  q: string;
+  a: string;
+}
+interface Group {
+  label: string;
+  intro?: string;
+  items: QA[];
+}
+
+const groups: Group[] = [
+  {
+    label: "Procurement & Contracting",
+    items: [
+      {
+        q: "Are you registered in SAM.gov and what's your CAGE / UEI?",
+        a: "Yes — OCEANS is actively registered in SAM.gov. CAGE and UEI are on our current capabilities statement, which we send by email upon request to keep them out of public scraping. Email info@oceansllc.com and we'll have it in your inbox within two business days.",
+      },
+      {
+        q: "What NAICS codes do you operate under?",
+        a: "Primary: 541330 (Engineering Services). Secondary: 541715 (R&D in the Physical, Engineering, and Life Sciences) and 541512 (Computer Systems Design). Most program offices write to one of these — if yours uses a different code, tell us and we'll confirm fit.",
+      },
+      {
+        q: "What contract vehicles do you work through?",
+        a: "We perform as a prime on direct awards under FAR Part 12 and Part 15, and we sub through teaming partners on GSA MAS, OASIS+, SeaPort-NxG, and similar IDIQs. For specific vehicle access, ask — we'll tell you straight what we hold and what we can reach through teaming.",
+      },
+      {
+        q: "Do you do small-business set-aside work?",
+        a: "OCEANS is a small business under the SBA size standard for NAICS 541330. We pursue set-aside opportunities where they're a fit; we won't go after work we can't deliver well, regardless of socioeconomic category.",
+      },
+      {
+        q: "What's your typical engagement length?",
+        a: "Most engagements run 12-24 months. We also do shorter surge engagements (~90 days) when a program needs targeted help with a specific decision or deliverable. Use the Scope an Engagement tool to see what a typical project of your shape would look like.",
+      },
+    ],
+  },
+  {
+    label: "Compliance & Security",
+    items: [
+      {
+        q: "What clearances does your team hold?",
+        a: "Our principals hold active clearances appropriate to the federal customers we support; specific levels are shared under standard need-to-know with program security officers. For unclassified work we operate at the controlled-unclassified-information (CUI) level by default.",
+      },
+      {
+        q: "How do you handle CUI / FOUO data?",
+        a: "We follow NIST SP 800-171 controls for any CUI we touch. Our IT environment is built around that baseline rather than retrofitted to it — encrypted devices, MFA, conditional access, audit logging, and we don't process customer data on consumer cloud services.",
+      },
+      {
+        q: "Are you CMMC-aligned?",
+        a: "We track CMMC requirements and align our control implementations to Level 2 expectations for the work we do. We can map our controls to your program's specific CMMC posture during scoping.",
+      },
+      {
+        q: "Do you have any foreign ownership, control, or influence?",
+        a: "No. OCEANS is wholly US-owned with no foreign control or financial dependencies. We've completed the standard FOCI mitigation questionnaires for engagements that required them.",
+      },
+    ],
+  },
+  {
+    label: "How We Engage",
+    items: [
+      {
+        q: "How does a typical engagement start?",
+        a: "A 30-minute call. We confirm the scope, run a sanity check on the assumptions, and tell you honestly whether we're the right fit. If we're not, we'll say so and (usually) point you at someone who is. If we are, we send a one-page success agreement before any contracting paperwork moves.",
+      },
+      {
+        q: "Will you sign an NDA?",
+        a: "Yes — for any pre-contract discussion of sensitive program details. We have a standard NDA we can send, or we'll sign yours after counsel review. Either way, fast.",
+      },
+      {
+        q: "Do you work on-site, hybrid, or remote?",
+        a: "All three. Most engagements have a mix — periodic on-site for stakeholder alignment, design reviews, and operational test events; remote for analysis and documentation. We deliver from anywhere we have safe network access and the appropriate authorization for the data involved.",
+      },
+      {
+        q: "What does pricing look like?",
+        a: "Standard rates by labor category, published to customers under our contract vehicles. We don't do hourly-billing surprises — engagements are scoped to a not-to-exceed ceiling with a clear breakdown of phases. Specifics shared after a scoping call.",
+      },
+      {
+        q: "Do you do fixed-price work?",
+        a: "Yes — for scopes where the deliverable is well-defined upfront (e.g., a specific assessment report, a CONOPS, a defined architecture package). For T&E and exploratory work where the scope evolves with discovery, time-and-materials with a ceiling protects both sides better.",
+      },
+    ],
+  },
+  {
+    label: "Capabilities & Delivery",
+    items: [
+      {
+        q: "What if our program needs capabilities you don't have in-house?",
+        a: "We tell you. Then we either team with a partner who has them, or recommend you go to someone else for that part. OCEANS is deliberately narrow — systems engineering, T&E, mission data, requirements. We don't pretend to be a one-stop shop.",
+      },
+      {
+        q: "Can you act as prime on multi-discipline contracts?",
+        a: "Yes for engagements where the primary work falls within our practice areas, with subcontracted teaming for adjacencies. For broader scopes we usually team under a larger prime so the core work isn't diluted.",
+      },
+      {
+        q: "How do you handle a program that's already off the rails?",
+        a: "We don't pretend to fix a re-baseline overnight. The first 30 days are usually stop-gap controls + a root-cause read, then 60 days on a recovery plan with restructured milestones. The Scope an Engagement tool walks through this pattern under 'Re-baseline.'",
+      },
+      {
+        q: "Can you share full case-study read-outs?",
+        a: "The case studies on /experience are public-sanitized. Full read-outs — methodology details, quantitative findings, lessons learned — are available upon request consistent with applicable disclosure restrictions. Email info@oceansllc.com.",
+      },
+    ],
+  },
+  {
+    label: "Logistics",
+    items: [
+      {
+        q: "Where are you based?",
+        a: "Jacksonville, Florida. We deliver to customers across the US and FVEY allies.",
+      },
+      {
+        q: "How fast do you respond to inquiries?",
+        a: "Two business days for substantive replies. Same-day acknowledgment if you flag something urgent.",
+      },
+      {
+        q: "Do you support international customers?",
+        a: "Yes — FVEY (UK, Canada, Australia, New Zealand) and selected allied partners. International engagements run under the appropriate authorizations and disclosure frameworks for the data involved.",
+      },
+    ],
+  },
+];
+
+const totalQs = groups.reduce((a, g) => a + g.items.length, 0);
+---
+<PageLayout
+  title="Frequently asked"
+  description="Common questions federal customers ask before engaging OCEANS. Procurement, compliance, how we engage, capabilities, logistics."
+>
+  <!-- HERO -->
+  <section class="mx-auto max-w-4xl px-6 pt-20 pb-12">
+    <Eyebrow>FAQ</Eyebrow>
+    <h1 class="font-display text-5xl md:text-7xl font-bold text-fg-strong mt-4 leading-[1.05]">
+      Frequently asked.
+    </h1>
+    <p class="mt-8 text-lg md:text-xl text-muted leading-relaxed max-w-3xl">
+      Questions federal customers and partners ask before engaging OCEANS.
+      Procurement, compliance, how we work, what we do and don't do. {totalQs}
+      answers, plain language, no hedging.
+    </p>
+  </section>
+
+  <!-- TABLE OF CONTENTS -->
+  <section class="mx-auto max-w-4xl px-6 pb-10">
+    <div class="flex flex-wrap gap-2 border-y border-border-hairline py-4">
+      <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted self-center mr-2">Jump to:</span>
+      {
+        groups.map((g, i) => (
+          <a
+            href={`#group-${i}`}
+            class="font-mono text-[10px] uppercase tracking-widest text-accent hover:text-fg-strong transition-colors border border-border-hairline rounded px-2.5 py-1"
+          >
+            {g.label}
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- GROUPS -->
+  <section class="mx-auto max-w-4xl px-6 pb-16 space-y-16">
+    {
+      groups.map((g, gi) => (
+        <section id={`group-${gi}`} class="scroll-mt-20">
+          <SectionLabel>{g.label}</SectionLabel>
+          <h2 class="font-display text-3xl md:text-4xl font-bold text-fg-strong mt-3 mb-6 leading-tight">
+            {g.label}.
+          </h2>
+          {g.intro && <p class="mb-6 text-muted leading-relaxed max-w-2xl">{g.intro}</p>}
+          <ul class="space-y-3">
+            {g.items.map((qa, qi) => (
+              <li>
+                <details
+                  class="group bg-surface border border-border-hairline rounded-lg transition-all hover:border-accent/40 open:border-accent/40"
+                  open={gi === 0 && qi === 0}
+                >
+                  <summary class="cursor-pointer list-none px-5 py-4 flex items-start gap-4">
+                    <span class="font-mono text-[10px] uppercase tracking-widest text-accent shrink-0 mt-1">
+                      Q{String(qi + 1).padStart(2, "0")}
+                    </span>
+                    <span class="flex-1 font-display text-base md:text-lg font-bold text-fg-strong leading-snug">
+                      {qa.q}
+                    </span>
+                    <span
+                      class="font-mono text-lg text-accent shrink-0 transition-transform group-open:rotate-45"
+                      aria-hidden="true"
+                    >+</span>
+                  </summary>
+                  <div class="px-5 pb-5 pl-[3.6rem]">
+                    <p class="text-fg leading-relaxed">{qa.a}</p>
+                  </div>
+                </details>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </section>
+
+  <!-- CTA -->
+  <section class="bg-surface border-y border-border-hairline">
+    <div class="mx-auto max-w-3xl px-6 py-16 text-center">
+      <h2 class="font-display text-2xl md:text-3xl font-bold text-fg-strong leading-tight">
+        Question we didn't answer?
+      </h2>
+      <p class="mt-3 text-muted leading-relaxed max-w-xl mx-auto">
+        Ask directly — we'll answer in two business days, and add it here for
+        the next visitor.
+      </p>
+      <div class="mt-6 flex justify-center gap-3 flex-wrap">
+        <Button href="/contact" variant="primary" size="sm">Ask a question</Button>
+        <Button href="/scope" variant="outline" size="sm">Scope an engagement</Button>
+      </div>
+    </div>
+  </section>
+</PageLayout>
+
+<script type="application/ld+json" set:html={JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: groups.flatMap((g) =>
+    g.items.map((qa) => ({
+      "@type": "Question",
+      name: qa.q,
+      acceptedAnswer: { "@type": "Answer", text: qa.a },
+    }))
+  ),
+})} />

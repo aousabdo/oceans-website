@@ -1,5 +1,6 @@
 ---
 import Logo from "./Logo.astro";
+import NewsletterSignup from "./NewsletterSignup.astro";
 
 const year = new Date().getFullYear();
 const cols = [
@@ -25,7 +26,10 @@ const cols = [
     title: "Resources",
     links: [
       { href: "/capabilities", label: "Capabilities Statement" },
-      { href: "/blog", label: "Blog" },
+      { href: "/blog", label: "Journal" },
+      { href: "/glossary", label: "Mission Glossary" },
+      { href: "/scope", label: "Scope an Engagement" },
+      { href: "/faq", label: "FAQ" },
       { href: "/privacy", label: "Privacy" },
       { href: "/terms", label: "Terms" },
     ],
@@ -73,7 +77,21 @@ const cols = [
         ))
       }
     </div>
-    <div class="mt-12 pt-6 border-t border-border-hairline flex items-center justify-between">
+    <!-- Newsletter signup strip -->
+    <div class="mt-12 pt-10 border-t border-border-hairline grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-6 items-start">
+      <div>
+        <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">▌ The Journal</div>
+        <h3 class="font-display text-base font-bold text-fg-strong mt-2">Practitioner notes in your inbox.</h3>
+        <p class="mt-1 text-[12px] text-muted leading-relaxed max-w-sm">
+          Twice a month. Field-tested writing on federal engineering.
+        </p>
+      </div>
+      <div class="md:max-w-md md:justify-self-end w-full">
+        <NewsletterSignup source="footer" />
+      </div>
+    </div>
+
+    <div class="mt-10 pt-6 border-t border-border-hairline flex items-center justify-between flex-wrap gap-3">
       <p class="font-mono text-xs text-muted">
         © {year} <span class="text-fg">OCEANS LLC</span>. All rights reserved.
       </p>
