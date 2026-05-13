@@ -1,0 +1,289 @@
+---
+/**
+ * FromTheData — "From the data" visualizations strip.
+ *
+ * Three SVG mini-visualizations:
+ *  1. Partner growth sparkline (cumulative agencies over years operating)
+ *  2. Sector distribution donut (which sectors we've supported, by partner count)
+ *  3. Engagement domain stacked bar (federal / international / infrastructure mix)
+ *
+ * Numbers for the time-series are illustrative — backed by the real total partner
+ * count from partners.json but the year-by-year curve is interpolated. The donut
+ * and stacked bar derive purely from real partners.json data.
+ */
+import partnersData from "@/data/partners.json";
+import SectionLabel from "@components/SectionLabel.astro";
+
+interface Partner { section: string; agency: string; logo: string | null }
+const partners = partnersData as Partner[];
+
+// ── 1. Sector breakdown (donut + bars) ───────────────────────────────
+const sectionOrder = [
+  "Department of Homeland Security",
+  "Department of War",
+  "Additional Federal Entities",
+  "International Entities",
+  "Local Law Enforcement",
+  "Organizations, Local Entities, National Labs",
+  "Transit",
+  "Airports",
+];
+const sectionDisplay: Record<string, string> = {
+  "Department of Homeland Security": "DHS",
+  "Department of War": "DoD",
+  "Additional Federal Entities": "Other Federal",
+  "International Entities": "International",
+  "Local Law Enforcement": "Law Enforcement",
+  "Organizations, Local Entities, National Labs": "Orgs & Labs",
+  "Transit": "Transit / Rail",
+  "Airports": "Airports",
+};
+
+const sectorCounts = sectionOrder.map((s) => ({
+  label: sectionDisplay[s] ?? s,
+  raw: s,
+  count: partners.filter((p) => p.section === s).length,
+}));
+const total = sectorCounts.reduce((a, b) => a + b.count, 0);
+
+// Donut math
+const RADIUS = 70;
+const CIRC = 2 * Math.PI * RADIUS;
+let cumulative = 0;
+const slices = sectorCounts.map((s, i) => {
+  const frac = s.count / total;
+  const len = frac * CIRC;
+  const gap = CIRC - len;
+  const offset = -cumulative;
+  cumulative += len;
+  return { ...s, frac, len, gap, offset, i };
+});
+
+// ── 2. Engagement-domain stacked bar ───────────────────────────────
+const domainGroups = [
+  {
+    label: "Federal",
+    count: partners.filter((p) =>
+      ["Department of Homeland Security", "Department of War", "Additional Federal Entities"].includes(p.section)
+    ).length,
+  },
+  {
+    label: "International",
+    count: partners.filter((p) => p.section === "International Entities").length,
+  },
+  {
+    label: "Infrastructure",
+    count: partners.filter((p) =>
+      ["Transit", "Airports"].includes(p.section)
+    ).length,
+  },
+  {
+    label: "Law Enforcement",
+    count: partners.filter((p) => p.section === "Local Law Enforcement").length,
+  },
+  {
+    label: "Orgs & Labs",
+    count: partners.filter((p) => p.section === "Organizations, Local Entities, National Labs").length,
+  },
+];
+const domainTotal = domainGroups.reduce((a, b) => a + b.count, 0);
+
+// ── 3. Partner growth sparkline (illustrative) ─────────────────────
+// We know: founded 2013, today ~`total` partners. Smooth S-curve growth.
+const startYear = 2013;
+const currentYear = new Date().getFullYear();
+const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => startYear + i);
+
+// Logistic-ish curve: slow start, accelerating mid-period, plateauing recently.
+const growth = years.map((y, i) => {
+  const t = i / (years.length - 1); // 0 → 1
+  // S-curve: 4 / (1 + e^(-k(t-0.5)))
+  const k = 7;
+  const sigmoid = 1 / (1 + Math.exp(-k * (t - 0.5)));
+  const value = Math.round(sigmoid * total);
+  return { year: y, count: value };
+});
+// Ensure first is small and last is exactly total
+growth[0]!.count = Math.max(3, growth[0]!.count);
+growth[growth.length - 1]!.count = total;
+
+const SVG_W = 600;
+const SVG_H = 180;
+const PAD = { l: 32, r: 16, t: 16, b: 28 };
+const innerW = SVG_W - PAD.l - PAD.r;
+const innerH = SVG_H - PAD.t - PAD.b;
+const maxY = total;
+
+const px = (i: number) => PAD.l + (i / (years.length - 1)) * innerW;
+const py = (v: number) => PAD.t + innerH - (v / maxY) * innerH;
+
+const polyline = growth.map((p, i) => `${px(i)},${py(p.count)}`).join(" ");
+const area = `M ${px(0)},${py(0)} L ${growth.map((p, i) => `${px(i)},${py(p.count)}`).join(" L ")} L ${px(growth.length - 1)},${py(0)} Z`;
+---
+
+<section class="mx-auto max-w-6xl px-6 py-20">
+  <div class="flex items-end justify-between gap-6 flex-wrap mb-3">
+    <div>
+      <SectionLabel>From the data</SectionLabel>
+      <h2 class="font-display text-3xl md:text-4xl font-bold text-fg-strong mt-3 leading-tight">
+        Twelve years, eight sectors, one footprint.
+      </h2>
+      <p class="mt-3 text-muted max-w-2xl leading-relaxed">
+        The shape of our past performance — what we've actually supported, where, and how
+        that's grown since we opened in 2013. Sector and domain counts are real; the
+        year-over-year curve is illustrative.
+      </p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6 mt-10">
+    {/* ── Partner growth sparkline ───────────────────── */}
+    <div class="bg-surface border border-border-hairline rounded-lg p-6">
+      <div class="flex items-baseline justify-between gap-4 mb-4">
+        <div>
+          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">▌ Growth</div>
+          <h3 class="font-display text-base md:text-lg font-bold text-fg-strong mt-1">
+            Cumulative mission partners, {startYear}–{currentYear}
+          </h3>
+        </div>
+        <div class="text-right">
+          <div class="font-display text-2xl md:text-3xl font-bold text-fg-strong tabular-nums">{total}</div>
+          <div class="font-mono text-[10px] uppercase tracking-widest text-muted mt-0.5">today</div>
+        </div>
+      </div>
+
+      <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} class="w-full h-auto" role="img" aria-label={`Cumulative partner count from ${startYear} to ${currentYear}, ending at ${total}.`}>
+        <defs>
+          <linearGradient id="ftd-area" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="currentColor" stop-opacity="0.25" />
+            <stop offset="1" stop-color="currentColor" stop-opacity="0" />
+          </linearGradient>
+        </defs>
+
+        {/* Gridlines */}
+        <g class="text-muted" opacity="0.25" stroke="currentColor" stroke-width="0.5">
+          {[0, 0.5, 1].map((f) => (
+            <line x1={PAD.l} x2={SVG_W - PAD.r} y1={PAD.t + innerH * (1 - f)} y2={PAD.t + innerH * (1 - f)} />
+          ))}
+        </g>
+        {/* Y axis labels */}
+        <g class="text-muted" fill="currentColor" font-family="ui-monospace, monospace" font-size="9">
+          {[0, 0.5, 1].map((f) => (
+            <text x={PAD.l - 6} y={PAD.t + innerH * (1 - f) + 3} text-anchor="end">{Math.round(maxY * f)}</text>
+          ))}
+        </g>
+
+        {/* Area fill */}
+        <path d={area} fill="url(#ftd-area)" class="text-accent" />
+        {/* Line */}
+        <polyline points={polyline} fill="none" stroke="currentColor" stroke-width="2" class="text-accent" stroke-linecap="round" stroke-linejoin="round" />
+        {/* End dot */}
+        <circle cx={px(growth.length - 1)} cy={py(total)} r="4" fill="currentColor" class="text-accent" />
+
+        {/* X axis labels (every ~3 years) */}
+        <g class="text-muted" fill="currentColor" font-family="ui-monospace, monospace" font-size="9">
+          {years.map((y, i) => {
+            if (i === 0 || i === years.length - 1 || (y % 3 === 0 && i < years.length - 1)) {
+              return <text x={px(i)} y={SVG_H - 10} text-anchor="middle">{y}</text>;
+            }
+            return null;
+          })}
+        </g>
+      </svg>
+
+      <p class="mt-3 font-mono text-[10px] uppercase tracking-[0.15em] text-muted">
+        Illustrative · Real endpoint, smoothed curve
+      </p>
+    </div>
+
+    {/* ── Sector donut ───────────────────── */}
+    <div class="bg-surface border border-border-hairline rounded-lg p-6">
+      <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">▌ Sectors</div>
+      <h3 class="font-display text-base md:text-lg font-bold text-fg-strong mt-1">
+        Where the partners live
+      </h3>
+
+      <div class="mt-4 grid grid-cols-[140px_1fr] gap-5 items-center">
+        <svg viewBox="0 0 180 180" class="w-full h-auto" role="img" aria-label="Donut chart of sector breakdown across mission partners.">
+          {/* Background ring */}
+          <circle cx="90" cy="90" r={RADIUS} fill="none" stroke="var(--color-border-hairline)" stroke-width="22" />
+          {/* Sector arcs */}
+          {slices.map((s, i) => (
+            <circle
+              cx="90"
+              cy="90"
+              r={RADIUS}
+              fill="none"
+              stroke="currentColor"
+              stroke-width="22"
+              stroke-dasharray={`${s.len} ${s.gap}`}
+              stroke-dashoffset={s.offset}
+              transform="rotate(-90 90 90)"
+              class="text-accent"
+              style={`opacity: ${1 - i * 0.085};`}
+            />
+          ))}
+          {/* Center label */}
+          <text x="90" y="86" text-anchor="middle" font-family="'Syne', sans-serif" font-weight="800" font-size="28" fill="var(--color-fg-strong)" class="tabular-nums">
+            {total}
+          </text>
+          <text x="90" y="106" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" fill="var(--color-muted)" letter-spacing="2">PARTNERS</text>
+        </svg>
+
+        <ul class="space-y-1.5 text-[11px]">
+          {slices.map((s, i) => (
+            <li class="flex items-center justify-between gap-2">
+              <span class="flex items-center gap-2 min-w-0">
+                <span class="inline-block w-2 h-2 rounded-sm shrink-0 bg-accent" style={`opacity: ${1 - i * 0.085};`} aria-hidden="true"></span>
+                <span class="text-muted truncate">{s.label}</span>
+              </span>
+              <span class="font-mono text-fg-strong tabular-nums shrink-0">{s.count}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  {/* ── Domain mix stacked bar ───────────────────── */}
+  <div class="mt-6 bg-surface border border-border-hairline rounded-lg p-6">
+    <div class="flex items-baseline justify-between gap-4 mb-4 flex-wrap">
+      <div>
+        <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">▌ Domain mix</div>
+        <h3 class="font-display text-base md:text-lg font-bold text-fg-strong mt-1">
+          Engagements by domain
+        </h3>
+      </div>
+      <div class="font-mono text-[10px] uppercase tracking-widest text-muted">
+        n = {domainTotal} partners
+      </div>
+    </div>
+
+    {/* Stacked bar */}
+    <div class="flex h-9 rounded-md overflow-hidden border border-border-hairline" role="img" aria-label="Stacked bar of engagements by domain.">
+      {domainGroups.map((d, i) => {
+        const w = (d.count / domainTotal) * 100;
+        return (
+          <div
+            class="bg-accent text-bg flex items-center justify-center text-[10px] font-mono uppercase tracking-widest min-w-0"
+            style={`width: ${w}%; opacity: ${1 - i * 0.13};`}
+            title={`${d.label}: ${d.count} (${w.toFixed(0)}%)`}
+          >
+            {w >= 8 && <span class="px-2 truncate">{d.count}</span>}
+          </div>
+        );
+      })}
+    </div>
+
+    {/* Legend */}
+    <ul class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 text-[11px]">
+      {domainGroups.map((d, i) => (
+        <li class="flex items-center gap-2">
+          <span class="inline-block w-2.5 h-2.5 rounded-sm shrink-0 bg-accent" style={`opacity: ${1 - i * 0.13};`} aria-hidden="true"></span>
+          <span class="text-muted">{d.label}</span>
+          <span class="font-mono text-fg-strong tabular-nums ml-auto">{d.count}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

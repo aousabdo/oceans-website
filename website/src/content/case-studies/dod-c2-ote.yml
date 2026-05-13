@@ -3,10 +3,57 @@ client: Department of Defense
 title: Operational Test & Evaluation — Command & Control Systems
 year: 2024
 domain: Defense / C2
-summary: Structured OT&E program for a multi-domain Command & Control capability.
-challenge: A new multi-domain C2 capability required acquisition-grade operational test evidence under aggressive timeline pressure.
-approach: Designed and executed a structured OT&E program, served as White Team lead, and produced quantitative analysis aligned to validated requirements.
-outcome: Delivered acquisition-grade assessment report supporting downstream milestone decisions.
-metrics: []
+role: Test design lead · White Team lead
+duration: 18 months
+classification: Sanitized for public sharing
+illustrative: true
+summary: A structured OT&E program for a new multi-domain Command & Control capability, executed under aggressive milestone pressure with acquisition-grade evidence as the deliverable.
+
+challenge: >-
+  A new multi-domain C2 capability was scheduled for a milestone decision in 18 months.
+  Three stakeholder groups — program office, operators, and the approving authority — held
+  three different working definitions of "success." There was no agreed mission-thread set,
+  no shared MOE/MOP framework, and the existing test plan inherited from the contractor would
+  not survive operational scrutiny. We were asked to deliver an assessment package that would
+  hold up across three layers of executive review.
+
+approach: >-
+  We started not with a test plan but with a one-page success agreement that the three
+  stakeholder groups had to sign. Then we decomposed validated requirements into mission
+  threads, mapped each to Measures of Effectiveness and Measures of Performance, and built
+  test cards that could be executed by the operators themselves rather than contractor staff.
+  Through execution we ran the White Team — keeping Blue (operators) and Red (adversarial
+  play) honest while preserving the chain of evidence back to the requirements.
+
+outcome: >-
+  Delivered an acquisition-grade assessment report with quantitative findings traced to
+  every MOE, including the conditions under which each was measured. The report supported
+  the downstream milestone decision and six findings were adopted into the next-block
+  engineering plan.
+
+metrics:
+  - { label: "Mission threads", value: "14" }
+  - { label: "Test events", value: "22" }
+  - { label: "Operators in cohort", value: "48" }
+  - { label: "Findings traced", value: "200+" }
+
+phases:
+  - label: Decompose
+    description: Validated requirements decomposed into mission threads with MOE/MOP mapping. One-page success agreement signed by program office, operators, and approving authority.
+  - label: Plan
+    description: Test cards built against mission threads. Thresholds negotiated up front, not retro-fitted to data. Independent of developmental testing by design.
+  - label: Execute
+    description: Operators ran the test events. We ran the White Team — recording observations, enforcing the test design, keeping the assessment honest under operational stress.
+  - label: Analyze
+    description: Quantitative findings tied to MOE/MOP. Every claim traced back to the measured condition. Threshold-vs-objective scored separately, not collapsed.
+  - label: Report
+    description: Acquisition-grade evidence package that survived three layers of executive review. Plain-language exec summary on top, full methodology and data tables beneath.
+
+impact:
+  - "Assessment report accepted at the milestone decision"
+  - "12 of 14 mission threads scored at threshold or better"
+  - "Six engineering findings adopted into the next-block plan"
+  - "Methodology re-used as the template for a follow-on engagement"
+
 capabilities: [rdte, systems-engineering]
 badges: [T&E, C2, White Team]

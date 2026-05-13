@@ -6,71 +6,205 @@ import Badge from "@components/Badge.astro";
 import Button from "@components/Button.astro";
 import Card from "@components/Card.astro";
 import MetricCallout from "@components/MetricCallout.astro";
+import { caseStudyLd, breadcrumbLd } from "@lib/schema";
+import { SITE_URL } from "@lib/seo";
 import { getCollection } from "astro:content";
 
 export async function getStaticPaths() {
   const items = await getCollection("caseStudies");
   const services = await getCollection("services");
-  return items.map((c) => ({
-    params: { slug: c.data.slug },
-    props: {
-      c: c.data,
-      capabilities: services.filter((s) => c.data.capabilities.includes(s.data.slug)),
-    },
-  }));
+  const sorted = [...items].sort((a, b) => b.data.year - a.data.year);
+  return items.map((c) => {
+    const idx = sorted.findIndex((x) => x.id === c.id);
+    return {
+      params: { slug: c.data.slug },
+      props: {
+        c: c.data,
+        capabilities: services.filter((s) => c.data.capabilities.includes(s.data.slug)),
+        prev: idx < sorted.length - 1 ? sorted[idx + 1]!.data : null,
+        next: idx > 0 ? sorted[idx - 1]!.data : null,
+      },
+    };
+  });
 }
-const { c, capabilities } = Astro.props;
+const { c, capabilities, prev, next } = Astro.props;
+
+const url = new URL(`/experience/${c.slug}`, SITE_URL).toString();
+const csLd = caseStudyLd({
+  title: c.title,
+  description: c.summary,
+  client: c.client,
+  year: c.year,
+  domain: c.domain,
+  capabilities: c.capabilities,
+  url,
+});
+const crumbs = breadcrumbLd([
+  ["Home", "/"],
+  ["Experience", "/experience"],
+  [c.title, `/experience/${c.slug}`],
+]);
 ---
 <PageLayout title={c.title} description={c.summary} type="article">
+  <script type="application/ld+json" set:html={JSON.stringify(csLd)} />
+  <script type="application/ld+json" set:html={JSON.stringify(crumbs)} />
+
+  <!-- BACK NAV -->
+  <div class="mx-auto max-w-5xl px-6 pt-10">
+    <a href="/experience" class="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted hover:text-fg-strong transition-colors">
+      ← All case studies
+    </a>
+  </div>
+
   <!-- HERO -->
   <section class="border-b border-border-hairline">
-    <div class="mx-auto max-w-4xl px-6 pt-20 pb-12">
-      <Eyebrow>{c.client} · {c.year} · {c.domain}</Eyebrow>
-      <h1 class="font-display text-4xl md:text-6xl font-bold text-fg-strong mt-4 leading-[1.05]">
-        {c.title}
-      </h1>
-      <p class="mt-8 text-lg md:text-xl text-muted leading-relaxed max-w-3xl">{c.summary}</p>
-      <div class="mt-6 flex flex-wrap gap-2">
-        {c.badges.map((b: string) => <Badge>{b}</Badge>)}
+    <div class="mx-auto max-w-5xl px-6 pt-8 pb-14">
+      <div class="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 items-start">
+        <div>
+          <Eyebrow>{c.client} · {c.year} · {c.domain}</Eyebrow>
+          <h1 class="font-display text-4xl md:text-6xl font-bold text-fg-strong mt-4 leading-[1.05]">
+            {c.title}
+          </h1>
+          <p class="mt-8 text-lg md:text-xl text-muted leading-relaxed max-w-3xl">{c.summary}</p>
+          <div class="mt-6 flex flex-wrap gap-2">
+            {c.badges.map((b: string) => <Badge>{b}</Badge>)}
+          </div>
+        </div>
+
+        {/* Engagement spec card */}
+        <aside class="bg-surface border border-border-hairline rounded-lg p-5">
+          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent mb-4">Engagement</div>
+          <dl class="space-y-4">
+            {c.role && (
+              <div>
+                <dt class="font-mono text-[10px] uppercase tracking-widest text-muted">Our role</dt>
+                <dd class="font-display text-sm font-bold text-fg-strong mt-1 leading-snug">{c.role}</dd>
+              </div>
+            )}
+            {c.duration && (
+              <div>
+                <dt class="font-mono text-[10px] uppercase tracking-widest text-muted">Duration</dt>
+                <dd class="font-display text-sm font-bold text-fg-strong mt-1">{c.duration}</dd>
+              </div>
+            )}
+            <div>
+              <dt class="font-mono text-[10px] uppercase tracking-widest text-muted">Domain</dt>
+              <dd class="font-display text-sm font-bold text-fg-strong mt-1">{c.domain}</dd>
+            </div>
+            <div>
+              <dt class="font-mono text-[10px] uppercase tracking-widest text-muted">Year</dt>
+              <dd class="font-display text-sm font-bold text-fg-strong mt-1">{c.year}</dd>
+            </div>
+            {c.classification && (
+              <div class="pt-3 border-t border-border-hairline">
+                <span class="font-mono text-[10px] uppercase tracking-widest text-muted">{c.classification}</span>
+              </div>
+            )}
+          </dl>
+        </aside>
       </div>
+
+      {c.illustrative && (
+        <div class="mt-8 inline-flex items-center gap-2 bg-bg-2 border border-accent/30 rounded-md px-3 py-1.5">
+          <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">▌ Illustrative</span>
+          <span class="text-[11px] text-muted">Sanitized — figures representative of similar engagements.</span>
+        </div>
+      )}
     </div>
   </section>
 
-  <!-- METRICS (if any) -->
+  <!-- HERO METRICS -->
   {
     c.metrics.length > 0 && (
-      <section class="mx-auto max-w-4xl px-6 py-12">
+      <section class="mx-auto max-w-5xl px-6 py-12">
         <MetricCallout metrics={c.metrics.map((m: { label: string; value: string }) => ({ label: m.label, value: m.value }))} />
       </section>
     )
   }
 
-  <!-- NARRATIVE — CHALLENGE / APPROACH / OUTCOME -->
-  <article class="mx-auto max-w-3xl px-6 py-16 space-y-16">
-    <section>
-      <div class="flex items-baseline gap-4 mb-4">
-        <span class="font-display text-4xl font-bold text-accent leading-none">01</span>
-        <SectionLabel>Challenge</SectionLabel>
-      </div>
-      <p class="text-lg text-fg leading-relaxed">{c.challenge}</p>
-    </section>
+  <!-- CHALLENGE -->
+  <section class="mx-auto max-w-3xl px-6 py-10">
+    <div class="flex items-baseline gap-5 mb-5">
+      <span class="font-display text-5xl font-bold text-accent leading-none">01</span>
+      <SectionLabel>Challenge</SectionLabel>
+    </div>
+    <p class="text-lg md:text-xl text-fg leading-relaxed">{c.challenge}</p>
+  </section>
 
-    <section>
-      <div class="flex items-baseline gap-4 mb-4">
-        <span class="font-display text-4xl font-bold text-accent leading-none">02</span>
+  <!-- APPROACH (with phases if present) -->
+  <section class="bg-bg-2 border-y border-border-hairline">
+    <div class="mx-auto max-w-5xl px-6 py-14">
+      <div class="flex items-baseline gap-5 mb-5 max-w-3xl mx-auto">
+        <span class="font-display text-5xl font-bold text-accent leading-none">02</span>
         <SectionLabel>Approach</SectionLabel>
       </div>
-      <p class="text-lg text-fg leading-relaxed">{c.approach}</p>
-    </section>
+      <p class="text-lg md:text-xl text-fg leading-relaxed max-w-3xl mx-auto">{c.approach}</p>
 
-    <section>
-      <div class="flex items-baseline gap-4 mb-4">
-        <span class="font-display text-4xl font-bold text-accent leading-none">03</span>
-        <SectionLabel>Outcome</SectionLabel>
+      {c.phases.length > 0 && (
+        <div class="mt-12 relative">
+          {/* Vertical accent line */}
+          <div class="absolute left-[19px] top-2 bottom-2 w-px bg-accent/20 hidden sm:block" aria-hidden="true"></div>
+          <ol class="space-y-6">
+            {c.phases.map((p: { label: string; description: string }, i: number) => (
+              <li class="relative pl-0 sm:pl-14">
+                <span class="hidden sm:grid absolute left-0 top-0.5 w-10 h-10 place-items-center bg-bg border-2 border-accent/40 rounded-full font-mono text-[11px] font-bold text-accent">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div class="bg-surface border border-border-hairline rounded-lg p-5 transition-all hover:border-accent/40">
+                  <div class="flex items-baseline gap-3 mb-2">
+                    <span class="sm:hidden font-mono text-[10px] font-bold text-accent">{String(i + 1).padStart(2, "0")}</span>
+                    <h3 class="font-display text-base md:text-lg font-bold text-fg-strong">{p.label}</h3>
+                  </div>
+                  <p class="text-sm md:text-base text-muted leading-relaxed">{p.description}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- OUTCOME + IMPACT -->
+  <section class="mx-auto max-w-5xl px-6 py-14">
+    <div class="grid grid-cols-1 md:grid-cols-[1fr_1fr] gap-10 items-start">
+      <div>
+        <div class="flex items-baseline gap-5 mb-5">
+          <span class="font-display text-5xl font-bold text-accent leading-none">03</span>
+          <SectionLabel>Outcome</SectionLabel>
+        </div>
+        <p class="text-lg text-fg leading-relaxed">{c.outcome}</p>
       </div>
-      <p class="text-lg text-fg leading-relaxed">{c.outcome}</p>
-    </section>
-  </article>
+
+      {c.impact.length > 0 && (
+        <div class="bg-surface border border-border-hairline rounded-lg p-6">
+          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent mb-4">Impact</div>
+          <ul class="space-y-3">
+            {c.impact.map((line: string) => (
+              <li class="flex items-start gap-3">
+                <span class="inline-block w-1.5 h-1.5 rounded-full bg-accent mt-2.5 shrink-0" aria-hidden="true"></span>
+                <span class="text-sm md:text-base text-fg leading-relaxed">{line}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- QUOTE (if present) -->
+  {
+    c.quote && (
+      <section class="bg-bg-2 border-y border-border-hairline">
+        <div class="mx-auto max-w-3xl px-6 py-14">
+          <blockquote class="border-l-2 border-accent pl-6">
+            <p class="font-display text-2xl md:text-3xl text-fg-strong leading-snug italic">"{c.quote.text}"</p>
+            <footer class="mt-4 font-mono text-[11px] uppercase tracking-widest text-muted">— {c.quote.attribution}</footer>
+          </blockquote>
+        </div>
+      </section>
+    )
+  }
 
   <!-- RELATED CAPABILITIES -->
   {
@@ -96,6 +230,44 @@ const { c, capabilities } = Astro.props;
                 </span>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- PREV / NEXT CASE STUDIES -->
+  {
+    (prev || next) && (
+      <section class="border-t border-border-hairline">
+        <div class="mx-auto max-w-5xl px-6 py-10 grid grid-cols-2 gap-6">
+          <div>
+            {prev && (
+              <a
+                href={`/experience/${prev.slug}`}
+                class="group block bg-surface border border-border-hairline rounded-lg p-5 transition-all hover:border-accent/40"
+              >
+                <div class="font-mono text-[10px] uppercase tracking-widest text-muted">← Previous</div>
+                <div class="mt-2 font-display text-base font-bold text-fg-strong group-hover:text-accent transition-colors line-clamp-2">
+                  {prev.title}
+                </div>
+                <div class="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted">{prev.client} · {prev.year}</div>
+              </a>
+            )}
+          </div>
+          <div>
+            {next && (
+              <a
+                href={`/experience/${next.slug}`}
+                class="group block bg-surface border border-border-hairline rounded-lg p-5 text-right transition-all hover:border-accent/40"
+              >
+                <div class="font-mono text-[10px] uppercase tracking-widest text-muted">Next →</div>
+                <div class="mt-2 font-display text-base font-bold text-fg-strong group-hover:text-accent transition-colors line-clamp-2">
+                  {next.title}
+                </div>
+                <div class="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted">{next.client} · {next.year}</div>
+              </a>
+            )}
           </div>
         </div>
       </section>

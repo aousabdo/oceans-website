@@ -8,6 +8,7 @@ import Card from "@components/Card.astro";
 import CaseStudyCard from "@components/CaseStudyCard.astro";
 import ServiceIcon from "@components/ServiceIcon.astro";
 import ServiceArtwork from "@components/ServiceArtwork.astro";
+import { breadcrumbLd } from "@lib/schema";
 import { getCollection } from "astro:content";
 
 export async function getStaticPaths() {
@@ -31,6 +32,12 @@ export async function getStaticPaths() {
 
 const { service, related, prev, next } = Astro.props;
 
+const crumbs = breadcrumbLd([
+  ["Home", "/"],
+  ["Services", "/services"],
+  [service.title, `/services/${service.slug}`],
+]);
+
 // Narrative intros per capability — set the stage with substance before the methods list
 const intros: Record<string, string> = {
   requirements:
@@ -45,6 +52,7 @@ const intros: Record<string, string> = {
 const intro = intros[service.slug] ?? "";
 ---
 <PageLayout title={service.title} description={service.summary}>
+  <script type="application/ld+json" set:html={JSON.stringify(crumbs)} />
   <!-- HERO with custom artwork on the right -->
   <section class="relative">
     <div class="mx-auto max-w-6xl px-6 pt-20 pb-12 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-12 items-start">

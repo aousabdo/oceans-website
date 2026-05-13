@@ -2,7 +2,7 @@
 import "@styles/global.css";
 import { ACTIVE_THEME } from "@lib/theme";
 import { buildSeo, type SeoInput } from "@lib/seo";
-import { organizationLd } from "@lib/schema";
+import { organizationLd, websiteLd } from "@lib/schema";
 import BackToTop from "@components/BackToTop.astro";
 
 interface Props extends Omit<SeoInput, "path"> {
@@ -51,6 +51,7 @@ const fontHrefs: Record<typeof ACTIVE_THEME, string> = {
     <meta name="twitter:image" content={seo.image} />
     <link rel="alternate" type="application/rss+xml" title="OCEANS Journal" href="/rss.xml" />
     <script type="application/ld+json" set:html={JSON.stringify(organizationLd())} />
+    <script type="application/ld+json" set:html={JSON.stringify(websiteLd())} />
   </head>
   <body class="min-h-screen flex flex-col">
     <a

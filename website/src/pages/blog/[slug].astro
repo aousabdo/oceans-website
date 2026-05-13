@@ -3,7 +3,7 @@ import PageLayout from "@layouts/PageLayout.astro";
 import Button from "@components/Button.astro";
 import ReadingProgress from "@components/ReadingProgress.astro";
 import { formatDate, readingTime } from "@lib/format";
-import { articleLd } from "@lib/schema";
+import { articleLd, breadcrumbLd } from "@lib/schema";
 import { SITE_URL } from "@lib/seo";
 import { getCollection, render } from "astro:content";
 
@@ -34,9 +34,15 @@ const ld = articleLd({
   author: post.data.author,
   url: new URL(`/blog/${post.id}`, SITE_URL).toString(),
 });
+const crumbs = breadcrumbLd([
+  ["Home", "/"],
+  ["Journal", "/blog"],
+  [post.data.title, `/blog/${post.id}`],
+]);
 ---
 <PageLayout title={post.data.title} description={post.data.excerpt} type="article">
   <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+  <script type="application/ld+json" set:html={JSON.stringify(crumbs)} />
   <ReadingProgress target="main" />
 
   <!-- BACK LINK -->

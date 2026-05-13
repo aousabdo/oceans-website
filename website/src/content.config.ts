@@ -30,6 +30,19 @@ const caseStudies = defineCollection({
     metrics: z.array(z.object({ label: z.string(), value: z.string() })).default([]),
     capabilities: z.array(z.string()),
     badges: z.array(z.string()).default([]),
+
+    // Visual case-study fields (all optional, illustrative when present)
+    role: z.string().optional(),
+    duration: z.string().optional(),
+    classification: z.string().optional(),
+    phases: z
+      .array(z.object({ label: z.string(), description: z.string() }))
+      .default([]),
+    impact: z.array(z.string()).default([]),
+    quote: z
+      .object({ text: z.string(), attribution: z.string() })
+      .optional(),
+    illustrative: z.boolean().default(false),
   }),
 });
 

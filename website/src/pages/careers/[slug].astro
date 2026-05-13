@@ -2,7 +2,7 @@
 import PageLayout from "@layouts/PageLayout.astro";
 import SectionLabel from "@components/SectionLabel.astro";
 import Button from "@components/Button.astro";
-import { jobPostingLd } from "@lib/schema";
+import { jobPostingLd, breadcrumbLd } from "@lib/schema";
 import { SITE_URL } from "@lib/seo";
 import { getCollection } from "astro:content";
 
@@ -19,9 +19,15 @@ const ld = jobPostingLd({
   employmentType: job.type,
   url: new URL(`/careers/${job.slug}`, SITE_URL).toString(),
 });
+const crumbs = breadcrumbLd([
+  ["Home", "/"],
+  ["Careers", "/careers"],
+  [job.title, `/careers/${job.slug}`],
+]);
 ---
 <PageLayout title={job.title} description={job.summary}>
   <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+  <script type="application/ld+json" set:html={JSON.stringify(crumbs)} />
   <section class="mx-auto max-w-3xl px-6 pt-24 pb-8">
     <SectionLabel>Open role · {job.department}</SectionLabel>
     <h1 class="font-display text-4xl md:text-5xl font-bold text-fg-strong mt-4 leading-tight">

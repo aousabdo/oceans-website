@@ -6,6 +6,7 @@ import Button from "@components/Button.astro";
 import CaseStudyCard from "@components/CaseStudyCard.astro";
 import MetricCallout from "@components/MetricCallout.astro";
 import PartnerMap from "@components/PartnerMap.astro";
+import FromTheData from "@components/FromTheData.astro";
 import partnersData from "@/data/partners.json";
 import { getCollection } from "astro:content";
 
@@ -95,6 +96,9 @@ const totalSections = groups.length;
       </section>
     )
   }
+
+  <!-- FROM THE DATA -->
+  <FromTheData />
 
   <!-- PARTNER MAP -->
   <PartnerMap />

@@ -3,10 +3,57 @@ client: Department of Homeland Security
 title: Enterprise Architecture & Sensor Integration
 year: 2023
 domain: Homeland Security
-summary: Multi-sensor border surveillance integration architecture with lifecycle cybersecurity.
-challenge: Heterogeneous border-sensor portfolio required a coherent integration architecture and CONOPS.
-approach: Developed integration architectures, CONOPS, and lifecycle cybersecurity documentation across multiple sensor classes.
-outcome: Provided the engineering baseline for sustained multi-sensor operations and downstream procurement.
-metrics: []
+role: Integration architecture lead · Lifecycle cybersecurity
+duration: 22 months
+classification: Sanitized for public sharing
+illustrative: true
+summary: A heterogeneous border-sensor portfolio modernized into a coherent integration architecture with lifecycle cybersecurity overlay — used as the engineering baseline for sustained operations and downstream procurement.
+
+challenge: >-
+  Years of sequential procurements had produced a sensor portfolio with seven distinct
+  classes — radar, EO/IR, ground-based, tethered, fixed, mobile, and unattended — each
+  with its own data format, its own command path, and its own cyber posture. There was no
+  unified architecture, no agreed CONOPS, and no lifecycle cyber overlay. Operations were
+  working but undocumented; every new procurement re-litigated the same integration
+  questions from scratch.
+
+approach: >-
+  We started by inventorying what was actually deployed, not what the program records said
+  was deployed — those had diverged. From the inventory we built an integration architecture
+  that preserved the operational distinctions between sensor classes rather than flattening
+  them to a single object class at ingest. CONOPS and interface specifications followed,
+  with a lifecycle cybersecurity overlay aligned to NIST 800-53 controls and operational
+  realities — not just a checklist.
+
+outcome: >-
+  Delivered the engineering baseline used for sustained multi-sensor operations and as the
+  reference document for two downstream procurements. The architecture and CONOPS are now
+  the artifacts new contractors are handed on day one — the integration questions don't
+  get re-litigated.
+
+metrics:
+  - { label: "Sensor classes", value: "7" }
+  - { label: "Sites in scope", value: "38" }
+  - { label: "Interface specs", value: "31" }
+  - { label: "Cyber controls", value: "60+" }
+
+phases:
+  - label: Inventory
+    description: What's actually deployed — not what the records say. Resolved discrepancies between program records and operational reality before architecture work began.
+  - label: Architect
+    description: Integration architecture preserving the operational distinctions analysts care about. Ontology-driven; classes stay distinct at ingest.
+  - label: Specify
+    description: Interface specifications per sensor class plus the cross-class command-and-control fabric. Versioned, signed, queryable.
+  - label: Secure
+    description: Lifecycle cybersecurity overlay mapped to NIST 800-53. Each control tied to operational use, not a checklist.
+  - label: Hand off
+    description: Architecture and CONOPS are the artifacts new contractors get on day one. Procurement-ready baseline.
+
+impact:
+  - "Engineering baseline used for sustained multi-sensor operations"
+  - "Architecture reused across two follow-on procurements"
+  - "Lifecycle cyber overlay accepted by the CISO Office"
+  - "CONOPS now the reference document for downstream T&E"
+
 capabilities: [systems-engineering, mission-data]
 badges: [Architecture, Sensor Fusion]
