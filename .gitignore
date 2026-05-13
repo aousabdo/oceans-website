@@ -23,6 +23,10 @@ node_modules/
 npm-debug.log*
 .pnpm-debug.log*
 
+# Stray package files at repo root — the real ones live in /website
+/package.json
+/package-lock.json
+
 # Astro
 .astro/
 dist/

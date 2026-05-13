@@ -1,19 +1,55 @@
 ---
+/**
+ * PartnerMap — real-world map of OCEANS LLC mission partners.
+ *
+ * Uses Natural Earth TopoJSON (via world-atlas) + d3-geo Equal Earth projection,
+ * rendered to SVG paths at build time. Pin positions come from real city
+ * lat/lon, projected to SVG coordinates by the same projection.
+ *
+ * Runtime interactivity:
+ *  - Mouse wheel / pinch zoom
+ *  - Click + drag to pan
+ *  - Hover or focus a pin to see partners in that region
+ *  - Zoom in / out / reset buttons
+ */
 import partnersData from "@/data/partners.json";
-import Eyebrow from "@components/Eyebrow.astro";
 import SectionLabel from "@components/SectionLabel.astro";
+import { geoEqualEarth, geoPath } from "d3-geo";
+import { feature } from "topojson-client";
+// @ts-expect-error - world-atlas JSON has no TS types
+import worldData from "world-atlas/countries-110m.json";
+import type { FeatureCollection, Geometry } from "geojson";
 
 interface Partner { section: string; agency: string; logo: string | null }
 const partners = partnersData as Partner[];
 
-// Where each partner is HQ'd (or where the operational footprint is anchored).
-// Coordinates in our SVG space — viewBox 1000×500, approximating a U.S. layout.
-interface City {
+// ── Project the world ──────────────────────────────────────────────
+const VIEW_W = 1000;
+const VIEW_H = 500;
+
+const topology = worldData as any;
+const countries = feature(
+  topology,
+  topology.objects.countries,
+) as unknown as FeatureCollection<Geometry, { name: string }>;
+
+// Equal Earth projection — modern, equal-area, looks good for partner maps.
+// fitSize() auto-computes scale + translate to fit the world in our viewBox.
+const projection = geoEqualEarth().fitSize([VIEW_W, VIEW_H], countries);
+const pathGen = geoPath(projection);
+
+const countryPaths = countries.features
+  .map((f) => ({ name: f.properties?.name ?? "", d: pathGen(f) ?? "" }))
+  .filter((c) => c.d.length > 0);
+
+// ── City pins from real lat/lon ────────────────────────────────────
+interface CityPin {
   id: string;
   name: string;
-  x: number;
-  y: number;
+  lat: number;
+  lon: number;
   agencies: string[];
+  international?: boolean;
 }
 
 // Federal-agency cluster lives in DC; nearly every federal partner lands here.
@@ -23,40 +59,47 @@ const federalAgencies = partners
   )
   .map((p) => p.agency);
 
-const cities: City[] = [
-  { id: "dc", name: "Washington DC area", x: 800, y: 235, agencies: [...federalAgencies, "Ronald Reagan Washington National Airport"] },
-  { id: "nyc", name: "New York", x: 830, y: 195, agencies: ["New York Police Department", "Metropolitan Transit Authority", "New Jersey Police Department", "New Jersey Transit", "Port Authority of New York/New Jersey"] },
-  { id: "boston", name: "Boston", x: 870, y: 165, agencies: [] },
-  { id: "miami", name: "Miami", x: 765, y: 425, agencies: ["Miami Police Department", "Miami International Airport", "Norwegian Cruise Lines", "Fédération Internationale de Football Association"] },
-  { id: "jax", name: "Jacksonville", x: 750, y: 380, agencies: ["CSX Railroad"] },
-  { id: "atlanta", name: "Atlanta", x: 660, y: 350, agencies: ["Metropolitan Atlanta Rapid Transit Authority", "Norfolk Southern Railway"] },
-  { id: "chicago", name: "Chicago", x: 580, y: 215, agencies: ["Chicago Transit Authority"] },
-  { id: "omaha", name: "Omaha", x: 480, y: 230, agencies: ["Union Pacific Railroad Company"] },
-  { id: "dfw", name: "Dallas / Fort Worth", x: 460, y: 360, agencies: ["Burlington Northern Santa Fe Railway"] },
-  { id: "sea", name: "Seattle / Pacific NW", x: 110, y: 110, agencies: ["Seattle Sound Transit", "Lummi Tribe - Puget Sound"] },
-  { id: "sf", name: "Bay Area", x: 80, y: 240, agencies: ["Bay Area Rapid Transit"] },
-  { id: "la", name: "Los Angeles", x: 130, y: 320, agencies: ["Los Ángeles Police Department", "Los Ángeles Metro", "Los Ángeles International Airport"] },
-  { id: "ak", name: "Alaska", x: 70, y: 430, agencies: ["Alaska Center for Unmanned Aircraft Systems Integration"] },
+const cities: CityPin[] = [
+  // US — major partner cities
+  { id: "dc", name: "Washington, DC", lat: 38.9072, lon: -77.0369, agencies: [...federalAgencies, "Ronald Reagan Washington National Airport"] },
+  { id: "nyc", name: "New York", lat: 40.7128, lon: -74.006, agencies: ["New York Police Department", "Metropolitan Transit Authority", "New Jersey Police Department", "New Jersey Transit", "Port Authority of New York/New Jersey"] },
+  { id: "miami", name: "Miami", lat: 25.7617, lon: -80.1918, agencies: ["Miami Police Department", "Miami International Airport", "Norwegian Cruise Lines", "Fédération Internationale de Football Association"] },
+  { id: "jax", name: "Jacksonville", lat: 30.3322, lon: -81.6557, agencies: ["CSX Railroad"] },
+  { id: "atlanta", name: "Atlanta", lat: 33.749, lon: -84.388, agencies: ["Metropolitan Atlanta Rapid Transit Authority", "Norfolk Southern Railway"] },
+  { id: "chicago", name: "Chicago", lat: 41.8781, lon: -87.6298, agencies: ["Chicago Transit Authority"] },
+  { id: "omaha", name: "Omaha", lat: 41.2565, lon: -95.9345, agencies: ["Union Pacific Railroad Company"] },
+  { id: "dfw", name: "Dallas / Fort Worth", lat: 32.7767, lon: -96.797, agencies: ["Burlington Northern Santa Fe Railway"] },
+  { id: "sea", name: "Seattle / Pacific NW", lat: 47.6062, lon: -122.3321, agencies: ["Seattle Sound Transit", "Lummi Tribe - Puget Sound"] },
+  { id: "sf", name: "Bay Area", lat: 37.7749, lon: -122.4194, agencies: ["Bay Area Rapid Transit"] },
+  { id: "la", name: "Los Angeles", lat: 34.0522, lon: -118.2437, agencies: ["Los Ángeles Police Department", "Los Ángeles Metro", "Los Ángeles International Airport"] },
+  { id: "ak", name: "Anchorage, AK", lat: 61.2181, lon: -149.9003, agencies: ["Alaska Center for Unmanned Aircraft Systems Integration"] },
+
+  // International
+  { id: "uk", name: "United Kingdom", lat: 51.5074, lon: -0.1278, international: true, agencies: ["U.K. Royal Navy", "U.K. Ministry of Defense", "U.K. Defense Intelligence", "U.K. Royal Air Force", "U.K. National Protective Security Authority"] },
+  { id: "ca", name: "Canada", lat: 45.4215, lon: -75.6972, international: true, agencies: ["Royal Canadian Mounted Police"] },
+  { id: "es", name: "Spain", lat: 40.4168, lon: -3.7038, international: true, agencies: ["Espana Departamento de Seguridad Nacional", "Espana Guardia Civil"] },
+  { id: "kr", name: "Republic of Korea", lat: 37.5665, lon: 126.978, international: true, agencies: ["Republic of Korea"] },
 ];
 
-const populated = cities.filter((c) => c.agencies.length > 0);
+const projectedPins = cities
+  .map((c) => {
+    const p = projection([c.lon, c.lat]);
+    return { ...c, x: p?.[0] ?? null, y: p?.[1] ?? null };
+  })
+  .filter((p): p is CityPin & { x: number; y: number } => p.x !== null && p.y !== null);
 
-const international = [
-  { region: "United Kingdom", flag: "🇬🇧", agencies: ["U.K. Royal Navy", "U.K. Ministry of Defense", "U.K. Defense Intelligence", "U.K. Royal Air Force", "U.K. National Protective Security Authority"] },
-  { region: "Canada", flag: "🇨🇦", agencies: ["Royal Canadian Mounted Police"] },
-  { region: "Spain", flag: "🇪🇸", agencies: ["Espana Departamento de Seguridad Nacional", "Espana Guardia Civil"] },
-  { region: "Republic of Korea", flag: "🇰🇷", agencies: ["Republic of Korea"] },
-  { region: "FVEY (multinational)", flag: "🌐", agencies: ["FVEY"] },
-];
-
-// Pin size scales with agency count
-function pinSize(n: number) {
-  if (n >= 15) return 22;
-  if (n >= 5) return 14;
-  if (n >= 2) return 10;
-  return 7;
+function pinSize(n: number): number {
+  if (n >= 15) return 11;
+  if (n >= 5) return 8;
+  if (n >= 2) return 6;
+  return 4.5;
 }
+
+// Mobile fallback list (US-only since international is in side panel)
+const usOnly = projectedPins.filter((p) => !p.international && p.agencies.length > 0);
+const intlOnly = projectedPins.filter((p) => p.international);
 ---
+
 <section class="bg-bg-2 border-y border-border-hairline">
   <div class="mx-auto max-w-6xl px-6 py-20">
     <div class="flex items-end justify-between gap-8 flex-wrap mb-10">
@@ -66,179 +109,194 @@ function pinSize(n: number) {
           Where we operate.
         </h2>
         <p class="mt-3 text-muted max-w-2xl leading-relaxed">
-          A geographic view of the {partners.length} partner agencies, services, and organizations
-          we've supported. Hover or tap any marker for the partners in that region.
+          {partners.length} partner agencies, services, and organizations across the U.S.,
+          FVEY allies, and other supporting nations. Drag to pan, scroll to zoom, hover any
+          marker for details.
         </p>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-10 items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
       {/* Map */}
-      <div class="relative bg-surface border border-border-hairline rounded-lg p-4 md:p-6">
-        <svg
-          viewBox="0 0 1000 500"
-          class="w-full h-auto"
-          role="img"
-          aria-label="Geographic distribution of OCEANS LLC partner agencies across the U.S."
-        >
-          <defs>
-            <radialGradient id="pmap-pin-glow" cx="0.5" cy="0.5" r="0.5">
-              <stop offset="0" stop-color="currentColor" stop-opacity="0.35" />
-              <stop offset="1" stop-color="currentColor" stop-opacity="0" />
-            </radialGradient>
-          </defs>
+      <div class="relative bg-surface border border-border-hairline rounded-lg overflow-hidden">
+        {/* Zoom controls */}
+        <div class="absolute top-3 right-3 z-10 flex flex-col gap-1 bg-bg-2/90 backdrop-blur-sm border border-border-hairline rounded-md p-1 shadow-lg">
+          <button
+            data-pmap-zoom="in"
+            class="w-8 h-8 grid place-items-center text-accent hover:bg-accent/10 rounded font-mono text-base transition-colors"
+            aria-label="Zoom in"
+          >+</button>
+          <button
+            data-pmap-zoom="out"
+            class="w-8 h-8 grid place-items-center text-accent hover:bg-accent/10 rounded font-mono text-base transition-colors"
+            aria-label="Zoom out"
+          >−</button>
+          <button
+            data-pmap-zoom="reset"
+            class="w-8 h-8 grid place-items-center text-accent hover:bg-accent/10 rounded font-mono text-xs transition-colors"
+            aria-label="Reset view"
+            title="Reset view"
+          >⤺</button>
+        </div>
 
-          {/* Stylized U.S. silhouette — recognizable enough to be the US (FL peninsula,
-              Texas, Maine NE corner, Great Lakes notch) without pretending to be a survey
-              cartograph. AK and HI in insets bottom-left. */}
-          <g class="text-muted" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-linecap="round">
-            {/* Continental US outline */}
-            <path
-              opacity="0.42"
-              stroke-width="1.4"
-              fill="currentColor"
-              fill-opacity="0.04"
-              d="M 95,100 L 100,150 Q 88,195 75,225 L 68,255 Q 78,290 92,310 L 130,330 L 165,348 Q 215,355 270,365 L 365,378 L 395,398 L 435,402 L 465,380 L 525,378 L 615,378 L 695,378 Q 720,378 730,395 Q 742,415 758,432 L 772,445 Q 780,432 776,418 L 778,395 L 765,372 L 778,348 L 798,318 L 818,288 L 838,255 L 845,225 L 855,205 L 873,188 L 875,168 L 895,158 L 885,138 L 882,118 L 878,105 L 800,98 L 700,105 L 640,130 L 600,140 L 565,130 L 520,105 L 380,92 L 230,95 L 130,98 Z"
-            />
-
-            {/* Great Lakes — two simple ellipses where the border notch is */}
-            <ellipse cx="585" cy="148" rx="38" ry="11" opacity="0.25" fill="var(--color-bg-2)" stroke="currentColor" stroke-width="0.8" />
-            <ellipse cx="640" cy="160" rx="20" ry="8" opacity="0.22" fill="var(--color-bg-2)" stroke="currentColor" stroke-width="0.8" />
-
-            {/* Mississippi River — dashed hint */}
-            <path
-              opacity="0.16"
-              stroke-width="0.8"
-              stroke-dasharray="3 3"
-              d="M 545,135 Q 545,210 525,275 Q 510,335 480,378"
-            />
-
-            {/* Rocky Mountains — dotted spine */}
-            <path
-              opacity="0.14"
-              stroke-width="0.6"
-              stroke-dasharray="1.5 3"
-              d="M 235,100 Q 245,200 255,310"
-            />
-
-            {/* Appalachian range */}
-            <path
-              opacity="0.14"
-              stroke-width="0.6"
-              stroke-dasharray="1.5 3"
-              d="M 735,135 Q 760,210 785,295"
-            />
-
-            {/* Alaska inset — bottom-left */}
-            <path
-              opacity="0.42"
-              stroke-width="1.3"
-              fill="currentColor"
-              fill-opacity="0.04"
-              d="M 20,400 L 50,392 L 85,398 L 115,415 L 110,440 L 90,455 L 60,460 L 30,452 L 15,432 Z"
-            />
-            <text x="60" y="478" font-family="ui-monospace, monospace" font-size="9" fill="currentColor" opacity="0.55" text-anchor="middle" letter-spacing="2">AK</text>
-
-            {/* Hawaii inset — three islands, lower-center */}
-            <g opacity="0.45">
-              <circle cx="220" cy="438" r="2.5" fill="currentColor" stroke="none" />
-              <circle cx="232" cy="443" r="2.8" fill="currentColor" stroke="none" />
-              <circle cx="248" cy="450" r="3.5" fill="currentColor" stroke="none" />
-              <text x="232" y="475" font-family="ui-monospace, monospace" font-size="9" fill="currentColor" opacity="0.7" text-anchor="middle" letter-spacing="2">HI</text>
-            </g>
-
-            {/* Inset divider hint */}
-            <line x1="135" y1="395" x2="135" y2="465" opacity="0.18" stroke-width="0.5" stroke-dasharray="2 3" />
-            <line x1="285" y1="425" x2="285" y2="465" opacity="0.18" stroke-width="0.5" stroke-dasharray="2 3" />
-          </g>
-
-          {/* Pins */}
-          {
-            populated.map((c) => {
-              const size = pinSize(c.agencies.length);
-              return (
-                <g class="pmap-pin text-accent cursor-pointer" data-city={c.id}>
-                  {/* Glow */}
-                  <circle cx={c.x} cy={c.y} r={size * 2.5} fill="url(#pmap-pin-glow)" class="pmap-glow" opacity="0.35" />
-                  {/* Outer ring */}
-                  <circle cx={c.x} cy={c.y} r={size} fill="var(--color-bg-2)" stroke="currentColor" stroke-width="2" />
-                  {/* Inner dot */}
-                  <circle cx={c.x} cy={c.y} r={Math.max(2, size * 0.35)} fill="currentColor" />
-                  {/* Pulse ring on hover */}
-                  <circle cx={c.x} cy={c.y} r={size} fill="none" stroke="currentColor" stroke-width="1.5" class="pmap-pulse" opacity="0" />
-                </g>
-              );
-            })
-          }
-
-          {/* City labels — show only on selected pin via JS toggle */}
-          {
-            populated.map((c) => (
-              <text
-                class="pmap-label font-mono"
-                x={c.x}
-                y={c.y - pinSize(c.agencies.length) - 8}
-                text-anchor="middle"
-                font-size="11"
-                fill="var(--color-fg-strong)"
-                data-city={c.id}
-                opacity="0"
-              >
-                {c.name}
-              </text>
-            ))
-          }
-        </svg>
-
-        {/* Floating partner-card panel, populated by JS */}
+        {/* Floating partner card */}
         <div
           id="pmap-card"
-          class="hidden lg:block absolute top-6 right-6 w-64 bg-bg border border-accent/30 rounded-lg p-4 pointer-events-none opacity-0 transition-opacity shadow-xl"
+          class="hidden lg:block absolute top-3 left-3 z-10 max-w-[280px] bg-bg/95 backdrop-blur-sm border border-accent/30 rounded-lg p-3 shadow-xl opacity-0 transition-opacity pointer-events-none"
           aria-hidden="true"
         >
           <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent" data-card-region>—</div>
-          <div class="font-display text-base font-bold text-fg-strong mt-1" data-card-count>—</div>
-          <ul class="mt-3 space-y-1 text-[12px] text-muted max-h-[260px] overflow-y-auto" data-card-list></ul>
+          <div class="font-display text-sm font-bold text-fg-strong mt-1" data-card-count>—</div>
+          <ul class="mt-2 space-y-0.5 text-[11px] text-muted max-h-[240px] overflow-y-auto" data-card-list></ul>
         </div>
+
+        {/* Hint chip */}
+        <div class="absolute bottom-3 left-3 z-10 font-mono text-[9px] uppercase tracking-[0.18em] text-muted bg-bg-2/80 backdrop-blur-sm border border-border-hairline rounded px-2 py-1 pointer-events-none">
+          drag · scroll · hover
+        </div>
+
+        <svg
+          id="pmap-svg"
+          viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+          class="w-full h-auto cursor-grab active:cursor-grabbing select-none"
+          role="img"
+          aria-label="World map showing OCEANS LLC partner footprint"
+        >
+          <defs>
+            <radialGradient id="pmap-pin-glow" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0" stop-color="currentColor" stop-opacity="0.5" />
+              <stop offset="1" stop-color="currentColor" stop-opacity="0" />
+            </radialGradient>
+            <linearGradient id="pmap-graticule" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="currentColor" stop-opacity="0.06" />
+              <stop offset="1" stop-color="currentColor" stop-opacity="0.04" />
+            </linearGradient>
+          </defs>
+
+          <g id="pmap-zoom-group">
+            {/* Ocean / background */}
+            <rect width={VIEW_W} height={VIEW_H} fill="var(--color-bg-2)" />
+
+            {/* Country fill + borders */}
+            <g class="text-muted">
+              {
+                countryPaths.map((c) => (
+                  <path
+                    d={c.d}
+                    fill="currentColor"
+                    fill-opacity="0.08"
+                    stroke="currentColor"
+                    stroke-opacity="0.22"
+                    stroke-width="0.5"
+                    vector-effect="non-scaling-stroke"
+                  />
+                ))
+              }
+            </g>
+
+            {/* Pin glows — rendered first, behind pins */}
+            <g class="text-accent">
+              {
+                projectedPins.map((p) => {
+                  const size = pinSize(p.agencies.length);
+                  return (
+                    <circle
+                      cx={p.x}
+                      cy={p.y}
+                      r={size * 3}
+                      fill="url(#pmap-pin-glow)"
+                      opacity="0.4"
+                      class="pmap-glow"
+                      data-glow-id={p.id}
+                    />
+                  );
+                })
+              }
+            </g>
+
+            {/* Pins */}
+            <g class="text-accent">
+              {
+                projectedPins.map((p) => {
+                  const size = pinSize(p.agencies.length);
+                  return (
+                    <g
+                      class="pmap-pin cursor-pointer"
+                      data-city={p.id}
+                      tabindex="0"
+                      role="button"
+                      aria-label={`${p.name}: ${p.agencies.length} partner${p.agencies.length === 1 ? "" : "s"}`}
+                    >
+                      <circle cx={p.x} cy={p.y} r={size + 1} fill="var(--color-bg-2)" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke" />
+                      <circle cx={p.x} cy={p.y} r={Math.max(1.5, size * 0.4)} fill="currentColor" />
+                    </g>
+                  );
+                })
+              }
+            </g>
+
+            {/* Labels — show on hover/focus */}
+            <g class="pointer-events-none">
+              {
+                projectedPins.map((p) => (
+                  <text
+                    class="pmap-label font-mono"
+                    x={p.x}
+                    y={p.y - pinSize(p.agencies.length) - 6}
+                    text-anchor="middle"
+                    font-size="9"
+                    fill="var(--color-fg-strong)"
+                    data-city={p.id}
+                    opacity="0"
+                    paint-order="stroke fill"
+                    stroke="var(--color-bg-2)"
+                    stroke-width="3"
+                  >
+                    {p.name}
+                  </text>
+                ))
+              }
+            </g>
+          </g>
+        </svg>
       </div>
 
-      {/* Right side: International partners panel */}
-      <aside class="bg-surface border border-border-hairline rounded-lg p-6 lg:max-w-[280px] w-full">
+      {/* International panel */}
+      <aside class="bg-surface border border-border-hairline rounded-lg p-6 w-full">
         <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">International</div>
         <h3 class="font-display text-lg font-bold text-fg-strong mt-2 leading-snug">FVEY &amp; allied partners</h3>
         <ul class="mt-5 space-y-4">
           {
-            international.map((r) => (
+            intlOnly.map((c) => (
               <li>
-                <div class="flex items-center gap-3">
-                  <span class="text-xl leading-none" aria-hidden="true">{r.flag}</span>
-                  <span class="font-display text-sm font-bold text-fg-strong">{r.region}</span>
-                </div>
-                <ul class="mt-1.5 ml-8 space-y-0.5 text-[12px] text-muted">
-                  {r.agencies.map((a) => (
-                    <li class="leading-snug">{a}</li>
-                  ))}
+                <div class="font-display text-sm font-bold text-fg-strong">{c.name}</div>
+                <ul class="mt-1 space-y-0.5 text-[12px] text-muted">
+                  {c.agencies.map((a) => <li class="leading-snug">{a}</li>)}
                 </ul>
               </li>
             ))
           }
+          <li>
+            <div class="font-display text-sm font-bold text-fg-strong">FVEY (multinational)</div>
+            <ul class="mt-1 space-y-0.5 text-[12px] text-muted">
+              <li class="leading-snug">FVEY</li>
+            </ul>
+          </li>
         </ul>
       </aside>
     </div>
 
-    {/* Mobile fallback list — only on small screens since the map card is hidden */}
+    {/* Mobile fallback list — only on small screens */}
     <div class="lg:hidden mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
       {
-        populated.map((c) => (
+        usOnly.map((c) => (
           <div class="bg-surface border border-border-hairline rounded-lg p-4">
             <div class="flex items-baseline justify-between gap-3 mb-2">
               <div class="font-display text-sm font-bold text-fg-strong">{c.name}</div>
               <span class="font-mono text-[10px] text-accent">{c.agencies.length}</span>
             </div>
             <ul class="text-[11px] text-muted space-y-0.5">
-              {c.agencies.slice(0, 4).map((a) => (
-                <li>{a}</li>
-              ))}
+              {c.agencies.slice(0, 4).map((a) => <li>{a}</li>)}
               {c.agencies.length > 4 && <li class="text-accent">+ {c.agencies.length - 4} more</li>}
             </ul>
           </div>
@@ -249,72 +307,207 @@ function pinSize(n: number) {
 </section>
 
 <style>
-  .pmap-pin .pmap-glow,
-  .pmap-pin .pmap-pulse {
+  .pmap-pin {
+    transition: filter 200ms;
+  }
+  .pmap-pin:hover,
+  .pmap-pin:focus-visible,
+  .pmap-pin.is-active {
+    filter: brightness(1.3);
+  }
+  .pmap-pin:focus-visible {
+    outline: none;
+  }
+  .pmap-glow {
     transition: opacity 200ms;
   }
-  .pmap-pin:hover .pmap-glow,
-  .pmap-pin:focus .pmap-glow,
-  .pmap-pin.is-active .pmap-glow {
-    opacity: 0.7;
-  }
-  .pmap-pin:hover .pmap-pulse,
-  .pmap-pin:focus .pmap-pulse,
-  .pmap-pin.is-active .pmap-pulse {
+  .pmap-pin:hover ~ * .pmap-glow,
+  .pmap-pin.is-active + .pmap-glow {
     opacity: 0.8;
-    animation: pmap-pulse 1.6s ease-out infinite;
+  }
+  .pmap-label {
+    transition: opacity 150ms;
   }
   .pmap-label.is-active {
-    opacity: 1;
-  }
-  @keyframes pmap-pulse {
-    0% { r: var(--r, 7); opacity: 0.8; }
-    100% { r: calc(var(--r, 7) + 18px); opacity: 0; }
+    opacity: 1 !important;
   }
   @media (prefers-reduced-motion: reduce) {
-    .pmap-pin .pmap-pulse { animation: none !important; }
+    #pmap-zoom-group { transition: none !important; }
   }
 </style>
 
-<script is:inline define:vars={{ cityData: populated.map((c) => ({ id: c.id, name: c.name, agencies: c.agencies })) }}>
+<script
+  is:inline
+  define:vars={{
+    pinData: projectedPins.map((p) => ({ id: p.id, name: p.name, agencies: p.agencies })),
+    VIEW_W,
+    VIEW_H,
+  }}
+>
   (function () {
+    const svg = document.getElementById("pmap-svg");
     const card = document.getElementById("pmap-card");
-    if (!card) return;
-    const regionEl = card.querySelector("[data-card-region]");
-    const countEl = card.querySelector("[data-card-count]");
-    const listEl = card.querySelector("[data-card-list]");
+    if (!svg) return;
 
-    const setCard = (id) => {
-      const c = cityData.find((x) => x.id === id);
-      if (!c) return;
-      regionEl.textContent = c.name;
-      countEl.textContent = `${c.agencies.length} ${c.agencies.length === 1 ? "partner" : "partners"}`;
-      listEl.innerHTML = c.agencies.map((a) => `<li>${a}</li>`).join("");
-      card.style.opacity = "1";
-    };
-    const hideCard = () => {
-      card.style.opacity = "0";
-    };
+    /** @type {{ x: number, y: number, w: number, h: number }} */
+    let vb = { x: 0, y: 0, w: VIEW_W, h: VIEW_H };
+    const ASPECT = VIEW_W / VIEW_H;
+    const MIN_W = VIEW_W / 12;   // max zoom-in: ~12x
+    const MAX_W = VIEW_W;        // can't zoom out beyond fit
+
+    function applyVB() {
+      svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+    }
+
+    function clamp() {
+      vb.x = Math.max(0, Math.min(VIEW_W - vb.w, vb.x));
+      vb.y = Math.max(0, Math.min(VIEW_H - vb.h, vb.y));
+    }
+
+    function svgPoint(clientX, clientY) {
+      const pt = svg.createSVGPoint();
+      pt.x = clientX;
+      pt.y = clientY;
+      const ctm = svg.getScreenCTM();
+      return ctm ? pt.matrixTransform(ctm.inverse()) : { x: 0, y: 0 };
+    }
+
+    function zoomBy(factor, anchorClientX, anchorClientY) {
+      const before = svgPoint(anchorClientX, anchorClientY);
+      const newW = Math.min(MAX_W, Math.max(MIN_W, vb.w / factor));
+      const newH = newW / ASPECT;
+      // re-anchor so the point under cursor stays under cursor
+      const fx = (before.x - vb.x) / vb.w;
+      const fy = (before.y - vb.y) / vb.h;
+      vb.w = newW;
+      vb.h = newH;
+      vb.x = before.x - fx * newW;
+      vb.y = before.y - fy * newH;
+      clamp();
+      applyVB();
+    }
+
+    // ─ Wheel zoom ─────────────────────────────────
+    svg.addEventListener(
+      "wheel",
+      (e) => {
+        e.preventDefault();
+        const factor = e.deltaY < 0 ? 1.18 : 1 / 1.18;
+        zoomBy(factor, e.clientX, e.clientY);
+      },
+      { passive: false }
+    );
+
+    // ─ Drag pan ───────────────────────────────────
+    let dragging = false;
+    let downX = 0,
+      downY = 0,
+      startVBX = 0,
+      startVBY = 0,
+      moved = false;
+
+    svg.addEventListener("pointerdown", (e) => {
+      if (e.target && e.target.closest && e.target.closest(".pmap-pin")) return;
+      dragging = true;
+      moved = false;
+      downX = e.clientX;
+      downY = e.clientY;
+      startVBX = vb.x;
+      startVBY = vb.y;
+      svg.setPointerCapture(e.pointerId);
+    });
+
+    svg.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return;
+      const scaleX = ctm.a;
+      const scaleY = ctm.d;
+      const dx = (e.clientX - downX) / scaleX;
+      const dy = (e.clientY - downY) / scaleY;
+      if (Math.abs(dx) + Math.abs(dy) > 2) moved = true;
+      vb.x = startVBX - dx;
+      vb.y = startVBY - dy;
+      clamp();
+      applyVB();
+    });
+
+    function endDrag(e) {
+      if (!dragging) return;
+      dragging = false;
+      try { svg.releasePointerCapture(e.pointerId); } catch {}
+    }
+    svg.addEventListener("pointerup", endDrag);
+    svg.addEventListener("pointercancel", endDrag);
+    svg.addEventListener("pointerleave", endDrag);
+
+    // ─ Button controls ────────────────────────────
+    function rectCenterClient() {
+      const r = svg.getBoundingClientRect();
+      return [r.left + r.width / 2, r.top + r.height / 2];
+    }
+    document.querySelector('[data-pmap-zoom="in"]')?.addEventListener("click", () => {
+      const [cx, cy] = rectCenterClient();
+      zoomBy(1.5, cx, cy);
+    });
+    document.querySelector('[data-pmap-zoom="out"]')?.addEventListener("click", () => {
+      const [cx, cy] = rectCenterClient();
+      zoomBy(1 / 1.5, cx, cy);
+    });
+    document.querySelector('[data-pmap-zoom="reset"]')?.addEventListener("click", () => {
+      vb = { x: 0, y: 0, w: VIEW_W, h: VIEW_H };
+      applyVB();
+    });
+
+    // ─ Pin selection / readout ────────────────────
+    function selectPin(id) {
+      document
+        .querySelectorAll(".pmap-pin.is-active, .pmap-label.is-active")
+        .forEach((el) => el.classList.remove("is-active"));
+      const pin = document.querySelector(`.pmap-pin[data-city='${id}']`);
+      const label = document.querySelector(`.pmap-label[data-city='${id}']`);
+      pin?.classList.add("is-active");
+      label?.classList.add("is-active");
+      const data = pinData.find((p) => p.id === id);
+      if (data && card) {
+        card.querySelector("[data-card-region]").textContent = data.name;
+        card.querySelector("[data-card-count]").textContent =
+          `${data.agencies.length} ${data.agencies.length === 1 ? "partner" : "partners"}`;
+        card.querySelector("[data-card-list]").innerHTML = data.agencies
+          .map((a) => `<li>${a}</li>`)
+          .join("");
+        card.style.opacity = "1";
+      }
+    }
+    function deselect() {
+      document
+        .querySelectorAll(".pmap-pin.is-active, .pmap-label.is-active")
+        .forEach((el) => el.classList.remove("is-active"));
+      if (card) card.style.opacity = "0";
+    }
 
     document.querySelectorAll(".pmap-pin").forEach((pin) => {
-      const id = pin.dataset.city;
-      const label = document.querySelector(`.pmap-label[data-city='${id}']`);
-      const activate = () => {
-        document.querySelectorAll(".pmap-pin.is-active, .pmap-label.is-active").forEach((el) => el.classList.remove("is-active"));
-        pin.classList.add("is-active");
-        label?.classList.add("is-active");
-        setCard(id);
-      };
-      const deactivate = () => {
-        pin.classList.remove("is-active");
-        label?.classList.remove("is-active");
-        hideCard();
-      };
-      pin.addEventListener("mouseenter", activate);
-      pin.addEventListener("mouseleave", deactivate);
-      pin.addEventListener("focusin", activate);
-      pin.addEventListener("focusout", deactivate);
-      pin.setAttribute("tabindex", "0");
+      const id = pin.getAttribute("data-city");
+      if (!id) return;
+      pin.addEventListener("mouseenter", () => selectPin(id));
+      pin.addEventListener("focus", () => selectPin(id));
+      pin.addEventListener("mouseleave", () => {
+        if (!pin.matches(":focus")) deselect();
+      });
+      pin.addEventListener("blur", deselect);
+      pin.addEventListener("click", (e) => {
+        if (moved) {
+          e.preventDefault();
+          return;
+        }
+        selectPin(id);
+      });
+      pin.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          selectPin(id);
+        }
+      });
     });
   })();
 </script>
