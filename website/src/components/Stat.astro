@@ -4,15 +4,80 @@ interface Props {
   label: string;
   emphasis?: string;
   align?: "left" | "right";
+  animate?: boolean;
 }
 const props = Astro.props as Props;
-const { value, label, emphasis, align = "left" } = props;
+const { value, label, emphasis, align = "left", animate = true } = props;
+
+function parseNumeric(v: string): number | null {
+  const cleaned = v.replace(/[^\d.]/g, "");
+  if (!cleaned) return null;
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : null;
+}
+const target = parseNumeric(value);
+const canAnimate = animate && target !== null;
 ---
-<div class={align === "right" ? "text-right" : "text-left"}>
+<div class={align === "right" ? "text-right" : "text-left"} data-stat={canAnimate ? "" : null}>
   <div class="font-display text-5xl md:text-6xl font-bold text-fg-strong leading-none tracking-tight">
-    {value}{emphasis && <span class="text-accent">{emphasis}</span>}
+    <span
+      class="metric-value tabular-nums"
+      data-target={canAnimate ? target : null}
+      data-original={value}
+    >
+      {canAnimate ? "0" : value}
+    </span>
+    {emphasis && <span class="text-accent">{emphasis}</span>}
   </div>
   <div class="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
     {label}
   </div>
 </div>
+<script>
+  (function () {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const stats = document.querySelectorAll<HTMLElement>("[data-stat]");
+    if (stats.length === 0) return;
+
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+    const DURATION = 1400;
+
+    const animateValue = (el: HTMLElement, target: number, original: string) => {
+      if (reduced) {
+        el.textContent = original;
+        return;
+      }
+      const start = performance.now();
+      const tick = (now: number) => {
+        const elapsed = now - start;
+        const t = Math.min(1, elapsed / DURATION);
+        const eased = easeOutCubic(t);
+        const current = Math.round(target * eased);
+        el.textContent = String(current);
+        if (t < 1) requestAnimationFrame(tick);
+        else el.textContent = original;
+      };
+      requestAnimationFrame(tick);
+    };
+
+    const seen = new WeakSet<HTMLElement>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const wrap = entry.target as HTMLElement;
+          if (seen.has(wrap)) return;
+          seen.add(wrap);
+          io.unobserve(wrap);
+          const v = wrap.querySelector<HTMLElement>(".metric-value[data-target]");
+          if (!v) return;
+          const t = Number(v.dataset.target);
+          const original = v.dataset.original ?? String(t);
+          if (Number.isFinite(t)) animateValue(v, t, original);
+        });
+      },
+      { threshold: 0.5 }
+    );
+    stats.forEach((s) => io.observe(s));
+  })();
+</script>

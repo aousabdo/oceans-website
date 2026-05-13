@@ -7,21 +7,102 @@ interface Metric {
 interface Props {
   metrics: Metric[];
   class?: string;
+  animate?: boolean;
 }
 const props = Astro.props as Props;
-const { metrics, class: extra = "" } = props;
+const { metrics, class: extra = "", animate = true } = props;
+
+// Detect whether a value is a numeric counter we can animate (e.g., "50", "57", "2013")
+function parseNumeric(v: string): number | null {
+  const cleaned = v.replace(/[^\d.]/g, "");
+  if (!cleaned) return null;
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : null;
+}
 ---
-<dl class:list={["grid gap-px bg-border-hairline rounded-lg overflow-hidden", extra]}
-    style={`grid-template-columns: repeat(${metrics.length}, minmax(0, 1fr));`}>
+<dl
+  class:list={[
+    "grid gap-px bg-border-hairline rounded-lg overflow-hidden",
+    extra,
+  ]}
+  style={`grid-template-columns: repeat(${metrics.length}, minmax(0, 1fr));`}
+  data-metric-callout={animate ? "" : null}
+>
   {
-    metrics.map((m) => (
-      <div class="bg-surface px-6 py-7">
-        <dt class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">{m.label}</dt>
-        <dd class="font-display text-3xl md:text-4xl font-bold text-fg-strong mt-3 leading-none">
-          {m.value}
-          {m.emphasis && <span class="text-accent">{m.emphasis}</span>}
-        </dd>
-      </div>
-    ))
+    metrics.map((m) => {
+      const target = parseNumeric(m.value);
+      const canAnimate = animate && target !== null;
+      return (
+        <div class="bg-surface px-6 py-7">
+          <dt class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">{m.label}</dt>
+          <dd class="font-display text-3xl md:text-4xl font-bold text-fg-strong mt-3 leading-none">
+            <span
+              class="metric-value tabular-nums"
+              data-target={canAnimate ? target : null}
+              data-original={m.value}
+            >
+              {canAnimate ? "0" : m.value}
+            </span>
+            {m.emphasis && <span class="text-accent">{m.emphasis}</span>}
+          </dd>
+        </div>
+      );
+    })
   }
 </dl>
+<script>
+  (function () {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const groups = document.querySelectorAll<HTMLElement>("[data-metric-callout]");
+    if (groups.length === 0) return;
+
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+    const DURATION = 1400;
+
+    const animateValue = (el: HTMLElement, target: number, original: string) => {
+      if (reduced) {
+        el.textContent = original;
+        return;
+      }
+      // Preserve number of decimal places (none for integers)
+      const decimals = original.includes(".")
+        ? (original.split(".")[1] ?? "").replace(/\D.*$/, "").length
+        : 0;
+      const start = performance.now();
+      const tick = (now: number) => {
+        const elapsed = now - start;
+        const t = Math.min(1, elapsed / DURATION);
+        const eased = easeOutCubic(t);
+        const current = target * eased;
+        el.textContent = current.toLocaleString(undefined, {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        });
+        if (t < 1) requestAnimationFrame(tick);
+        else el.textContent = original;
+      };
+      requestAnimationFrame(tick);
+    };
+
+    const seen = new WeakSet<HTMLElement>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const group = entry.target as HTMLElement;
+          if (seen.has(group)) return;
+          seen.add(group);
+          io.unobserve(group);
+          const values = group.querySelectorAll<HTMLElement>(".metric-value[data-target]");
+          values.forEach((v) => {
+            const target = Number(v.dataset.target);
+            const original = v.dataset.original ?? String(target);
+            if (Number.isFinite(target)) animateValue(v, target, original);
+          });
+        });
+      },
+      { threshold: 0.3 }
+    );
+    groups.forEach((g) => io.observe(g));
+  })();
+</script>

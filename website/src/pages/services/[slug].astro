@@ -7,6 +7,7 @@ import Button from "@components/Button.astro";
 import Card from "@components/Card.astro";
 import CaseStudyCard from "@components/CaseStudyCard.astro";
 import ServiceIcon from "@components/ServiceIcon.astro";
+import ServiceArtwork from "@components/ServiceArtwork.astro";
 import { getCollection } from "astro:content";
 
 export async function getStaticPaths() {
@@ -44,25 +45,23 @@ const intros: Record<string, string> = {
 const intro = intros[service.slug] ?? "";
 ---
 <PageLayout title={service.title} description={service.summary}>
-  <!-- HERO -->
+  <!-- HERO with custom artwork on the right -->
   <section class="relative">
-    <div class="mx-auto max-w-5xl px-6 pt-20 pb-12">
-      <div class="flex items-center gap-5">
-        <div class="w-16 h-16 md:w-20 md:h-20 rounded-lg bg-surface border border-accent/20 grid place-items-center shrink-0">
-          <ServiceIcon slug={service.slug} size={40} />
-        </div>
-        <div>
-          <Eyebrow>Capability · {service.number}</Eyebrow>
-          <h1 class="font-display text-4xl md:text-6xl font-bold text-fg-strong mt-2 leading-[1.05]">
-            {service.title}
-          </h1>
+    <div class="mx-auto max-w-6xl px-6 pt-20 pb-12 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-12 items-start">
+      <div>
+        <Eyebrow>Capability · {service.number}</Eyebrow>
+        <h1 class="font-display text-4xl md:text-6xl font-bold text-fg-strong mt-3 leading-[1.05]">
+          {service.title}
+        </h1>
+        <p class="mt-8 text-lg md:text-xl text-muted leading-relaxed max-w-2xl">
+          {service.summary}
+        </p>
+        <div class="mt-6 flex flex-wrap gap-2">
+          {service.tags.map((t: string) => <Tag>{t}</Tag>)}
         </div>
       </div>
-      <p class="mt-8 text-lg md:text-xl text-muted leading-relaxed max-w-3xl">
-        {service.summary}
-      </p>
-      <div class="mt-6 flex flex-wrap gap-2">
-        {service.tags.map((t: string) => <Tag>{t}</Tag>)}
+      <div class="hidden md:block w-[280px] lg:w-[320px] aspect-[200/140] bg-surface/40 border border-border-hairline rounded-lg p-5">
+        <ServiceArtwork slug={service.slug} class="w-full h-full" />
       </div>
     </div>
   </section>

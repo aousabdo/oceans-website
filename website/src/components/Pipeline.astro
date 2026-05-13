@@ -12,36 +12,36 @@ interface Props {
 const props = Astro.props as Props;
 const { steps, class: extra = "" } = props;
 ---
-<ol class:list={["relative", extra]}>
+<ol
+  class:list={["relative pipeline-scroll", extra]}
+  data-pipeline
+>
   {
     steps.map((s, i) => (
-      <li class="relative grid grid-cols-[auto_1fr] gap-5 md:gap-7">
+      <li class="relative grid grid-cols-[auto_1fr] gap-5 md:gap-7 pipeline-step" data-step-idx={i}>
         {/* number column with connecting line through it */}
         <div class="relative flex flex-col items-center">
           <div
             class:list={[
-              "relative z-10 w-14 h-14 md:w-16 md:h-16 rounded-md grid place-items-center font-display font-bold text-xl md:text-2xl shrink-0 transition-colors",
-              s.emphasis
-                ? "bg-accent text-bg border border-accent shadow-[0_8px_24px_-8px_var(--color-accent)]"
-                : "bg-surface border border-accent/30 text-accent",
+              "pipeline-num relative z-10 w-14 h-14 md:w-16 md:h-16 rounded-md grid place-items-center font-display font-bold text-xl md:text-2xl shrink-0 transition-all duration-500",
+              "bg-surface border border-accent/25 text-accent/60",
             ]}
           >
             {String(i + 1).padStart(2, "0")}
           </div>
           {i < steps.length - 1 && (
-            <div class="flex-1 w-px my-2 bg-gradient-to-b from-accent/40 via-accent/20 to-accent/40" />
+            <div class="pipeline-line-wrap relative flex-1 w-px my-2 overflow-hidden">
+              <div class="pipeline-line absolute inset-0 bg-gradient-to-b from-accent/40 via-accent/20 to-accent/40" />
+            </div>
           )}
         </div>
         {/* content card */}
         <div
           class:list={[
-            "min-w-0 mb-8 last:mb-0 p-5 md:p-6 rounded-lg border transition-all hover:border-accent/40 hover:translate-x-0.5",
-            s.emphasis
-              ? "border-accent/40 bg-surface-2/40"
-              : "border-border-hairline bg-surface",
+            "pipeline-card min-w-0 mb-8 last:mb-0 p-5 md:p-6 rounded-lg border transition-all duration-500 border-border-hairline bg-surface",
           ]}
         >
-          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">
+          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent/70">
             {s.label}
           </div>
           <div class="font-display text-lg md:text-xl font-bold text-fg-strong mt-1.5 leading-tight">
@@ -55,3 +55,113 @@ const { steps, class: extra = "" } = props;
     ))
   }
 </ol>
+<style>
+  .pipeline-step .pipeline-num { box-shadow: 0 0 0 0 transparent; }
+  .pipeline-step.is-active .pipeline-num {
+    background: var(--color-accent);
+    color: var(--color-bg);
+    border-color: var(--color-accent);
+    box-shadow: 0 8px 24px -8px var(--color-accent);
+  }
+  .pipeline-step.is-past .pipeline-num {
+    background: var(--color-surface-2);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+  .pipeline-step.is-active .pipeline-card,
+  .pipeline-step.is-past .pipeline-card {
+    border-color: rgba(255, 255, 255, 0); /* fallback */
+  }
+  .pipeline-step.is-active .pipeline-card {
+    border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
+    transform: translateX(2px);
+  }
+  .pipeline-step.is-past .pipeline-card {
+    border-color: color-mix(in srgb, var(--color-accent) 25%, transparent);
+  }
+  .pipeline-step .pipeline-card .font-mono.text-accent\/70 {
+    color: color-mix(in srgb, var(--color-accent) 60%, transparent);
+    transition: color 500ms;
+  }
+  .pipeline-step.is-active .pipeline-card .font-mono.text-accent\/70,
+  .pipeline-step.is-past .pipeline-card .font-mono.text-accent\/70 {
+    color: var(--color-accent);
+  }
+  .pipeline-line-wrap .pipeline-line {
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 700ms ease-out;
+  }
+  .pipeline-step.is-active + .pipeline-step .pipeline-line-wrap .pipeline-line,
+  .pipeline-step.is-past .pipeline-line-wrap .pipeline-line {
+    transform: scaleY(1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pipeline-step .pipeline-num,
+    .pipeline-step .pipeline-card,
+    .pipeline-line-wrap .pipeline-line {
+      transition: none !important;
+      transform: none !important;
+    }
+    .pipeline-step .pipeline-num {
+      background: var(--color-accent);
+      color: var(--color-bg);
+      border-color: var(--color-accent);
+    }
+    .pipeline-line-wrap .pipeline-line { transform: scaleY(1) !important; }
+  }
+</style>
+<script>
+  (function () {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const pipelines = document.querySelectorAll<HTMLOListElement>("[data-pipeline]");
+    pipelines.forEach((pipeline) => {
+      const steps = Array.from(pipeline.querySelectorAll<HTMLLIElement>(".pipeline-step"));
+      if (steps.length === 0) return;
+
+      let activeIdx = -1;
+
+      const updateStates = () => {
+        // Determine which step is the "active" one — the one whose card center
+        // is closest to ~60% from the top of the viewport.
+        const targetY = window.innerHeight * 0.55;
+        let nextActiveIdx = activeIdx;
+        let bestDistance = Infinity;
+        steps.forEach((step, i) => {
+          const rect = step.getBoundingClientRect();
+          const center = rect.top + rect.height / 2;
+          // Only consider steps that have entered the viewport
+          if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+          const distance = Math.abs(center - targetY);
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            nextActiveIdx = i;
+          }
+        });
+
+        if (nextActiveIdx !== activeIdx) {
+          activeIdx = nextActiveIdx;
+          steps.forEach((step, i) => {
+            step.classList.toggle("is-active", i === activeIdx);
+            step.classList.toggle("is-past", i < activeIdx);
+          });
+        }
+      };
+
+      updateStates();
+      let ticking = false;
+      const onScroll = () => {
+        if (!ticking) {
+          requestAnimationFrame(() => {
+            updateStates();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      };
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll, { passive: true });
+    });
+  })();
+</script>
