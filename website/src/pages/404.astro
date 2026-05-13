@@ -1,15 +1,196 @@
 ---
 import PageLayout from "@layouts/PageLayout.astro";
 import Button from "@components/Button.astro";
+import { getCollection } from "astro:content";
+
+// Pull a few real entries to surface as suggestions
+const services = (await getCollection("services")).sort(
+  (a, b) => (a.data.order ?? 99) - (b.data.order ?? 99),
+);
+const recentPosts = (await getCollection("blog", ({ data }) => !data.draft))
+  .sort((a, b) => +b.data.date - +a.data.date)
+  .slice(0, 3);
+
+const destinations = [
+  {
+    label: "Capabilities statement",
+    href: "/capabilities",
+    desc: "What we do, in one page.",
+  },
+  {
+    label: "Services",
+    href: "/services",
+    desc: "Requirements, SE, RDT&E, mission data.",
+  },
+  {
+    label: "Past performance",
+    href: "/experience",
+    desc: "Where we've operated. Federal, international, infrastructure.",
+  },
+  {
+    label: "Team",
+    href: "/team",
+    desc: "Who actually does the work.",
+  },
+  {
+    label: "Journal",
+    href: "/blog",
+    desc: "Practitioner notes on T&E and federal engineering.",
+  },
+  {
+    label: "Glossary",
+    href: "/glossary",
+    desc: "Federal-engineering terms, defined plainly.",
+  },
+];
 ---
-<PageLayout title="Not found" description="404">
-  <section class="mx-auto max-w-3xl px-6 pt-32 pb-24 text-center">
-    <p class="font-mono text-[11px] uppercase tracking-widest text-accent">▌ Error 404</p>
-    <h1 class="font-display text-6xl md:text-8xl font-bold text-fg-strong mt-4">Off course.</h1>
-    <p class="mt-6 text-lg text-muted">The page you were looking for doesn't exist or has moved.</p>
+<PageLayout title="Not found · OCEANS LLC" description="The page you were looking for doesn't exist or has moved.">
+  <!-- HERO -->
+  <section class="mx-auto max-w-4xl px-6 pt-24 pb-12 text-center">
+    <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">▌ Bearing: 404 · Off course</p>
+
+    <!-- Stylized coordinate display -->
+    <div class="mt-8 inline-flex items-center gap-6 font-mono text-[10px] md:text-xs uppercase tracking-[0.18em] text-muted">
+      <span>LAT —</span>
+      <span class="text-accent">No fix</span>
+      <span>LON —</span>
+      <span class="text-accent">No fix</span>
+    </div>
+
+    <h1 class="font-display text-6xl md:text-8xl font-bold text-fg-strong mt-6 leading-[1.02]">
+      Off course.
+    </h1>
+    <p class="mt-6 text-lg md:text-xl text-muted leading-relaxed max-w-2xl mx-auto">
+      The page you tried to reach doesn't exist or has moved. No drama — let's
+      reroute. Below are the destinations most people end up at when they land here.
+    </p>
+
     <div class="mt-8 flex justify-center gap-3 flex-wrap">
       <Button href="/" variant="primary">Back to home</Button>
       <Button href="/contact" variant="outline">Tell us what you needed</Button>
+    </div>
+  </section>
+
+  <!-- POPULAR DESTINATIONS -->
+  <section class="mx-auto max-w-5xl px-6 pb-16">
+    <div class="flex items-center gap-4 mb-6">
+      <span class="h-px flex-1 bg-border-hairline"></span>
+      <span class="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">You might be looking for</span>
+      <span class="h-px flex-1 bg-border-hairline"></span>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {
+        destinations.map((d) => (
+          <li>
+            <a
+              href={d.href}
+              class="group block bg-surface border border-border-hairline rounded-lg p-5 transition-all hover:border-accent/50 hover:-translate-y-0.5"
+            >
+              <div class="flex items-center justify-between gap-4">
+                <div class="font-display text-base md:text-lg font-bold text-fg-strong group-hover:text-accent transition-colors">
+                  {d.label}
+                </div>
+                <span class="font-mono text-accent opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
+                  →
+                </span>
+              </div>
+              <p class="mt-1.5 text-sm text-muted leading-relaxed">{d.desc}</p>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- SERVICES STRIP -->
+  {
+    services.length > 0 && (
+      <section class="bg-bg-2 border-y border-border-hairline">
+        <div class="mx-auto max-w-5xl px-6 py-14">
+          <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">▌ Service lines</p>
+          <h2 class="font-display text-2xl md:text-3xl font-bold text-fg-strong mt-2">
+            Or jump to a capability.
+          </h2>
+          <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {services.map((s) => (
+              <a
+                href={`/services/${s.data.slug}`}
+                class="group block bg-surface border border-border-hairline rounded-md p-4 transition-all hover:border-accent/50"
+              >
+                <div class="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
+                  {s.data.number}
+                </div>
+                <div class="mt-2 font-display text-sm font-bold text-fg-strong group-hover:text-accent transition-colors">
+                  {s.data.title}
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- LATEST JOURNAL -->
+  {
+    recentPosts.length > 0 && (
+      <section class="mx-auto max-w-5xl px-6 py-14">
+        <div class="flex items-end justify-between gap-6 mb-6 flex-wrap">
+          <div>
+            <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">▌ Recent journal</p>
+            <h2 class="font-display text-2xl md:text-3xl font-bold text-fg-strong mt-2">
+              Or read something new.
+            </h2>
+          </div>
+          <a
+            href="/blog"
+            class="font-mono text-[10px] uppercase tracking-widest text-accent hover:text-fg-strong transition-colors"
+          >
+            All entries →
+          </a>
+        </div>
+        <ul class="space-y-3">
+          {recentPosts.map((p) => (
+            <li>
+              <a
+                href={`/blog/${p.id}`}
+                class="group flex items-start gap-4 bg-surface border border-border-hairline rounded-md p-4 transition-all hover:border-accent/50"
+              >
+                <span class="font-mono text-[10px] uppercase tracking-widest text-muted shrink-0 mt-1 hidden sm:inline">
+                  {new Date(p.data.date).toISOString().slice(0, 10)}
+                </span>
+                <div class="flex-1 min-w-0">
+                  <div class="font-display text-base font-bold text-fg-strong group-hover:text-accent transition-colors line-clamp-2">
+                    {p.data.title}
+                  </div>
+                  <p class="mt-1 text-sm text-muted leading-relaxed line-clamp-2">
+                    {p.data.excerpt}
+                  </p>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <!-- CTA -->
+  <section class="bg-surface border-y border-border-hairline">
+    <div class="mx-auto max-w-3xl px-6 py-14 text-center">
+      <h2 class="font-display text-2xl md:text-3xl font-bold text-fg-strong leading-tight">
+        Still can't find what you needed?
+      </h2>
+      <p class="mt-3 text-muted leading-relaxed max-w-xl mx-auto">
+        Tell us what you were looking for and we'll point you at it — or fix the
+        broken link that sent you here.
+      </p>
+      <div class="mt-6">
+        <Button href="/contact" variant="primary" size="sm">
+          Send us a quick note
+        </Button>
+      </div>
     </div>
   </section>
 </PageLayout>

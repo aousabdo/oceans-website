@@ -5,6 +5,7 @@ import Eyebrow from "@components/Eyebrow.astro";
 import Button from "@components/Button.astro";
 import CaseStudyCard from "@components/CaseStudyCard.astro";
 import MetricCallout from "@components/MetricCallout.astro";
+import PartnerMap from "@components/PartnerMap.astro";
 import partnersData from "@/data/partners.json";
 import { getCollection } from "astro:content";
 
@@ -94,6 +95,9 @@ const totalSections = groups.length;
       </section>
     )
   }
+
+  <!-- PARTNER MAP -->
+  <PartnerMap />
 
   <!-- MISSION PARTNERS GRID -->
   <section class="mx-auto max-w-6xl px-6 py-20">

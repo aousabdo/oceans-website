@@ -1,0 +1,233 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import SectionLabel from "@components/SectionLabel.astro";
+import Eyebrow from "@components/Eyebrow.astro";
+
+interface Term {
+  term: string;
+  abbreviation?: string;
+  category: string;
+  definition: string;
+}
+
+const terms: Term[] = [
+  {
+    term: "Acquisition program",
+    category: "Process",
+    definition:
+      "A directed, funded effort to acquire a new system or capability. In the federal context, programs move through phased milestones with formal review gates. The phases include the engineering decisions, contracting actions, and operational tests that lead to a fielded system.",
+  },
+  {
+    term: "Common Operating Picture",
+    abbreviation: "COP",
+    category: "Mission Data",
+    definition:
+      "A shared situational display that integrates data from multiple sources so distributed teams reason from the same view. Good COPs preserve the operational distinctions analysts care about; poor ones flatten everything to a single object class and lose meaning at the boundary.",
+  },
+  {
+    term: "Concept of Operations",
+    abbreviation: "CONOPS",
+    category: "Architecture",
+    definition:
+      "A document describing how a capability will be used in the field — who operates it, under what conditions, in service of what mission. CONOPS bridges between high-level mission needs and detailed system requirements.",
+  },
+  {
+    term: "Counter-Unmanned Aircraft Systems",
+    abbreviation: "C-UAS",
+    category: "Mission Domain",
+    definition:
+      "Capabilities for detecting, identifying, tracking, and (when authorized) defeating uncrewed aerial systems. Spans sensors, classifiers, command-and-control, and effectors — typically integrated under tight latency and rules-of-engagement constraints.",
+  },
+  {
+    term: "Defensible engineering",
+    category: "OCEANS terminology",
+    definition:
+      "Engineering whose conclusions survive technical, operational, and executive review. Every recommendation traces to a validated requirement; every metric was measured the way it was measured for a documented reason. We use this phrase a lot.",
+  },
+  {
+    term: "DOTMLPF-P",
+    category: "Process",
+    definition:
+      "Doctrine, Organization, Training, Materiel, Leadership, Personnel, Facilities, and Policy — the dimensions DoD uses to analyze whether a capability gap requires a materiel solution or a non-materiel one. Acquisition decisions usually inspect each dimension.",
+  },
+  {
+    term: "Five Eyes",
+    abbreviation: "FVEY",
+    category: "International",
+    definition:
+      "The intelligence-sharing alliance comprising the United States, United Kingdom, Canada, Australia, and New Zealand. References to FVEY on this site typically mean engagements with allied partners in those nations.",
+  },
+  {
+    term: "Intelligence, Surveillance, and Reconnaissance",
+    abbreviation: "ISR",
+    category: "Mission Domain",
+    definition:
+      "The activities and systems that gather, process, and disseminate information for decision-making. ISR ranges from satellite imagery to ground sensors to operator reports.",
+  },
+  {
+    term: "Measures of Effectiveness",
+    abbreviation: "MOE",
+    category: "T&E",
+    definition:
+      "Mission-level metrics that indicate whether a capability achieves its intended operational outcome. MOEs are tied to what an operator or commander cares about — distinct from sub-system performance metrics.",
+  },
+  {
+    term: "Measures of Performance",
+    abbreviation: "MOP",
+    category: "T&E",
+    definition:
+      "Sub-system or component-level metrics that indicate whether a piece of the capability performs to specification. Many MOPs roll up into a single MOE.",
+  },
+  {
+    term: "Ontology (data)",
+    category: "Mission Data",
+    definition:
+      "A formal model that defines the entities, attributes, and relationships a data system represents. Ontology-driven architectures preserve the distinctions operators care about — instead of flattening everything to a single object class during ingestion.",
+  },
+  {
+    term: "Operational Test and Evaluation",
+    abbreviation: "OT&E",
+    category: "T&E",
+    definition:
+      "Testing performed by operational users (rather than developers) under realistic conditions, to determine whether a system meets mission needs. OT&E produces the evidence that informs fielding decisions and is independent from developmental testing.",
+  },
+  {
+    term: "Rules of Engagement",
+    abbreviation: "ROE",
+    category: "Operations",
+    definition:
+      "The authorities and constraints that govern when force or specific actions may be applied. ROE shape the operational logic of a system — particularly anything involving classification, tracking, or response to identified threats.",
+  },
+  {
+    term: "Sea state",
+    category: "Maritime",
+    definition:
+      "A standardized scale (0 through 9) describing wave height, wind speed, and ocean conditions. Sea state is a common condition variable in maritime test requirements — performance claims often depend on which sea states a system is qualified against.",
+  },
+  {
+    term: "Technology Readiness Level",
+    abbreviation: "TRL",
+    category: "Architecture",
+    definition:
+      "A 1–9 scale describing how mature a technology is, from basic principles observed (TRL 1) to a system proven in operational use (TRL 9). TRL assessments inform whether a capability is ready to transition to fielding or needs more development.",
+  },
+  {
+    term: "Test plan",
+    category: "T&E",
+    definition:
+      "The structured document specifying what will be tested, under what conditions, against which thresholds, and how the data will be analyzed. A good test plan is approved before testing begins; a post-hoc test plan is a story written to fit the data.",
+  },
+  {
+    term: "Threshold / Objective",
+    category: "T&E",
+    definition:
+      "Threshold is the minimum acceptable level of performance. Objective is the desired level. Requirements that state only thresholds tell you when something fails — they don't tell you when it succeeds well.",
+  },
+  {
+    term: "Traceability matrix",
+    category: "Requirements",
+    definition:
+      "A live document linking every requirement back to a validated mission need and forward to the test that verifies it. The matrix exists to answer 'why are we doing this?' for every engineering choice — not as a deliverable, but as a query interface.",
+  },
+  {
+    term: "White Team / Blue Team / Red Team",
+    category: "T&E",
+    definition:
+      "In an operational test: Blue is the operators using the system as they would in the field. Red is the adversarial play (threats, attackers). White sits between them — runs the engagement, records observations, enforces the test design, keeps the assessment honest.",
+  },
+];
+
+// Group alphabetically with anchor sections
+const groups = terms.reduce<Record<string, Term[]>>((acc, t) => {
+  const letter = t.term[0]!.toUpperCase();
+  (acc[letter] ??= []).push(t);
+  return acc;
+}, {});
+const letters = Object.keys(groups).sort();
+---
+<PageLayout
+  title="Mission Glossary"
+  description="Plain-language definitions of the federal-engineering terms used across this site."
+>
+  <!-- HERO -->
+  <section class="mx-auto max-w-4xl px-6 pt-20 pb-8">
+    <Eyebrow>Mission Glossary</Eyebrow>
+    <h1 class="font-display text-5xl md:text-7xl font-bold text-fg-strong mt-4 leading-[1.05]">
+      The federal-engineering<br />vocabulary, plain.
+    </h1>
+    <p class="mt-8 text-lg md:text-xl text-muted leading-relaxed max-w-2xl">
+      Terms we use across the site, defined in plain language. For federal readers this is review;
+      for everyone else it's a quick way to follow the writing without a defense-acquisition
+      decoder ring.
+    </p>
+  </section>
+
+  <!-- ALPHABETICAL ANCHOR NAV -->
+  <section class="mx-auto max-w-4xl px-6 pb-10">
+    <div class="flex flex-wrap gap-2 border-y border-border-hairline py-4">
+      <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted self-center mr-2">Jump to:</span>
+      {
+        letters.map((l) => (
+          <a
+            href={`#letter-${l}`}
+            class="font-mono text-xs text-accent hover:text-fg-strong transition-colors w-6 h-6 grid place-items-center rounded hover:bg-accent/10"
+          >
+            {l}
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- TERMS -->
+  <section class="mx-auto max-w-4xl px-6 pb-24 space-y-12">
+    {
+      letters.map((letter) => (
+        <section id={`letter-${letter}`} class="scroll-mt-20">
+          <h2 class="font-display text-4xl font-bold text-accent leading-none mb-6">{letter}</h2>
+          <dl class="space-y-8">
+            {groups[letter]!.map((t) => (
+              <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-4 md:gap-8 pb-6 border-b border-border-hairline last:border-0">
+                <dt class="md:text-right">
+                  <div class="font-display text-lg font-bold text-fg-strong leading-snug">
+                    {t.term}
+                  </div>
+                  {t.abbreviation && (
+                    <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-accent mt-1">
+                      {t.abbreviation}
+                    </div>
+                  )}
+                  <div class="font-mono text-[10px] uppercase tracking-[0.15em] text-muted mt-2">
+                    {t.category}
+                  </div>
+                </dt>
+                <dd class="text-fg leading-relaxed">{t.definition}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      ))
+    }
+  </section>
+
+  <!-- CTA -->
+  <section class="bg-surface border-y border-border-hairline">
+    <div class="mx-auto max-w-3xl px-6 py-16 text-center">
+      <h2 class="font-display text-2xl md:text-3xl font-bold text-fg-strong leading-tight">
+        Missing a term?
+      </h2>
+      <p class="mt-3 text-muted leading-relaxed max-w-xl mx-auto">
+        Tell us — we'll add it. This glossary is here to make the rest of the site readable, not
+        to be a definitive reference.
+      </p>
+      <div class="mt-6">
+        <a
+          href="/contact"
+          class="inline-flex items-center justify-center font-mono text-xs uppercase tracking-widest bg-accent text-bg px-6 py-3 rounded transition-all hover:brightness-110"
+        >
+          Suggest a term
+        </a>
+      </div>
+    </div>
+  </section>
+</PageLayout>
