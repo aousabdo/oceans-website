@@ -1,0 +1,203 @@
+---
+/**
+ * SectionDivider — animated SVG ornament between major page sections.
+ *
+ * Variants:
+ *  - "wave"   : two sine curves drawing in from the center (default)
+ *  - "ticks"  : tick-mark scale that resolves into measurement marks
+ *  - "compass": rotating compass rose (subtle)
+ *  - "circuit": branching circuit lines
+ *
+ * Animations are scroll-triggered (IntersectionObserver). Respects
+ * prefers-reduced-motion via global rules.
+ *
+ * Usage:
+ *  <SectionDivider />                  // default: wave
+ *  <SectionDivider variant="ticks" />
+ */
+interface Props {
+  variant?: "wave" | "ticks" | "compass" | "circuit";
+  label?: string;        // optional eyebrow text overlaid on the line
+  class?: string;
+}
+const { variant = "wave", label, class: extra = "" } = Astro.props as Props;
+---
+<div
+  data-section-divider
+  class:list={[
+    "relative mx-auto max-w-6xl px-6 py-10 text-accent",
+    extra,
+  ]}
+  role="separator"
+  aria-orientation="horizontal"
+>
+  <div class="flex items-center gap-5">
+    <span class="block h-px flex-1 bg-border-hairline"></span>
+
+    {variant === "wave" && (
+      <svg
+        viewBox="0 0 140 24"
+        width="140"
+        height="24"
+        class="sd-svg shrink-0"
+        aria-hidden="true"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.2"
+        stroke-linecap="round"
+      >
+        <path
+          class="sd-path"
+          pathLength="100"
+          d="M 4 12 Q 22 4 40 12 T 76 12 T 112 12 T 136 12"
+          stroke-dasharray="100"
+          stroke-dashoffset="100"
+        />
+        <circle cx="70" cy="12" r="2.2" fill="currentColor" class="sd-dot" />
+      </svg>
+    )}
+
+    {variant === "ticks" && (
+      <svg
+        viewBox="0 0 200 24"
+        width="200"
+        height="24"
+        class="sd-svg shrink-0"
+        aria-hidden="true"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.2"
+        stroke-linecap="round"
+      >
+        {Array.from({ length: 21 }).map((_, i) => {
+          const x = 5 + i * 9.5;
+          const isMajor = i % 5 === 0;
+          const h = isMajor ? 14 : 7;
+          return (
+            <line
+              class="sd-tick"
+              x1={x}
+              x2={x}
+              y1={12 - h / 2}
+              y2={12 + h / 2}
+              style={`transition-delay: ${i * 25}ms;`}
+            />
+          );
+        })}
+      </svg>
+    )}
+
+    {variant === "compass" && (
+      <svg
+        viewBox="0 0 36 36"
+        width="36"
+        height="36"
+        class="sd-svg shrink-0"
+        aria-hidden="true"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.2"
+        stroke-linecap="round"
+      >
+        <circle cx="18" cy="18" r="14" class="sd-ring" stroke-dasharray="88" stroke-dashoffset="88" />
+        <line x1="18" y1="3" x2="18" y2="33" class="sd-axis" stroke-dasharray="32" stroke-dashoffset="32" />
+        <line x1="3" y1="18" x2="33" y2="18" class="sd-axis" stroke-dasharray="32" stroke-dashoffset="32" style="transition-delay: 200ms;" />
+        <circle cx="18" cy="18" r="2" fill="currentColor" class="sd-dot" />
+      </svg>
+    )}
+
+    {variant === "circuit" && (
+      <svg
+        viewBox="0 0 160 24"
+        width="160"
+        height="24"
+        class="sd-svg shrink-0"
+        aria-hidden="true"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.2"
+        stroke-linecap="round"
+      >
+        <path
+          class="sd-path"
+          pathLength="100"
+          d="M 0 12 L 40 12 L 50 6 L 80 6 L 90 12 L 120 12 L 130 18 L 160 18"
+          stroke-dasharray="100"
+          stroke-dashoffset="100"
+        />
+        <circle cx="80" cy="6" r="2" fill="currentColor" class="sd-dot" />
+        <circle cx="120" cy="12" r="2" fill="currentColor" class="sd-dot" style="transition-delay: 250ms;" />
+      </svg>
+    )}
+
+    {label && (
+      <span class="font-mono text-[10px] uppercase tracking-[0.22em] text-muted whitespace-nowrap">{label}</span>
+    )}
+
+    <span class="block h-px flex-1 bg-border-hairline"></span>
+  </div>
+</div>
+
+<style>
+  /* Animation triggers when the divider is in view (set by global scroll-reveal observer) */
+  .sd-svg .sd-path,
+  .sd-svg .sd-ring,
+  .sd-svg .sd-axis {
+    transition: stroke-dashoffset 1100ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .sd-svg .sd-dot,
+  .sd-svg .sd-tick {
+    transform-origin: center;
+    transform: scale(0);
+    transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  [data-section-divider].is-revealed .sd-path,
+  [data-section-divider].is-revealed .sd-ring,
+  [data-section-divider].is-revealed .sd-axis {
+    stroke-dashoffset: 0;
+  }
+  [data-section-divider].is-revealed .sd-dot,
+  [data-section-divider].is-revealed .sd-tick {
+    transform: scale(1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sd-svg .sd-path,
+    .sd-svg .sd-ring,
+    .sd-svg .sd-axis,
+    .sd-svg .sd-dot,
+    .sd-svg .sd-tick {
+      transition: none !important;
+    }
+    [data-section-divider] .sd-svg .sd-path,
+    [data-section-divider] .sd-svg .sd-ring,
+    [data-section-divider] .sd-svg .sd-axis {
+      stroke-dashoffset: 0;
+    }
+    [data-section-divider] .sd-svg .sd-dot,
+    [data-section-divider] .sd-svg .sd-tick {
+      transform: scale(1);
+    }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    if (!("IntersectionObserver" in window)) {
+      document.querySelectorAll("[data-section-divider]").forEach((d) => d.classList.add("is-revealed"));
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-revealed");
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+    document.querySelectorAll("[data-section-divider]").forEach((d) => io.observe(d));
+  })();
+</script>

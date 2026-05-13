@@ -1,0 +1,127 @@
+---
+/**
+ * StickyCta — slim sticky bar that appears once the user has scrolled past
+ * the hero on long pages. Dismissible (preference saved to sessionStorage),
+ * never appears on /contact / /scope (where the conversion is already the
+ * page's job), respects reduced motion.
+ *
+ * Copy adapts to the page: /experience -> "Brief on past performance",
+ * /services -> "Scope an engagement", everywhere else -> "Get in touch".
+ */
+---
+<div
+  id="sticky-cta"
+  hidden
+  class="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 max-w-[calc(100%-2rem)] opacity-0 translate-y-3 transition-all duration-300 ease-out"
+  role="region"
+  aria-label="Quick action"
+>
+  <div class="flex items-center gap-3 bg-surface/95 backdrop-blur-md border border-accent/30 rounded-full shadow-2xl pl-5 pr-2 py-2">
+    <span
+      id="sticky-cta-text"
+      class="font-display text-sm font-bold text-fg-strong"
+    >Working on something this touches?</span>
+    <a
+      id="sticky-cta-link"
+      href="/contact"
+      class="inline-flex items-center justify-center font-mono text-[10px] uppercase tracking-widest bg-accent text-bg px-4 py-2 rounded-full transition-all hover:brightness-110 whitespace-nowrap shrink-0"
+    >
+      Get in touch
+    </a>
+    <button
+      id="sticky-cta-dismiss"
+      type="button"
+      class="grid place-items-center w-8 h-8 text-muted hover:text-fg-strong transition-colors rounded-full shrink-0"
+      aria-label="Dismiss"
+    >
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    const bar = document.getElementById("sticky-cta");
+    const textEl = document.getElementById("sticky-cta-text");
+    const linkEl = document.getElementById("sticky-cta-link");
+    const dismissBtn = document.getElementById("sticky-cta-dismiss");
+    if (!bar || !textEl || !linkEl || !dismissBtn) return;
+
+    // Pages where the sticky bar would be in the way / redundant
+    const path = window.location.pathname;
+    const SUPPRESS = ["/contact", "/contact/", "/scope", "/scope/", "/404"];
+    if (SUPPRESS.includes(path)) return;
+
+    // Honor session dismissal
+    if (sessionStorage.getItem("oceans-cta-dismissed") === "1") return;
+
+    // Contextual copy per page
+    const COPY = [
+      { match: /^\/experience/, text: "Want a deeper read-out on past performance?", link: "/contact?subject=Briefing+request", cta: "Request a briefing" },
+      { match: /^\/services/, text: "Curious what your engagement would look like?", link: "/scope", cta: "Scope it" },
+      { match: /^\/capabilities/, text: "Need a capabilities statement for procurement?", link: "/contact?subject=Capabilities+statement", cta: "Get the brief" },
+      { match: /^\/blog/, text: "Working on something this post touches?", link: "/contact", cta: "Get in touch" },
+      { match: /^\/team/, text: "Want to talk with one of these folks?", link: "/contact?subject=Team+intro", cta: "Schedule a call" },
+      { match: /^\/careers/, text: "Don't see your role? Tell us anyway.", link: "mailto:careers@oceansllc.com", cta: "Email careers" },
+      { match: /^\/glossary/, text: "Use these terms every day? Let's talk.", link: "/contact", cta: "Get in touch" },
+      { match: /^\/about/, text: "Engaging us on a federal program?", link: "/scope", cta: "Scope an engagement" },
+      { match: /^\/$/, text: "Engaging us on a federal program?", link: "/scope", cta: "Scope an engagement" },
+    ];
+    const match = COPY.find((c) => c.match.test(path));
+    const cfg = match ?? { text: "Working on something we could support?", link: "/contact", cta: "Get in touch" };
+    textEl.textContent = cfg.text;
+    linkEl.setAttribute("href", cfg.link);
+    linkEl.textContent = cfg.cta;
+
+    // Show after the user has scrolled past the first hero (~70vh)
+    let visible = false;
+    function update() {
+      const trigger = window.innerHeight * 0.7;
+      const past = window.scrollY > trigger;
+      // Hide before the footer so it doesn't overlap the page CTA
+      const nearBottom =
+        window.innerHeight + window.scrollY > document.body.scrollHeight - 240;
+      const shouldShow = past && !nearBottom;
+      if (shouldShow && !visible) {
+        bar.hidden = false;
+        // next frame so transition runs
+        requestAnimationFrame(() => {
+          bar.classList.remove("opacity-0", "translate-y-3");
+        });
+        visible = true;
+      } else if (!shouldShow && visible) {
+        bar.classList.add("opacity-0", "translate-y-3");
+        // hide after the transition
+        setTimeout(() => {
+          if (!visible) bar.hidden = true;
+        }, 300);
+        visible = false;
+      }
+    }
+
+    let ticking = false;
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          update();
+          ticking = false;
+        });
+      },
+      { passive: true }
+    );
+    window.addEventListener("resize", update, { passive: true });
+    update();
+
+    dismissBtn.addEventListener("click", () => {
+      bar.classList.add("opacity-0", "translate-y-3");
+      sessionStorage.setItem("oceans-cta-dismissed", "1");
+      setTimeout(() => (bar.hidden = true), 300);
+    });
+  })();
+</script>

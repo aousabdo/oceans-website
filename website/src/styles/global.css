@@ -113,6 +113,46 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────
+   Per-theme cursor variants (pointer: fine only — touch keeps native).
+   The custom cursor replaces only the default arrow; interactive
+   elements keep `pointer`, text inputs keep `text`. The system
+   gracefully falls back to `auto` if the SVG fails to load.
+───────────────────────────────────────────────────────────────── */
+@media (pointer: fine) {
+  [data-theme="operator"] body {
+    cursor: url("/cursors/operator.svg") 11 11, default;
+  }
+  [data-theme="institute"] body {
+    cursor: url("/cursors/institute.svg") 8 8, default;
+  }
+  [data-theme="mariner"] body {
+    cursor: url("/cursors/mariner.svg") 11 11, default;
+  }
+  /* Restore native cursors for interactive content */
+  [data-theme] a,
+  [data-theme] button,
+  [data-theme] [role="button"],
+  [data-theme] label,
+  [data-theme] summary,
+  [data-theme] select {
+    cursor: pointer;
+  }
+  [data-theme] input[type="text"],
+  [data-theme] input[type="email"],
+  [data-theme] input[type="tel"],
+  [data-theme] input[type="search"],
+  [data-theme] input[type="number"],
+  [data-theme] textarea,
+  [data-theme] [contenteditable="true"] {
+    cursor: text;
+  }
+  [data-theme] [disabled],
+  [data-theme] [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
    Scroll-reveal — fades + slides any element marked [data-reveal]
    into view as it enters the viewport. JS in BaseLayout flags
    below-the-fold sections; above-the-fold stays visible by default.
