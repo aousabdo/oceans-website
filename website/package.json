@@ -16,7 +16,11 @@
     "test:e2e": "playwright test",
     "lint": "eslint . --ext .ts,.tsx,.astro",
     "format": "prettier --write \"**/*.{ts,tsx,astro,md,mdx,json,css}\"",
-    "pages:dev": "wrangler pages dev dist --compatibility-date=2026-01-01"
+    "pages:dev": "wrangler pages dev dist --compatibility-date=2026-01-01",
+    "deploy:operator": "PUBLIC_THEME=operator npm run build && wrangler pages deploy dist --project-name oceans-website --branch theme/operator --commit-dirty=true",
+    "deploy:institute": "PUBLIC_THEME=institute npm run build && wrangler pages deploy dist --project-name oceans-website --branch theme/institute --commit-dirty=true",
+    "deploy:mariner": "PUBLIC_THEME=mariner npm run build && wrangler pages deploy dist --project-name oceans-website --branch theme/mariner --commit-dirty=true",
+    "deploy:all": "npm run deploy:operator && npm run deploy:institute && npm run deploy:mariner"
   },
   "dependencies": {
     "@astrojs/mdx": "^5.0.4",
