@@ -278,12 +278,20 @@ const clientLinks = links.map((l) => ({ s: l.source, t: l.target }));
   <section class="mx-auto max-w-5xl px-6 pt-20 pb-8">
     <Eyebrow>Mission Network</Eyebrow>
     <h1 class="font-display text-5xl md:text-7xl font-bold text-fg-strong mt-4 leading-[1.05]">
-      Everything connected.
+      How the work<br />actually connects.
     </h1>
     <p class="mt-8 text-lg md:text-xl text-muted leading-relaxed max-w-3xl">
-      An interactive graph of the company. {nodes.length} nodes — OCEANS, four service lines, eight
-      sector groups, {partners.length} partner agencies, {caseStudies.length} case studies,
-      and the team. Hover any node to see its connections. Click to open it. Drag to rearrange.
+      A site is usually a list of pages. Federal engineering is a web — every project we run
+      threads through a service line, a sector, a set of partners, and a case study that proves
+      it worked. This is that web, drawn as a graph. {nodes.length} nodes, {links.length} real
+      relationships pulled from the same data the rest of the site is built on.
+    </p>
+    <p class="mt-4 text-base text-muted leading-relaxed max-w-3xl">
+      <span class="text-fg-strong font-bold">Hover</span> a node to follow what it touches.
+      <span class="text-fg-strong font-bold">Click</span> to open it.
+      <span class="text-fg-strong font-bold">Drag</span> to rearrange.
+      <span class="text-fg-strong font-bold">Scroll</span> (or pinch) to zoom.
+      On the side, toggle off any category to thin the view.
     </p>
   </section>
 
@@ -333,16 +341,28 @@ const clientLinks = links.map((l) => ({ s: l.source, t: l.target }));
         </ul>
 
         <div class="mt-6 pt-5 border-t border-border-hairline">
+          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent mb-3">Label size</div>
+          <div class="grid grid-cols-3 gap-1 bg-bg-2 border border-border-hairline rounded p-1">
+            <button data-net-text="sm" class="net-text-btn font-mono text-[10px] uppercase tracking-widest py-1.5 rounded transition-colors text-muted hover:text-fg-strong" aria-label="Small text">S</button>
+            <button data-net-text="md" class="net-text-btn font-mono text-[10px] uppercase tracking-widest py-1.5 rounded transition-colors bg-accent/15 text-accent" aria-label="Medium text" aria-pressed="true">M</button>
+            <button data-net-text="lg" class="net-text-btn font-mono text-[10px] uppercase tracking-widest py-1.5 rounded transition-colors text-muted hover:text-fg-strong" aria-label="Large text">L</button>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-border-hairline">
           <button
             id="net-reset"
-            class="w-full font-mono text-[10px] uppercase tracking-widest text-muted hover:text-fg-strong border border-border-hairline rounded px-3 py-1.5 transition-colors"
+            class="w-full font-mono text-[10px] uppercase tracking-widest text-muted hover:text-fg-strong border border-border-hairline rounded px-3 py-2 transition-colors"
           >
             ↻ Reset view
           </button>
         </div>
 
-        <p class="mt-5 text-[11px] text-muted leading-relaxed">
+        <p class="mt-5 text-[11px] text-muted leading-relaxed hidden md:block">
           <strong class="text-fg-strong">Hover</strong> a node to highlight its neighbors. <strong class="text-fg-strong">Drag</strong> to rearrange. <strong class="text-fg-strong">Scroll</strong> to zoom. <strong class="text-fg-strong">Click</strong> to open the linked page.
+        </p>
+        <p class="mt-5 text-[11px] text-muted leading-relaxed md:hidden">
+          <strong class="text-fg-strong">Tap</strong> a node to see what it connects to. <strong class="text-fg-strong">Drag</strong> to pan. <strong class="text-fg-strong">Pinch</strong> to zoom.
         </p>
       </aside>
 
@@ -425,8 +445,7 @@ const clientLinks = links.map((l) => ({ s: l.source, t: l.target }));
                       <text
                         y={n.size + 14}
                         text-anchor="middle"
-                        class="net-label font-mono pointer-events-none select-none"
-                        font-size={n.kind === "center" ? 13 : n.kind === "service" ? 11 : 10}
+                        class={`net-label net-label-${n.kind} font-mono pointer-events-none select-none`}
                         fill="var(--color-fg-strong)"
                         paint-order="stroke"
                         stroke="var(--color-bg)"
@@ -511,11 +530,53 @@ const clientLinks = links.map((l) => ({ s: l.source, t: l.target }));
   /* Hide kinds that are filtered out */
   .net-node.is-hidden, .net-edge.is-hidden { display: none; }
 
-  /* Tighter labels at low zoom */
-  .net-label { font-weight: 600; letter-spacing: 0.02em; }
+  /* Label sizing — three steps via SVG class toggle */
+  .net-label {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  /* Default (medium) */
+  .net-label-center  { font-size: 13px; }
+  .net-label-service { font-size: 11px; }
+  .net-label-sector  { font-size: 10px; }
+  .net-label-case    { font-size: 10px; }
+  .net-label-team    { font-size: 10px; }
+
+  /* Small */
+  #net-svg.text-sm .net-label-center  { font-size: 11px; }
+  #net-svg.text-sm .net-label-service { font-size: 9px; }
+  #net-svg.text-sm .net-label-sector,
+  #net-svg.text-sm .net-label-case,
+  #net-svg.text-sm .net-label-team    { font-size: 8.5px; }
+
+  /* Large */
+  #net-svg.text-lg .net-label-center  { font-size: 17px; }
+  #net-svg.text-lg .net-label-service { font-size: 15px; }
+  #net-svg.text-lg .net-label-sector,
+  #net-svg.text-lg .net-label-case,
+  #net-svg.text-lg .net-label-team    { font-size: 13px; }
+
+  /* On mobile, bump everything one notch so default is readable */
+  @media (max-width: 768px) {
+    .net-label-center  { font-size: 15px; }
+    .net-label-service { font-size: 13px; }
+    .net-label-sector,
+    .net-label-case,
+    .net-label-team    { font-size: 12px; }
+  }
+
+  /* Mobile zoom-button tap targets */
+  @media (max-width: 768px) {
+    [data-net-zoom] { width: 44px !important; height: 44px !important; font-size: 18px !important; }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .net-node, .net-halo, .net-edge { transition: none !important; }
+  }
+
+  /* Print: render flat snapshot */
+  @media print {
+    #net-svg { height: 600px !important; }
   }
 </style>
 
@@ -759,6 +820,39 @@ const clientLinks = links.map((l) => ({ s: l.source, t: l.target }));
         });
       });
     });
+
+    // ── Text-size toggle ──────────────────────────────
+    function setTextSize(size) {
+      svg.classList.remove("text-sm", "text-lg");
+      if (size === "sm") svg.classList.add("text-sm");
+      if (size === "lg") svg.classList.add("text-lg");
+      document.querySelectorAll(".net-text-btn").forEach((btn) => {
+        const active = btn.getAttribute("data-net-text") === size;
+        btn.setAttribute("aria-pressed", active ? "true" : "false");
+        if (active) {
+          btn.classList.add("bg-accent/15", "text-accent");
+          btn.classList.remove("text-muted");
+        } else {
+          btn.classList.remove("bg-accent/15", "text-accent");
+          btn.classList.add("text-muted");
+        }
+      });
+    }
+    document.querySelectorAll(".net-text-btn").forEach((btn) => {
+      btn.addEventListener("click", () => setTextSize(btn.getAttribute("data-net-text")));
+    });
+
+    // ── Mobile defaults ───────────────────────────────
+    // On small screens, start with agencies hidden so the structure reads
+    // clearly — user can flip them back on via the sidebar.
+    const isSmall = window.matchMedia("(max-width: 768px)").matches;
+    if (isSmall) {
+      const agencyCb = document.querySelector('[data-net-kind="agency"]');
+      if (agencyCb) {
+        agencyCb.checked = false;
+        agencyCb.dispatchEvent(new Event("change"));
+      }
+    }
 
     // ── Reset ──────────────────────────────────────────
     document.getElementById("net-reset")?.addEventListener("click", () => {
