@@ -1,46 +1,162 @@
 ---
 import Logo from "./Logo.astro";
 
-const links = [
-  { href: "/services", label: "Services" },
-  { href: "/scope", label: "Scope" },
-  { href: "/experience", label: "Experience" },
-  { href: "/about", label: "About" },
-  { href: "/team", label: "Team" },
-  { href: "/careers", label: "Careers" },
-  { href: "/blog", label: "Blog" },
-  { href: "/contact", label: "Contact" },
+/**
+ * Top navigation — 5 primary items with dropdowns (Option A from the
+ * brainstorm). Each primary item is a button that opens a panel; the
+ * panel's first link is the overview page for that section. Desktop:
+ * hover opens, click toggles, keyboard arrow-keys navigate. Mobile:
+ * drawer flattens to grouped sections (no nested menus).
+ */
+
+interface SubItem {
+  href: string;
+  label: string;
+  description?: string;
+}
+interface NavItem {
+  label: string;
+  href?: string;       // if present, parent has no dropdown — it's a direct link
+  overview?: string;   // overview link for the dropdown (first item)
+  overviewLabel?: string;
+  items?: SubItem[];
+}
+
+const nav: NavItem[] = [
+  {
+    label: "Services",
+    overview: "/services",
+    overviewLabel: "All services",
+    items: [
+      { href: "/services/requirements", label: "Requirements Development", description: "Structured, testable requirements with full traceability." },
+      { href: "/services/systems-engineering", label: "Systems Engineering", description: "Integration architecture, cyber, lifecycle." },
+      { href: "/services/rdte", label: "RDT&E", description: "Research, development, operational test & evaluation." },
+      { href: "/services/mission-data", label: "Mission Data", description: "Ontology, schema, COP design, data products." },
+      { href: "/scope", label: "Scope an engagement", description: "Interactive tool — see what your engagement would look like." },
+    ],
+  },
+  {
+    label: "Experience",
+    overview: "/experience",
+    overviewLabel: "Past performance",
+    items: [
+      { href: "/experience", label: "Partner footprint", description: "Map of agencies and sectors we've supported." },
+      { href: "/network", label: "Mission Network", description: "Interactive graph of services, sectors, partners." },
+    ],
+  },
+  {
+    label: "About",
+    overview: "/about",
+    overviewLabel: "About OCEANS",
+    items: [
+      { href: "/about", label: "Who we are", description: "Founders, principles, how we work." },
+      { href: "/team", label: "Team", description: "The engineers doing the work." },
+      { href: "/careers", label: "Careers", description: "Open roles and how to apply." },
+    ],
+  },
+  {
+    label: "Resources",
+    items: [
+      { href: "/blog", label: "Journal", description: "Practitioner notes on federal engineering." },
+      { href: "/glossary", label: "Mission Glossary", description: "Federal-engineering terms, plain language." },
+      { href: "/faq", label: "FAQ", description: "Procurement, compliance, and engagement questions." },
+      { href: "/capabilities", label: "Capabilities Statement", description: "One-page summary of what we do." },
+    ],
+  },
+  {
+    label: "Contact",
+    href: "/contact",
+  },
 ];
 
 const path = Astro.url.pathname;
-function isActive(href: string) {
-  if (href === "/") return path === "/";
-  return path.startsWith(href);
+function isActive(item: NavItem): boolean {
+  if (item.href) return item.href === path || (item.href !== "/" && path.startsWith(item.href));
+  // Parent is active if any sub-item matches
+  const all = [item.overview, ...(item.items?.map((i) => i.href) ?? [])].filter(Boolean) as string[];
+  return all.some((h) => h === path || (h !== "/" && path.startsWith(h)));
 }
 ---
-<nav class="sticky top-0 z-40 backdrop-blur bg-bg/70 border-b border-border-hairline">
+<nav class="sticky top-0 z-40 backdrop-blur bg-bg/70 border-b border-border-hairline" aria-label="Primary">
   <div class="mx-auto max-w-6xl flex items-center justify-between px-6 h-16">
     <a href="/" class="text-fg-strong" aria-label="OCEANS LLC home">
       <Logo size="md" />
     </a>
-    <ul class="hidden md:flex items-center gap-7">
+
+    <!-- DESKTOP NAV -->
+    <ul class="hidden md:flex items-center gap-2" id="nav-primary">
       {
-        links.map((l) => (
-          <li>
-            <a
-              href={l.href}
-              aria-current={isActive(l.href) ? "page" : undefined}
-              class:list={[
-                "font-mono text-xs uppercase tracking-widest transition-colors",
-                isActive(l.href) ? "text-fg-strong" : "text-muted hover:text-fg-strong",
-              ]}
-            >
-              {l.label}
-            </a>
+        nav.map((item) => (
+          <li class="relative" data-nav-item={item.items ? "true" : null}>
+            {item.items ? (
+              <button
+                type="button"
+                data-nav-trigger
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-current={isActive(item) ? "page" : undefined}
+                class:list={[
+                  "font-mono text-xs uppercase tracking-widest transition-colors px-2 py-1.5 inline-flex items-center gap-1.5",
+                  isActive(item) ? "text-fg-strong" : "text-muted hover:text-fg-strong",
+                ]}
+              >
+                {item.label}
+                <svg viewBox="0 0 12 12" width="9" height="9" class="opacity-60 transition-transform" data-nav-chevron aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M2 4 L6 8 L10 4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+            ) : (
+              <a
+                href={item.href}
+                aria-current={isActive(item) ? "page" : undefined}
+                class:list={[
+                  "font-mono text-xs uppercase tracking-widest transition-colors px-2 py-1.5 inline-block",
+                  isActive(item) ? "text-fg-strong" : "text-muted hover:text-fg-strong",
+                ]}
+              >
+                {item.label}
+              </a>
+            )}
+
+            {/* Dropdown panel */}
+            {item.items && (
+              <div
+                data-nav-panel
+                hidden
+                class="absolute left-1/2 -translate-x-1/2 top-full mt-1 min-w-[340px] bg-surface border border-border-hairline rounded-lg shadow-2xl p-2 opacity-0 -translate-y-1 transition-all duration-150"
+                role="menu"
+              >
+                {item.overview && (
+                  <a
+                    href={item.overview}
+                    role="menuitem"
+                    class="block px-4 py-2.5 rounded transition-colors hover:bg-bg-2 border-b border-border-hairline mb-2"
+                  >
+                    <div class="font-mono text-[10px] uppercase tracking-widest text-accent">
+                      → {item.overviewLabel ?? "Overview"}
+                    </div>
+                  </a>
+                )}
+                {item.items.map((sub) => (
+                  <a
+                    href={sub.href}
+                    role="menuitem"
+                    class="block px-4 py-2.5 rounded transition-colors hover:bg-bg-2"
+                  >
+                    <div class="font-display text-sm font-bold text-fg-strong">{sub.label}</div>
+                    {sub.description && (
+                      <div class="mt-0.5 text-[12px] text-muted leading-snug">{sub.description}</div>
+                    )}
+                  </a>
+                ))}
+              </div>
+            )}
           </li>
         ))
       }
     </ul>
+
+    <!-- DESKTOP UTILITY -->
     <div class="hidden md:flex items-center gap-3">
       <button
         type="button"
@@ -63,39 +179,170 @@ function isActive(href: string) {
         Get In Touch
       </a>
     </div>
-    <button id="nav-toggle" class="md:hidden text-fg-strong p-2" aria-label="Open menu">
+
+    <!-- MOBILE TOGGLE -->
+    <button id="nav-toggle" class="md:hidden text-fg-strong p-2" aria-label="Open menu" aria-expanded="false">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5">
         <path d="M4 7h16M4 12h16M4 17h16"></path>
       </svg>
     </button>
   </div>
-  <div id="nav-drawer" hidden class="md:hidden border-t border-border-hairline bg-bg">
-    <ul class="px-6 py-4 flex flex-col gap-3">
+
+  <!-- MOBILE DRAWER — flattened, grouped by section -->
+  <div id="nav-drawer" hidden class="md:hidden border-t border-border-hairline bg-bg max-h-[calc(100vh-4rem)] overflow-y-auto">
+    <ul class="px-6 py-4 flex flex-col gap-1">
       {
-        links.map((l) => (
-          <li>
-            <a href={l.href} class="font-mono text-sm uppercase tracking-wider text-fg">
-              {l.label}
-            </a>
+        nav.map((item) => (
+          <li class="border-b border-border-hairline/50 last:border-0 pb-3 mb-1">
+            {item.href ? (
+              <a href={item.href} class="block font-mono text-sm uppercase tracking-wider text-fg-strong py-2">
+                {item.label}
+              </a>
+            ) : (
+              <>
+                <div class="font-mono text-[10px] uppercase tracking-[0.22em] text-accent mt-2 mb-2">{item.label}</div>
+                {item.overview && (
+                  <a href={item.overview} class="block py-1.5 font-mono text-sm uppercase tracking-wider text-fg-strong">
+                    → {item.overviewLabel}
+                  </a>
+                )}
+                {item.items!.map((sub) => (
+                  <a href={sub.href} class="block py-1.5 text-sm text-fg">
+                    {sub.label}
+                  </a>
+                ))}
+              </>
+            )}
           </li>
         ))
       }
-      <li>
-        <a href="/contact" class="font-mono text-sm uppercase tracking-wider text-accent">
+      <li class="mt-2">
+        <a href="/contact" class="block font-mono text-sm uppercase tracking-wider bg-accent text-bg px-4 py-3 rounded text-center">
           Get In Touch
         </a>
       </li>
     </ul>
   </div>
 </nav>
-<script>
-  const toggle = document.getElementById("nav-toggle");
-  const drawer = document.getElementById("nav-drawer");
-  toggle?.addEventListener("click", () => {
-    if (!drawer) return;
-    const open = !drawer.hasAttribute("hidden");
-    if (open) drawer.setAttribute("hidden", "");
-    else drawer.removeAttribute("hidden");
-    toggle.setAttribute("aria-label", open ? "Open menu" : "Close menu");
-  });
+
+<style>
+  /* Dropdown reveal */
+  [data-nav-panel]:not([hidden]) {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  [data-nav-item][data-open="true"] [data-nav-chevron] {
+    transform: rotate(180deg);
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    // ── Desktop dropdown behavior ─────────────────────
+    const items = document.querySelectorAll('[data-nav-item="true"]');
+    let closeTimer = 0;
+
+    function closeAll(exceptItem) {
+      items.forEach((it) => {
+        if (it === exceptItem) return;
+        const trigger = it.querySelector("[data-nav-trigger]");
+        const panel = it.querySelector("[data-nav-panel]");
+        if (trigger) trigger.setAttribute("aria-expanded", "false");
+        if (panel) panel.setAttribute("hidden", "");
+        it.removeAttribute("data-open");
+      });
+    }
+
+    function openItem(it) {
+      const trigger = it.querySelector("[data-nav-trigger]");
+      const panel = it.querySelector("[data-nav-panel]");
+      if (!trigger || !panel) return;
+      trigger.setAttribute("aria-expanded", "true");
+      panel.removeAttribute("hidden");
+      it.setAttribute("data-open", "true");
+      closeAll(it);
+    }
+    function closeItem(it) {
+      const trigger = it.querySelector("[data-nav-trigger]");
+      const panel = it.querySelector("[data-nav-panel]");
+      if (!trigger || !panel) return;
+      trigger.setAttribute("aria-expanded", "false");
+      panel.setAttribute("hidden", "");
+      it.removeAttribute("data-open");
+    }
+
+    items.forEach((it) => {
+      const trigger = it.querySelector("[data-nav-trigger]");
+
+      // Hover: open on mouseenter, close after a brief delay on mouseleave
+      it.addEventListener("mouseenter", () => {
+        window.clearTimeout(closeTimer);
+        openItem(it);
+      });
+      it.addEventListener("mouseleave", () => {
+        closeTimer = window.setTimeout(() => closeItem(it), 120);
+      });
+
+      // Click: toggle (for touch + keyboard)
+      trigger?.addEventListener("click", (e) => {
+        e.preventDefault();
+        const isOpen = it.getAttribute("data-open") === "true";
+        if (isOpen) closeItem(it);
+        else openItem(it);
+      });
+
+      // Keyboard: ArrowDown opens; Escape closes; arrow keys move within panel
+      trigger?.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          openItem(it);
+          const firstLink = it.querySelector("[data-nav-panel] a");
+          firstLink?.focus();
+        } else if (e.key === "Escape") {
+          closeItem(it);
+        }
+      });
+      const panel = it.querySelector("[data-nav-panel]");
+      panel?.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          closeItem(it);
+          trigger?.focus();
+        } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          e.preventDefault();
+          const links = Array.from(panel.querySelectorAll("a"));
+          const idx = links.indexOf(document.activeElement);
+          const next = e.key === "ArrowDown"
+            ? (idx + 1) % links.length
+            : (idx - 1 + links.length) % links.length;
+          links[next]?.focus();
+        }
+      });
+    });
+
+    // Click outside closes all
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest("[data-nav-item]")) closeAll(null);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeAll(null);
+    });
+
+    // ── Mobile drawer toggle ─────────────────────────
+    const toggle = document.getElementById("nav-toggle");
+    const drawer = document.getElementById("nav-drawer");
+    toggle?.addEventListener("click", () => {
+      if (!drawer) return;
+      const open = !drawer.hasAttribute("hidden");
+      if (open) {
+        drawer.setAttribute("hidden", "");
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.setAttribute("aria-label", "Open menu");
+      } else {
+        drawer.removeAttribute("hidden");
+        toggle.setAttribute("aria-expanded", "true");
+        toggle.setAttribute("aria-label", "Close menu");
+      }
+    });
+  })();
 </script>

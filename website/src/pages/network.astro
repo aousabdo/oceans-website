@@ -218,11 +218,45 @@ nodes.forEach((n, i) => {
   n.y = s.y;
 });
 
-// Resolve link endpoints to coordinates for static rendering
+// Resolve link endpoints to coordinates + relationship labels for static rendering.
+// The relation describes what the edge means; used in the hover tooltip.
+function describeRelation(sourceId: string, targetId: string): string {
+  if (sourceId === "oceans" && targetId.startsWith("service:")) return "Service line";
+  if (sourceId === "oceans" && targetId.startsWith("sector:")) return "Sector served";
+  if (sourceId.startsWith("sector:") && targetId.startsWith("agency:")) return "Partner agency";
+  if (sourceId.startsWith("case:") && targetId.startsWith("service:")) return "Capability used";
+  if (sourceId.startsWith("case:") && targetId.startsWith("sector:")) return "Engagement sector";
+  if (sourceId.startsWith("team:") && targetId === "oceans") return "Team member";
+  return "Connection";
+}
+
 const resolvedLinks = links.map((l) => {
   const a = nodes.find((n) => n.id === l.source)!;
   const b = nodes.find((n) => n.id === l.target)!;
-  return { from: l.source, to: l.target, ax: a.x!, ay: a.y!, bx: b.x!, by: b.y!, weight: l.weight ?? 1 };
+  // Bezier curve: perpendicular midpoint offset (~12% of edge length)
+  const mx = (a.x! + b.x!) / 2;
+  const my = (a.y! + b.y!) / 2;
+  const dx = b.x! - a.x!;
+  const dy = b.y! - a.y!;
+  const len = Math.sqrt(dx * dx + dy * dy);
+  // Perpendicular vector (rotate 90deg)
+  const offset = len * 0.12;
+  const cx = mx - (dy / len) * offset;
+  const cy = my + (dx / len) * offset;
+  return {
+    from: l.source,
+    to: l.target,
+    ax: a.x!,
+    ay: a.y!,
+    bx: b.x!,
+    by: b.y!,
+    cx,
+    cy,
+    weight: l.weight ?? 1,
+    relation: describeRelation(l.source, l.target),
+    sourceLabel: a.label,
+    targetLabel: b.label,
+  };
 });
 
 // ── Visual styling per kind ───────────────────────────────────────
@@ -368,16 +402,59 @@ const clientLinks = links.map((l) => ({ s: l.source, t: l.target }));
 
       <!-- Map -->
       <div class="relative bg-surface border border-border-hairline rounded-lg overflow-hidden">
+        <!-- Search box (top-left of map) -->
+        <div class="absolute top-4 left-4 z-10 w-[260px] max-w-[calc(100%-5rem)]">
+          <div class="relative">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              type="text"
+              id="net-search"
+              placeholder="Search the network…"
+              autocomplete="off"
+              spellcheck="false"
+              class="w-full bg-bg/95 backdrop-blur-sm border border-border-hairline rounded-md pl-9 pr-9 py-2 text-sm text-fg placeholder:text-muted focus:outline-none focus:border-accent transition-colors"
+              aria-label="Search nodes by label"
+              aria-autocomplete="list"
+            />
+            <button
+              id="net-search-clear"
+              type="button"
+              hidden
+              class="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 grid place-items-center text-muted hover:text-fg-strong rounded transition-colors"
+              aria-label="Clear search"
+            >
+              <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <line x1="3" y1="3" x2="9" y2="9"></line>
+                <line x1="9" y1="3" x2="3" y2="9"></line>
+              </svg>
+            </button>
+          </div>
+          <ul id="net-search-results" hidden class="mt-1 bg-bg/95 backdrop-blur-sm border border-border-hairline rounded-md max-h-64 overflow-y-auto shadow-xl"></ul>
+        </div>
+
         <!-- Selected node card -->
         <div
           id="net-card"
-          class="hidden lg:block absolute top-4 left-4 z-10 max-w-[320px] bg-bg/95 backdrop-blur-sm border border-accent/30 rounded-lg p-4 shadow-xl opacity-0 transition-opacity pointer-events-none"
+          class="hidden lg:block absolute top-[120px] left-4 z-10 max-w-[280px] bg-bg/95 backdrop-blur-sm border border-accent/30 rounded-lg p-4 shadow-xl opacity-0 transition-opacity pointer-events-none"
           aria-hidden="true"
         >
           <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent" data-net-kind>—</div>
           <div class="font-display text-base font-bold text-fg-strong mt-1 leading-snug" data-net-label>—</div>
           <p class="mt-1 text-[12px] text-muted leading-relaxed" data-net-desc>—</p>
           <div class="mt-2 font-mono text-[10px] text-accent" data-net-conns>—</div>
+        </div>
+
+        <!-- Edge tooltip -->
+        <div
+          id="net-edge-tip"
+          class="absolute z-20 bg-bg/95 backdrop-blur-sm border border-accent/40 rounded-md px-3 py-1.5 shadow-xl opacity-0 transition-opacity pointer-events-none text-[11px]"
+          aria-hidden="true"
+        >
+          <span class="font-mono text-[9px] uppercase tracking-widest text-accent" data-edge-rel>—</span>
+          <div class="font-display text-fg-strong mt-0.5 leading-snug" data-edge-pair>—</div>
         </div>
 
         <!-- Zoom controls -->
@@ -395,20 +472,23 @@ const clientLinks = links.map((l) => ({ s: l.source, t: l.target }));
           aria-label="Mission network graph"
         >
           <g id="net-zoom-group">
-            <!-- Edges first, so they sit behind the nodes -->
+            <!-- Edges first, so they sit behind the nodes. Bezier curves
+                 with quadratic control point computed at build time. -->
             <g id="net-edges" stroke="currentColor" class="text-muted" fill="none" stroke-linecap="round">
               {
                 resolvedLinks.map((l) => (
-                  <line
+                  <path
                     class="net-edge"
-                    x1={l.ax}
-                    y1={l.ay}
-                    x2={l.bx}
-                    y2={l.by}
-                    stroke-opacity="0.18"
-                    stroke-width={Math.max(0.6, l.weight * 0.6)}
+                    d={`M ${l.ax},${l.ay} Q ${l.cx},${l.cy} ${l.bx},${l.by}`}
+                    stroke-opacity="0.2"
+                    stroke-width={Math.max(0.7, l.weight * 0.7)}
                     data-from={l.from}
                     data-to={l.to}
+                    data-rel={l.relation}
+                    data-source-label={l.sourceLabel}
+                    data-target-label={l.targetLabel}
+                    data-cx={l.cx}
+                    data-cy={l.cy}
                     vector-effect="non-scaling-stroke"
                   />
                 ))
@@ -418,44 +498,71 @@ const clientLinks = links.map((l) => ({ s: l.source, t: l.target }));
             <!-- Nodes -->
             <g id="net-nodes">
               {
-                nodes.map((n) => (
-                  <g
-                    class="net-node cursor-pointer"
-                    data-id={n.id}
-                    data-kind={n.kind}
-                    transform={`translate(${n.x},${n.y})`}
-                    tabindex="0"
-                    role="button"
-                    aria-label={`${kindLabels[n.kind]}: ${n.label}`}
-                  >
-                    <circle
-                      r={n.size + 6}
-                      class="net-halo"
-                      fill={kindColors[n.kind]}
-                      opacity="0"
-                    />
-                    <circle
-                      r={n.size}
-                      fill={n.kind === "agency" ? "var(--color-bg-2)" : kindColors[n.kind]}
-                      stroke={kindColors[n.kind]}
-                      stroke-width={n.kind === "agency" ? 1.4 : 0}
-                      vector-effect="non-scaling-stroke"
-                    />
-                    {n.kind !== "agency" && (
-                      <text
-                        y={n.size + 14}
-                        text-anchor="middle"
-                        class={`net-label net-label-${n.kind} font-mono pointer-events-none select-none`}
-                        fill="var(--color-fg-strong)"
-                        paint-order="stroke"
-                        stroke="var(--color-bg)"
-                        stroke-width="3"
-                      >
-                        {n.label.length > 28 ? n.label.slice(0, 26) + "…" : n.label}
-                      </text>
-                    )}
-                  </g>
-                ))
+                nodes.map((n) => {
+                  const s = n.size;
+                  // Distinct shape per kind:
+                  //  - center, sector, team, agency → circle
+                  //  - service → rounded square
+                  //  - case study → diamond (rotated square)
+                  const isService = n.kind === "service";
+                  const isCase = n.kind === "case";
+                  const isAgency = n.kind === "agency";
+                  const haloR = (isService ? s * 1.25 : s) + 7;
+                  return (
+                    <g
+                      class={`net-node net-node-${n.kind} cursor-pointer`}
+                      data-id={n.id}
+                      data-kind={n.kind}
+                      transform={`translate(${n.x},${n.y})`}
+                      tabindex="0"
+                      role="button"
+                      aria-label={`${kindLabels[n.kind]}: ${n.label}`}
+                    >
+                      <circle r={haloR} class="net-halo" fill={kindColors[n.kind]} opacity="0" />
+                      {isService ? (
+                        <rect
+                          x={-s}
+                          y={-s}
+                          width={s * 2}
+                          height={s * 2}
+                          rx={3}
+                          fill={kindColors[n.kind]}
+                        />
+                      ) : isCase ? (
+                        // Diamond — rotated square
+                        <rect
+                          x={-s}
+                          y={-s}
+                          width={s * 2}
+                          height={s * 2}
+                          fill={kindColors[n.kind]}
+                          transform="rotate(45)"
+                        />
+                      ) : (
+                        <circle
+                          r={s}
+                          fill={isAgency ? "var(--color-bg-2)" : kindColors[n.kind]}
+                          stroke={kindColors[n.kind]}
+                          stroke-width={isAgency ? 1.4 : 0}
+                          vector-effect="non-scaling-stroke"
+                        />
+                      )}
+                      {n.kind !== "agency" && (
+                        <text
+                          y={(isService ? s : isCase ? s * 1.45 : s) + 14}
+                          text-anchor="middle"
+                          class={`net-label net-label-${n.kind} font-mono pointer-events-none select-none`}
+                          fill="var(--color-fg-strong)"
+                          paint-order="stroke"
+                          stroke="var(--color-bg)"
+                          stroke-width="3"
+                        >
+                          {n.label.length > 28 ? n.label.slice(0, 26) + "…" : n.label}
+                        </text>
+                      )}
+                    </g>
+                  );
+                })
               }
             </g>
           </g>
@@ -529,6 +636,30 @@ const clientLinks = links.map((l) => ({ s: l.source, t: l.target }));
 
   /* Hide kinds that are filtered out */
   .net-node.is-hidden, .net-edge.is-hidden { display: none; }
+
+  /* Search-dim state */
+  .net-node.is-dimmed { opacity: 0.12; }
+  .net-edge.is-dimmed { stroke-opacity: 0.04 !important; }
+
+  /* Found-pulse (post-search jump) */
+  @keyframes net-found-pulse {
+    0% { opacity: 0; }
+    20% { opacity: 0.7; }
+    100% { opacity: 0; }
+  }
+  .net-node.is-found .net-halo {
+    animation: net-found-pulse 1.6s ease-out;
+    opacity: 0;
+  }
+
+  /* Edge hover */
+  .net-edge {
+    transition: stroke-opacity 150ms;
+  }
+  .net-edge:hover {
+    stroke-opacity: 0.9 !important;
+    cursor: help;
+  }
 
   /* Label sizing — three steps via SVG class toggle */
   .net-label {
@@ -668,19 +799,34 @@ const clientLinks = links.map((l) => ({ s: l.source, t: l.target }));
       svg.setPointerCapture(e.pointerId);
     });
 
+    // Curved edge path: M ax,ay Q cx,cy bx,by
+    function updateEdgePath(edge) {
+      const fromId = edge.getAttribute("data-from");
+      const toId = edge.getAttribute("data-to");
+      const a = nodeIndex.get(fromId);
+      const b = nodeIndex.get(toId);
+      if (!a || !b) return;
+      const mx = (a.x + b.x) / 2;
+      const my = (a.y + b.y) / 2;
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const len = Math.sqrt(dx * dx + dy * dy) || 1;
+      const offset = len * 0.12;
+      const cx = mx - (dy / len) * offset;
+      const cy = my + (dx / len) * offset;
+      edge.setAttribute("d", `M ${a.x},${a.y} Q ${cx},${cy} ${b.x},${b.y}`);
+      edge.setAttribute("data-cx", cx);
+      edge.setAttribute("data-cy", cy);
+    }
+
     function moveNodeTo(id, nx, ny) {
       const node = nodeIndex.get(id);
       node.x = nx; node.y = ny;
       const g = nodesGroup.querySelector(`.net-node[data-id='${CSS.escape(id)}']`);
       if (g) g.setAttribute("transform", `translate(${nx},${ny})`);
-      edgesGroup.querySelectorAll(`.net-edge[data-from='${CSS.escape(id)}']`).forEach((line) => {
-        line.setAttribute("x1", nx);
-        line.setAttribute("y1", ny);
-      });
-      edgesGroup.querySelectorAll(`.net-edge[data-to='${CSS.escape(id)}']`).forEach((line) => {
-        line.setAttribute("x2", nx);
-        line.setAttribute("y2", ny);
-      });
+      edgesGroup.querySelectorAll(
+        `.net-edge[data-from='${CSS.escape(id)}'], .net-edge[data-to='${CSS.escape(id)}']`
+      ).forEach(updateEdgePath);
     }
 
     svg.addEventListener("pointermove", (e) => {
@@ -820,6 +966,145 @@ const clientLinks = links.map((l) => ({ s: l.source, t: l.target }));
         });
       });
     });
+
+    // ── Edge tooltip ───────────────────────────────────
+    const edgeTip = document.getElementById("net-edge-tip");
+    const mapContainer = svg.parentElement;
+    edgesGroup.querySelectorAll(".net-edge").forEach((edge) => {
+      edge.addEventListener("mouseenter", (e) => {
+        if (!edgeTip || !mapContainer) return;
+        const rel = edge.getAttribute("data-rel") ?? "Connection";
+        const sLabel = edge.getAttribute("data-source-label") ?? "";
+        const tLabel = edge.getAttribute("data-target-label") ?? "";
+        edgeTip.querySelector("[data-edge-rel]").textContent = rel;
+        edgeTip.querySelector("[data-edge-pair]").textContent = `${sLabel} ↔ ${tLabel}`;
+        const rect = mapContainer.getBoundingClientRect();
+        edgeTip.style.left = e.clientX - rect.left + 12 + "px";
+        edgeTip.style.top = e.clientY - rect.top + 12 + "px";
+        edgeTip.style.opacity = "1";
+      });
+      edge.addEventListener("mousemove", (e) => {
+        if (!edgeTip || !mapContainer) return;
+        const rect = mapContainer.getBoundingClientRect();
+        edgeTip.style.left = e.clientX - rect.left + 12 + "px";
+        edgeTip.style.top = e.clientY - rect.top + 12 + "px";
+      });
+      edge.addEventListener("mouseleave", () => {
+        if (edgeTip) edgeTip.style.opacity = "0";
+      });
+    });
+
+    // ── In-graph search ───────────────────────────────
+    const searchInput = document.getElementById("net-search");
+    const searchClear = document.getElementById("net-search-clear");
+    const searchResults = document.getElementById("net-search-results");
+
+    function clearSearch() {
+      if (searchInput) searchInput.value = "";
+      if (searchClear) searchClear.hidden = true;
+      if (searchResults) { searchResults.hidden = true; searchResults.innerHTML = ""; }
+      // Restore visibility of non-matching nodes (in case of last filter)
+      nodesGroup.querySelectorAll(".net-node").forEach((g) => g.classList.remove("is-dimmed"));
+      edgesGroup.querySelectorAll(".net-edge").forEach((e) => e.classList.remove("is-dimmed"));
+    }
+
+    function focusOnNode(id) {
+      const n = nodeIndex.get(id);
+      if (!n) return;
+      // Pan + zoom to the node — use a 250x125 window centered on it
+      const targetW = 250;
+      const targetH = targetW / ASPECT;
+      vb.w = targetW;
+      vb.h = targetH;
+      vb.x = n.x - targetW / 2;
+      vb.y = n.y - targetH / 2;
+      clamp();
+      applyVB();
+      // Pulse the halo
+      const nodeEl = nodesGroup.querySelector(`.net-node[data-id='${CSS.escape(id)}']`);
+      if (nodeEl) {
+        nodeEl.classList.add("is-found");
+        setTimeout(() => nodeEl.classList.remove("is-found"), 1600);
+      }
+      activate(id);
+    }
+
+    function runSearch(q) {
+      if (!searchResults) return;
+      const query = q.trim().toLowerCase();
+      if (!query) {
+        searchResults.hidden = true;
+        searchResults.innerHTML = "";
+        if (searchClear) searchClear.hidden = true;
+        nodesGroup.querySelectorAll(".net-node").forEach((g) => g.classList.remove("is-dimmed"));
+        edgesGroup.querySelectorAll(".net-edge").forEach((e) => e.classList.remove("is-dimmed"));
+        return;
+      }
+      if (searchClear) searchClear.hidden = false;
+      const matches = nodesData
+        .filter((n) =>
+          n.label.toLowerCase().includes(query) ||
+          (n.desc && n.desc.toLowerCase().includes(query))
+        )
+        .slice(0, 8);
+
+      // Dim non-matching nodes + their edges
+      const matchIds = new Set(matches.map((m) => m.id));
+      nodesGroup.querySelectorAll(".net-node").forEach((g) => {
+        const id = g.getAttribute("data-id");
+        g.classList.toggle("is-dimmed", !matchIds.has(id));
+      });
+      edgesGroup.querySelectorAll(".net-edge").forEach((edge) => {
+        const f = edge.getAttribute("data-from");
+        const t = edge.getAttribute("data-to");
+        edge.classList.toggle("is-dimmed", !matchIds.has(f) && !matchIds.has(t));
+      });
+
+      if (matches.length === 0) {
+        searchResults.innerHTML = `<li class="px-4 py-3 text-[11px] text-muted">No matches.</li>`;
+        searchResults.hidden = false;
+        return;
+      }
+      searchResults.innerHTML = matches
+        .map(
+          (m) => `
+        <li>
+          <button data-search-jump="${m.id}" type="button" class="w-full text-left px-4 py-2 hover:bg-bg-2 transition-colors flex items-baseline gap-2.5">
+            <span class="font-mono text-[9px] uppercase tracking-widest text-accent shrink-0">${m.kind}</span>
+            <span class="font-display text-[13px] font-bold text-fg-strong leading-snug">${m.label}</span>
+          </button>
+        </li>`
+        )
+        .join("");
+      searchResults.hidden = false;
+      searchResults.querySelectorAll("[data-search-jump]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-search-jump");
+          if (id) {
+            focusOnNode(id);
+            searchResults.hidden = true;
+          }
+        });
+      });
+    }
+    searchInput?.addEventListener("input", (e) => runSearch(e.target.value));
+    searchInput?.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        clearSearch();
+        searchInput.blur();
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        const first = searchResults?.querySelector("[data-search-jump]");
+        if (first) {
+          const id = first.getAttribute("data-search-jump");
+          if (id) {
+            focusOnNode(id);
+            searchResults.hidden = true;
+          }
+        }
+      }
+    });
+    searchClear?.addEventListener("click", clearSearch);
 
     // ── Text-size toggle ──────────────────────────────
     function setTextSize(size) {
