@@ -1006,6 +1006,9 @@ const clientLinks = links.map((l) => ({ s: l.source, t: l.target }));
       // Restore visibility of non-matching nodes (in case of last filter)
       nodesGroup.querySelectorAll(".net-node").forEach((g) => g.classList.remove("is-dimmed"));
       edgesGroup.querySelectorAll(".net-edge").forEach((e) => e.classList.remove("is-dimmed"));
+      // Also drop any node still highlighted from a previous search-jump,
+      // and dismiss the floating info card.
+      deactivate();
     }
 
     function focusOnNode(id) {
@@ -1033,11 +1036,15 @@ const clientLinks = links.map((l) => ({ s: l.source, t: l.target }));
       if (!searchResults) return;
       const query = q.trim().toLowerCase();
       if (!query) {
+        // Same teardown as the explicit Clear button: drop dim state,
+        // hide results, and dismiss any still-highlighted node from a
+        // previous search-jump (otherwise the info card stays pinned).
         searchResults.hidden = true;
         searchResults.innerHTML = "";
         if (searchClear) searchClear.hidden = true;
         nodesGroup.querySelectorAll(".net-node").forEach((g) => g.classList.remove("is-dimmed"));
         edgesGroup.querySelectorAll(".net-edge").forEach((e) => e.classList.remove("is-dimmed"));
+        deactivate();
         return;
       }
       if (searchClear) searchClear.hidden = false;
