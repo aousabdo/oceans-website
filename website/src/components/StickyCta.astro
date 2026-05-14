@@ -52,7 +52,7 @@
 
     // Pages where the sticky bar would be in the way / redundant
     const path = window.location.pathname;
-    const SUPPRESS = ["/contact", "/contact/", "/scope", "/scope/", "/404"];
+    const SUPPRESS = ["/contact", "/contact/", "/scope", "/scope/", "/network", "/network/", "/404"];
     if (SUPPRESS.includes(path)) return;
 
     // Dismissal is in-memory only — fresh page load = fresh bar.

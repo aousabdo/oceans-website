@@ -43,6 +43,7 @@ const TOP_PAGES: IndexEntry[] = [
   { title: "Services", url: "/services", kind: "Page", summary: "All four capabilities — requirements, systems engineering, RDT&E, mission data." },
   { title: "Scope an engagement", url: "/scope", kind: "Page", summary: "Interactive tool — get a realistic engagement plan in 4 questions.", keywords: "calculator estimate planner" },
   { title: "Experience", url: "/experience", kind: "Page", summary: "Past performance, partner map, case studies, from-the-data visualizations." },
+  { title: "Mission Network", url: "/network", kind: "Page", summary: "Interactive graph of services, sectors, partners, case studies, and team.", keywords: "graph map knowledge mind map relationships network" },
   { title: "Capabilities statement", url: "/capabilities", kind: "Page", summary: "Single-page summary of what OCEANS does." },
   { title: "About", url: "/about", kind: "Page" },
   { title: "Team", url: "/team", kind: "Page" },

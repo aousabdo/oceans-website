@@ -1,0 +1,795 @@
+---
+/**
+ * /network — Mission Network
+ *
+ * Interactive knowledge graph of OCEANS LLC: services, sectors, partner
+ * agencies, case studies, and team members, plus the relationships
+ * between them. Layout computed at build time using d3-force (no client
+ * d3 bundle). Drag, pan, zoom, hover-highlight, sidebar filters all
+ * hand-rolled in vanilla JS.
+ */
+import PageLayout from "@layouts/PageLayout.astro";
+import SectionLabel from "@components/SectionLabel.astro";
+import Eyebrow from "@components/Eyebrow.astro";
+import partnersData from "@/data/partners.json";
+import { getCollection } from "astro:content";
+import {
+  forceSimulation,
+  forceLink,
+  forceManyBody,
+  forceCenter,
+  forceCollide,
+  forceRadial,
+} from "d3-force";
+
+// ── Data ───────────────────────────────────────────────────────────
+interface Partner { section: string; agency: string; logo: string | null }
+const partners = partnersData as Partner[];
+const services = (await getCollection("services")).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+const caseStudies = await getCollection("caseStudies");
+const team = await getCollection("team");
+
+// Map case-study client to sector (the partner-data section the client
+// belongs to) so we can connect cases to sectors.
+function clientToSector(client: string): string | null {
+  const match = partners.find((p) => p.agency.includes(client) || client.includes(p.agency));
+  if (match) return match.section;
+  // Heuristic fallbacks for the seed case studies
+  if (client.toLowerCase().includes("homeland")) return "Department of Homeland Security";
+  if (client.toLowerCase().includes("defense") || client.toLowerCase().includes("war"))
+    return "Department of War";
+  return null;
+}
+
+// Display labels for sectors
+const sectorDisplay: Record<string, string> = {
+  "Department of Homeland Security": "DHS",
+  "Department of War": "DoD",
+  "Additional Federal Entities": "Other Federal",
+  "International Entities": "International",
+  "Local Law Enforcement": "Law Enforcement",
+  "Organizations, Local Entities, National Labs": "Orgs & Labs",
+  "Transit": "Transit / Rail",
+  "Airports": "Airports",
+};
+
+// Unique sectors that have at least one partner
+const sectorsInUse = Array.from(new Set(partners.map((p) => p.section)));
+
+// Node kinds — also used for filtering, coloring, sizing
+type Kind = "center" | "service" | "sector" | "agency" | "case" | "team";
+interface GraphNode {
+  id: string;
+  label: string;
+  kind: Kind;
+  size: number;
+  url?: string;
+  desc?: string;
+  // d3-force populates these:
+  x?: number;
+  y?: number;
+}
+interface GraphLink {
+  source: string;
+  target: string;
+  weight?: number;
+}
+
+const nodes: GraphNode[] = [
+  { id: "oceans", label: "OCEANS LLC", kind: "center", size: 24, url: "/", desc: "12 years of federal engineering" },
+  ...services.map((s) => ({
+    id: `service:${s.data.slug}`,
+    label: s.data.title,
+    kind: "service" as const,
+    size: 15,
+    url: `/services/${s.data.slug}`,
+    desc: s.data.summary,
+  })),
+  ...sectorsInUse.map((s) => ({
+    id: `sector:${s}`,
+    label: sectorDisplay[s] ?? s,
+    kind: "sector" as const,
+    size: 11,
+    desc: `${partners.filter((p) => p.section === s).length} partner${partners.filter((p) => p.section === s).length === 1 ? "" : "s"}`,
+  })),
+  ...partners.map((p, i) => ({
+    id: `agency:${i}`,
+    label: p.agency,
+    kind: "agency" as const,
+    size: 5.5,
+    desc: sectorDisplay[p.section] ?? p.section,
+  })),
+  ...caseStudies.map((c) => ({
+    id: `case:${c.data.slug}`,
+    label: c.data.title,
+    kind: "case" as const,
+    size: 9,
+    url: `/experience/${c.data.slug}`,
+    desc: `${c.data.client} · ${c.data.year}`,
+  })),
+  ...team.map((t) => ({
+    id: `team:${t.data.slug}`,
+    label: t.data.name,
+    kind: "team" as const,
+    size: 8,
+    url: `/team#${t.data.slug}`,
+    desc: t.data.role,
+  })),
+];
+
+const links: GraphLink[] = [
+  // OCEANS → each service (strong, short)
+  ...services.map((s) => ({ source: "oceans", target: `service:${s.data.slug}`, weight: 3 })),
+  // OCEANS → each sector (medium)
+  ...sectorsInUse.map((s) => ({ source: "oceans", target: `sector:${s}`, weight: 2 })),
+  // Sector → each agency in that sector (many short edges)
+  ...partners.map((p, i) => ({ source: `sector:${p.section}`, target: `agency:${i}`, weight: 1 })),
+  // Case study → each capability it used
+  ...caseStudies.flatMap((c) =>
+    c.data.capabilities.map((cap) => ({
+      source: `case:${c.data.slug}`,
+      target: `service:${cap}`,
+      weight: 2,
+    })),
+  ),
+  // Case study → the sector its client is in
+  ...caseStudies
+    .map((c) => {
+      const sector = clientToSector(c.data.client);
+      return sector ? { source: `case:${c.data.slug}`, target: `sector:${sector}`, weight: 2 } : null;
+    })
+    .filter((x): x is GraphLink => x !== null),
+  // Team → OCEANS center (loose cluster around center)
+  ...team.map((t) => ({ source: `team:${t.data.slug}`, target: "oceans", weight: 1 })),
+];
+
+// ── Layout at build time ──────────────────────────────────────────
+const W = 1400;
+const H = 900;
+
+// Pre-position OCEANS at center, services in inner ring, sectors in outer
+// ring — this gives the simulation a head start and avoids tangle.
+const centerNode = nodes.find((n) => n.id === "oceans")!;
+centerNode.x = W / 2;
+centerNode.y = H / 2;
+
+const serviceNodes = nodes.filter((n) => n.kind === "service");
+serviceNodes.forEach((n, i) => {
+  const angle = (i / serviceNodes.length) * Math.PI * 2 - Math.PI / 2;
+  n.x = W / 2 + Math.cos(angle) * 130;
+  n.y = H / 2 + Math.sin(angle) * 130;
+});
+
+const sectorNodes = nodes.filter((n) => n.kind === "sector");
+sectorNodes.forEach((n, i) => {
+  const angle = (i / sectorNodes.length) * Math.PI * 2;
+  n.x = W / 2 + Math.cos(angle) * 320;
+  n.y = H / 2 + Math.sin(angle) * 320;
+});
+
+// Run a tight, deterministic simulation
+const simNodes = nodes.map((n) => ({ ...n }));
+const simLinks = links.map((l) => ({ ...l }));
+
+const sim = forceSimulation(simNodes as any)
+  .force(
+    "link",
+    forceLink(simLinks as any)
+      .id((d: any) => d.id)
+      .distance((l: any) => {
+        const s = typeof l.source === "string" ? l.source : l.source.id;
+        const t = typeof l.target === "string" ? l.target : l.target.id;
+        if (s === "oceans" && t.startsWith("service:")) return 130;
+        if (s === "oceans" && t.startsWith("sector:")) return 250;
+        if (s.startsWith("sector:") && t.startsWith("agency:")) return 55;
+        if (s.startsWith("case:") && t.startsWith("service:")) return 90;
+        if (s.startsWith("case:") && t.startsWith("sector:")) return 150;
+        if (s.startsWith("team:") && t === "oceans") return 100;
+        return 100;
+      })
+      .strength(0.6),
+  )
+  .force("charge", forceManyBody().strength((d: any) => (d.kind === "agency" ? -60 : -240)))
+  .force("center", forceCenter(W / 2, H / 2))
+  .force(
+    "collide",
+    forceCollide().radius((d: any) => d.size + 6),
+  )
+  // Lock OCEANS at center via radial force at radius 0
+  .force(
+    "radial",
+    forceRadial(
+      (d: any) => (d.id === "oceans" ? 0 : null),
+      W / 2,
+      H / 2,
+    ).strength((d: any) => (d.id === "oceans" ? 1 : 0)),
+  )
+  .stop();
+
+// Run 400 ticks for a settled layout
+for (let i = 0; i < 400; i++) sim.tick();
+
+// Pull computed positions back into our node list (in same order)
+nodes.forEach((n, i) => {
+  const s = simNodes[i] as GraphNode;
+  n.x = s.x;
+  n.y = s.y;
+});
+
+// Resolve link endpoints to coordinates for static rendering
+const resolvedLinks = links.map((l) => {
+  const a = nodes.find((n) => n.id === l.source)!;
+  const b = nodes.find((n) => n.id === l.target)!;
+  return { from: l.source, to: l.target, ax: a.x!, ay: a.y!, bx: b.x!, by: b.y!, weight: l.weight ?? 1 };
+});
+
+// ── Visual styling per kind ───────────────────────────────────────
+const kindColors: Record<Kind, string> = {
+  center: "var(--color-accent)",
+  service: "var(--color-accent)",
+  sector: "var(--color-accent-warm)",
+  agency: "var(--color-muted)",
+  case: "var(--color-accent-go)",
+  team: "var(--color-accent-2)",
+};
+
+const kindLabels: Record<Kind, string> = {
+  center: "OCEANS",
+  service: "Service line",
+  sector: "Sector",
+  agency: "Partner agency",
+  case: "Case study",
+  team: "Team",
+};
+
+// Counts for sidebar
+const kindCounts: Record<Kind, number> = {
+  center: 1,
+  service: services.length,
+  sector: sectorsInUse.length,
+  agency: partners.length,
+  case: caseStudies.length,
+  team: team.length,
+};
+
+const allKinds: Kind[] = ["center", "service", "sector", "agency", "case", "team"];
+
+// Data for client JS — minimal payload
+const clientNodes = nodes.map((n) => ({
+  id: n.id,
+  kind: n.kind,
+  label: n.label,
+  desc: n.desc ?? "",
+  url: n.url ?? "",
+  size: n.size,
+  x: n.x,
+  y: n.y,
+}));
+const clientLinks = links.map((l) => ({ s: l.source, t: l.target }));
+---
+
+<PageLayout
+  title="Mission Network"
+  description="An interactive map of OCEANS LLC — every service line, partner sector, agency, case study, and team member, with the relationships between them."
+>
+  <!-- HERO -->
+  <section class="mx-auto max-w-5xl px-6 pt-20 pb-8">
+    <Eyebrow>Mission Network</Eyebrow>
+    <h1 class="font-display text-5xl md:text-7xl font-bold text-fg-strong mt-4 leading-[1.05]">
+      Everything connected.
+    </h1>
+    <p class="mt-8 text-lg md:text-xl text-muted leading-relaxed max-w-3xl">
+      An interactive graph of the company. {nodes.length} nodes — OCEANS, four service lines, eight
+      sector groups, {partners.length} partner agencies, {caseStudies.length} case studies,
+      and the team. Hover any node to see its connections. Click to open it. Drag to rearrange.
+    </p>
+  </section>
+
+  <!-- GRAPH -->
+  <section class="mx-auto max-w-7xl px-4 md:px-6 pb-16">
+    <div class="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-4 md:gap-6">
+      <!-- Sidebar -->
+      <aside class="bg-surface border border-border-hairline rounded-lg p-5 lg:sticky lg:top-20 self-start">
+        <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">Filter</div>
+        <h2 class="font-display text-base font-bold text-fg-strong mt-1 mb-4">Node categories</h2>
+        <ul class="space-y-2" id="net-legend">
+          {
+            allKinds.map((k) => (
+              <li>
+                <label class="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    data-net-kind={k}
+                    checked
+                    class="peer sr-only"
+                  />
+                  <span class="w-4 h-4 rounded border border-border-hairline grid place-items-center peer-checked:bg-accent/15 peer-checked:border-accent transition-colors">
+                    <svg
+                      class="w-3 h-3 text-accent opacity-0 peer-checked:opacity-100 transition-opacity"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                    >
+                      <path d="M2 6.5 L5 9.5 L10 3.5" />
+                    </svg>
+                  </span>
+                  <span class="flex items-center gap-2 flex-1 min-w-0">
+                    <span
+                      class="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+                      style={`background:${kindColors[k]}`}
+                      aria-hidden="true"
+                    />
+                    <span class="font-display text-sm text-fg leading-snug">{kindLabels[k]}</span>
+                  </span>
+                  <span class="font-mono text-[10px] text-muted tabular-nums">{kindCounts[k]}</span>
+                </label>
+              </li>
+            ))
+          }
+        </ul>
+
+        <div class="mt-6 pt-5 border-t border-border-hairline">
+          <button
+            id="net-reset"
+            class="w-full font-mono text-[10px] uppercase tracking-widest text-muted hover:text-fg-strong border border-border-hairline rounded px-3 py-1.5 transition-colors"
+          >
+            ↻ Reset view
+          </button>
+        </div>
+
+        <p class="mt-5 text-[11px] text-muted leading-relaxed">
+          <strong class="text-fg-strong">Hover</strong> a node to highlight its neighbors. <strong class="text-fg-strong">Drag</strong> to rearrange. <strong class="text-fg-strong">Scroll</strong> to zoom. <strong class="text-fg-strong">Click</strong> to open the linked page.
+        </p>
+      </aside>
+
+      <!-- Map -->
+      <div class="relative bg-surface border border-border-hairline rounded-lg overflow-hidden">
+        <!-- Selected node card -->
+        <div
+          id="net-card"
+          class="hidden lg:block absolute top-4 left-4 z-10 max-w-[320px] bg-bg/95 backdrop-blur-sm border border-accent/30 rounded-lg p-4 shadow-xl opacity-0 transition-opacity pointer-events-none"
+          aria-hidden="true"
+        >
+          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent" data-net-kind>—</div>
+          <div class="font-display text-base font-bold text-fg-strong mt-1 leading-snug" data-net-label>—</div>
+          <p class="mt-1 text-[12px] text-muted leading-relaxed" data-net-desc>—</p>
+          <div class="mt-2 font-mono text-[10px] text-accent" data-net-conns>—</div>
+        </div>
+
+        <!-- Zoom controls -->
+        <div class="absolute top-4 right-4 z-10 flex flex-col gap-1 bg-bg-2/90 backdrop-blur-sm border border-border-hairline rounded-md p-1">
+          <button data-net-zoom="in" class="w-7 h-7 grid place-items-center text-accent hover:bg-accent/10 rounded font-mono text-sm" aria-label="Zoom in">+</button>
+          <button data-net-zoom="out" class="w-7 h-7 grid place-items-center text-accent hover:bg-accent/10 rounded font-mono text-sm" aria-label="Zoom out">−</button>
+          <button data-net-zoom="fit" class="w-7 h-7 grid place-items-center text-accent hover:bg-accent/10 rounded font-mono text-[10px]" aria-label="Fit to view">⤢</button>
+        </div>
+
+        <svg
+          id="net-svg"
+          viewBox={`0 0 ${W} ${H}`}
+          class="w-full h-[600px] md:h-[720px] cursor-grab active:cursor-grabbing"
+          role="img"
+          aria-label="Mission network graph"
+        >
+          <g id="net-zoom-group">
+            <!-- Edges first, so they sit behind the nodes -->
+            <g id="net-edges" stroke="currentColor" class="text-muted" fill="none" stroke-linecap="round">
+              {
+                resolvedLinks.map((l) => (
+                  <line
+                    class="net-edge"
+                    x1={l.ax}
+                    y1={l.ay}
+                    x2={l.bx}
+                    y2={l.by}
+                    stroke-opacity="0.18"
+                    stroke-width={Math.max(0.6, l.weight * 0.6)}
+                    data-from={l.from}
+                    data-to={l.to}
+                    vector-effect="non-scaling-stroke"
+                  />
+                ))
+              }
+            </g>
+
+            <!-- Nodes -->
+            <g id="net-nodes">
+              {
+                nodes.map((n) => (
+                  <g
+                    class="net-node cursor-pointer"
+                    data-id={n.id}
+                    data-kind={n.kind}
+                    transform={`translate(${n.x},${n.y})`}
+                    tabindex="0"
+                    role="button"
+                    aria-label={`${kindLabels[n.kind]}: ${n.label}`}
+                  >
+                    <circle
+                      r={n.size + 6}
+                      class="net-halo"
+                      fill={kindColors[n.kind]}
+                      opacity="0"
+                    />
+                    <circle
+                      r={n.size}
+                      fill={n.kind === "agency" ? "var(--color-bg-2)" : kindColors[n.kind]}
+                      stroke={kindColors[n.kind]}
+                      stroke-width={n.kind === "agency" ? 1.4 : 0}
+                      vector-effect="non-scaling-stroke"
+                    />
+                    {n.kind !== "agency" && (
+                      <text
+                        y={n.size + 14}
+                        text-anchor="middle"
+                        class="net-label font-mono pointer-events-none select-none"
+                        font-size={n.kind === "center" ? 13 : n.kind === "service" ? 11 : 10}
+                        fill="var(--color-fg-strong)"
+                        paint-order="stroke"
+                        stroke="var(--color-bg)"
+                        stroke-width="3"
+                      >
+                        {n.label.length > 28 ? n.label.slice(0, 26) + "…" : n.label}
+                      </text>
+                    )}
+                  </g>
+                ))
+              }
+            </g>
+          </g>
+        </svg>
+
+        <!-- Hint chip -->
+        <div class="absolute bottom-3 left-3 z-10 font-mono text-[9px] uppercase tracking-[0.18em] text-muted bg-bg-2/80 backdrop-blur-sm border border-border-hairline rounded px-2 py-1 pointer-events-none">
+          {nodes.length} nodes · {links.length} edges
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- READING THE GRAPH -->
+  <section class="bg-bg-2 border-y border-border-hairline">
+    <div class="mx-auto max-w-5xl px-6 py-14">
+      <SectionLabel>Reading the graph</SectionLabel>
+      <h2 class="font-display text-2xl md:text-3xl font-bold text-fg-strong mt-3 leading-tight">
+        Three patterns to look for.
+      </h2>
+      <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="bg-surface border border-border-hairline rounded-lg p-5">
+          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">▌ Breadth</div>
+          <h3 class="font-display text-base font-bold text-fg-strong mt-2 leading-snug">Where the partners cluster</h3>
+          <p class="mt-2 text-sm text-muted leading-relaxed">
+            Each of the eight sector hubs collects the agencies in its space.
+            Hover a sector to see its weight.
+          </p>
+        </div>
+        <div class="bg-surface border border-border-hairline rounded-lg p-5">
+          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">▌ Focus</div>
+          <h3 class="font-display text-base font-bold text-fg-strong mt-2 leading-snug">Four service lines</h3>
+          <p class="mt-2 text-sm text-muted leading-relaxed">
+            Requirements, Systems Engineering, RDT&E, Mission Data — every engagement maps to at
+            least one. Hover one to see which case studies and clients have used it.
+          </p>
+        </div>
+        <div class="bg-surface border border-border-hairline rounded-lg p-5">
+          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">▌ Bridges</div>
+          <h3 class="font-display text-base font-bold text-fg-strong mt-2 leading-snug">Case studies span service + sector</h3>
+          <p class="mt-2 text-sm text-muted leading-relaxed">
+            Each case study connects to the services it used AND the sector it served — they sit on
+            the bridges of the graph, not at the edges.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  .net-node { transition: transform 200ms; }
+  .net-node:hover .net-halo,
+  .net-node:focus-visible .net-halo,
+  .net-node.is-active .net-halo {
+    opacity: 0.25;
+  }
+  .net-node .net-halo { transition: opacity 200ms; }
+  .net-node:focus-visible { outline: none; }
+
+  /* Dim non-neighbors when something is hovered */
+  #net-nodes.is-focused .net-node:not(.is-active):not(.is-neighbor) {
+    opacity: 0.15;
+  }
+  #net-edges.is-focused .net-edge:not(.is-neighbor) {
+    opacity: 0.05;
+  }
+  #net-edges.is-focused .net-edge.is-neighbor {
+    stroke-opacity: 0.7;
+  }
+
+  /* Hide kinds that are filtered out */
+  .net-node.is-hidden, .net-edge.is-hidden { display: none; }
+
+  /* Tighter labels at low zoom */
+  .net-label { font-weight: 600; letter-spacing: 0.02em; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .net-node, .net-halo, .net-edge { transition: none !important; }
+  }
+</style>
+
+<script
+  is:inline
+  define:vars={{
+    nodesData: clientNodes,
+    linksData: clientLinks,
+    W,
+    H,
+  }}
+>
+  (function () {
+    const svg = document.getElementById("net-svg");
+    const card = document.getElementById("net-card");
+    if (!svg) return;
+
+    // ── Adjacency lookup ───────────────────────────────
+    const neighbors = new Map();
+    nodesData.forEach((n) => neighbors.set(n.id, new Set()));
+    linksData.forEach((l) => {
+      neighbors.get(l.s)?.add(l.t);
+      neighbors.get(l.t)?.add(l.s);
+    });
+
+    const nodeIndex = new Map(nodesData.map((n) => [n.id, n]));
+    const nodesGroup = document.getElementById("net-nodes");
+    const edgesGroup = document.getElementById("net-edges");
+
+    // ── Pan / zoom ─────────────────────────────────────
+    let vb = { x: 0, y: 0, w: W, h: H };
+    const ASPECT = W / H;
+    const MIN_W = W / 6;
+    const MAX_W = W;
+
+    function applyVB() {
+      svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+    }
+    function clamp() {
+      vb.x = Math.max(-W * 0.2, Math.min(W * 1.2 - vb.w, vb.x));
+      vb.y = Math.max(-H * 0.2, Math.min(H * 1.2 - vb.h, vb.y));
+    }
+    function svgPoint(cx, cy) {
+      const pt = svg.createSVGPoint();
+      pt.x = cx; pt.y = cy;
+      const ctm = svg.getScreenCTM();
+      return ctm ? pt.matrixTransform(ctm.inverse()) : { x: 0, y: 0 };
+    }
+    function zoomBy(factor, anchorX, anchorY) {
+      const before = svgPoint(anchorX, anchorY);
+      const newW = Math.min(MAX_W, Math.max(MIN_W, vb.w / factor));
+      const newH = newW / ASPECT;
+      const fx = (before.x - vb.x) / vb.w;
+      const fy = (before.y - vb.y) / vb.h;
+      vb.w = newW; vb.h = newH;
+      vb.x = before.x - fx * newW;
+      vb.y = before.y - fy * newH;
+      clamp();
+      applyVB();
+    }
+    svg.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const factor = e.deltaY < 0 ? 1.18 : 1 / 1.18;
+      zoomBy(factor, e.clientX, e.clientY);
+    }, { passive: false });
+
+    // ── Drag-to-pan + node-drag ────────────────────────
+    let panning = false;
+    let downX = 0, downY = 0, startVBX = 0, startVBY = 0;
+    let draggingNode = null;
+    let nodeStart = { x: 0, y: 0 };
+    let nodeOrig = { x: 0, y: 0 };
+
+    svg.addEventListener("pointerdown", (e) => {
+      const nodeEl = e.target.closest(".net-node");
+      if (nodeEl) {
+        draggingNode = nodeEl;
+        const p = svgPoint(e.clientX, e.clientY);
+        nodeStart = { x: p.x, y: p.y };
+        const id = nodeEl.getAttribute("data-id");
+        const n = nodeIndex.get(id);
+        nodeOrig = { x: n.x, y: n.y };
+        svg.setPointerCapture(e.pointerId);
+        return;
+      }
+      panning = true;
+      downX = e.clientX; downY = e.clientY;
+      startVBX = vb.x; startVBY = vb.y;
+      svg.setPointerCapture(e.pointerId);
+    });
+
+    function moveNodeTo(id, nx, ny) {
+      const node = nodeIndex.get(id);
+      node.x = nx; node.y = ny;
+      const g = nodesGroup.querySelector(`.net-node[data-id='${CSS.escape(id)}']`);
+      if (g) g.setAttribute("transform", `translate(${nx},${ny})`);
+      edgesGroup.querySelectorAll(`.net-edge[data-from='${CSS.escape(id)}']`).forEach((line) => {
+        line.setAttribute("x1", nx);
+        line.setAttribute("y1", ny);
+      });
+      edgesGroup.querySelectorAll(`.net-edge[data-to='${CSS.escape(id)}']`).forEach((line) => {
+        line.setAttribute("x2", nx);
+        line.setAttribute("y2", ny);
+      });
+    }
+
+    svg.addEventListener("pointermove", (e) => {
+      if (draggingNode) {
+        const p = svgPoint(e.clientX, e.clientY);
+        const dx = p.x - nodeStart.x;
+        const dy = p.y - nodeStart.y;
+        const id = draggingNode.getAttribute("data-id");
+        moveNodeTo(id, nodeOrig.x + dx, nodeOrig.y + dy);
+        return;
+      }
+      if (!panning) return;
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return;
+      const dx = (e.clientX - downX) / ctm.a;
+      const dy = (e.clientY - downY) / ctm.d;
+      vb.x = startVBX - dx;
+      vb.y = startVBY - dy;
+      clamp();
+      applyVB();
+    });
+
+    function endPointer(e) {
+      panning = false;
+      draggingNode = null;
+      try { svg.releasePointerCapture(e.pointerId); } catch {}
+    }
+    svg.addEventListener("pointerup", endPointer);
+    svg.addEventListener("pointercancel", endPointer);
+
+    // ── Zoom buttons ───────────────────────────────────
+    function centerClient() {
+      const r = svg.getBoundingClientRect();
+      return [r.left + r.width / 2, r.top + r.height / 2];
+    }
+    document.querySelector('[data-net-zoom="in"]')?.addEventListener("click", () => {
+      const [cx, cy] = centerClient();
+      zoomBy(1.4, cx, cy);
+    });
+    document.querySelector('[data-net-zoom="out"]')?.addEventListener("click", () => {
+      const [cx, cy] = centerClient();
+      zoomBy(1 / 1.4, cx, cy);
+    });
+    document.querySelector('[data-net-zoom="fit"]')?.addEventListener("click", () => {
+      vb = { x: 0, y: 0, w: W, h: H };
+      applyVB();
+    });
+
+    // ── Hover / focus highlight ────────────────────────
+    function activate(id) {
+      const adj = neighbors.get(id);
+      if (!adj) return;
+      nodesGroup.classList.add("is-focused");
+      edgesGroup.classList.add("is-focused");
+      nodesGroup.querySelectorAll(".net-node").forEach((g) => {
+        const nid = g.getAttribute("data-id");
+        g.classList.remove("is-active", "is-neighbor");
+        if (nid === id) g.classList.add("is-active");
+        else if (adj.has(nid)) g.classList.add("is-neighbor");
+      });
+      edgesGroup.querySelectorAll(".net-edge").forEach((line) => {
+        const f = line.getAttribute("data-from");
+        const t = line.getAttribute("data-to");
+        line.classList.toggle("is-neighbor", f === id || t === id);
+      });
+
+      // Card
+      const n = nodeIndex.get(id);
+      if (n && card) {
+        card.querySelector("[data-net-kind]").textContent = n.kind.toUpperCase();
+        card.querySelector("[data-net-label]").textContent = n.label;
+        card.querySelector("[data-net-desc]").textContent = n.desc || "";
+        card.querySelector("[data-net-conns]").textContent =
+          adj.size + " connection" + (adj.size === 1 ? "" : "s");
+        card.style.opacity = "1";
+        card.setAttribute("aria-hidden", "false");
+      }
+    }
+    function deactivate() {
+      nodesGroup.classList.remove("is-focused");
+      edgesGroup.classList.remove("is-focused");
+      nodesGroup.querySelectorAll(".net-node").forEach((g) =>
+        g.classList.remove("is-active", "is-neighbor"),
+      );
+      edgesGroup.querySelectorAll(".net-edge").forEach((line) =>
+        line.classList.remove("is-neighbor"),
+      );
+      if (card) {
+        card.style.opacity = "0";
+        card.setAttribute("aria-hidden", "true");
+      }
+    }
+
+    nodesGroup.querySelectorAll(".net-node").forEach((g) => {
+      const id = g.getAttribute("data-id");
+      g.addEventListener("mouseenter", () => activate(id));
+      g.addEventListener("focus", () => activate(id));
+      g.addEventListener("mouseleave", () => {
+        if (!g.matches(":focus")) deactivate();
+      });
+      g.addEventListener("blur", deactivate);
+      g.addEventListener("click", () => {
+        const n = nodeIndex.get(id);
+        if (n?.url) window.location.href = n.url;
+      });
+      g.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          const n = nodeIndex.get(id);
+          if (n?.url) window.location.href = n.url;
+        }
+      });
+    });
+
+    // ── Sidebar filters ────────────────────────────────
+    document.querySelectorAll("[data-net-kind]").forEach((cb) => {
+      cb.addEventListener("change", () => {
+        const kind = cb.getAttribute("data-net-kind");
+        const visible = cb.checked;
+        // Toggle nodes of this kind
+        nodesGroup.querySelectorAll(`.net-node[data-kind='${CSS.escape(kind)}']`).forEach((g) => {
+          g.classList.toggle("is-hidden", !visible);
+        });
+        // Toggle edges whose endpoint is of this kind
+        edgesGroup.querySelectorAll(".net-edge").forEach((line) => {
+          const f = line.getAttribute("data-from");
+          const t = line.getAttribute("data-to");
+          const fNode = nodeIndex.get(f);
+          const tNode = nodeIndex.get(t);
+          if (!fNode || !tNode) return;
+          const fKind = fNode.kind;
+          const tKind = tNode.kind;
+          // Hide edge if either endpoint kind is unchecked
+          const fVisible = document.querySelector(`[data-net-kind='${CSS.escape(fKind)}']`)?.checked;
+          const tVisible = document.querySelector(`[data-net-kind='${CSS.escape(tKind)}']`)?.checked;
+          line.classList.toggle("is-hidden", !(fVisible && tVisible));
+        });
+      });
+    });
+
+    // ── Reset ──────────────────────────────────────────
+    document.getElementById("net-reset")?.addEventListener("click", () => {
+      vb = { x: 0, y: 0, w: W, h: H };
+      applyVB();
+      // Reset node positions
+      nodesData.forEach((nd) => {
+        const live = nodeIndex.get(nd.id);
+        live.x = nd.x; live.y = nd.y;
+        const g = nodesGroup.querySelector(`.net-node[data-id='${CSS.escape(nd.id)}']`);
+        if (g) g.setAttribute("transform", `translate(${nd.x},${nd.y})`);
+      });
+      linksData.forEach((l) => {
+        const a = nodeIndex.get(l.s);
+        const b = nodeIndex.get(l.t);
+        const lines = edgesGroup.querySelectorAll(
+          `.net-edge[data-from='${CSS.escape(l.s)}'][data-to='${CSS.escape(l.t)}']`,
+        );
+        lines.forEach((line) => {
+          line.setAttribute("x1", a.x);
+          line.setAttribute("y1", a.y);
+          line.setAttribute("x2", b.x);
+          line.setAttribute("y2", b.y);
+        });
+      });
+      // Re-check all filters
+      document.querySelectorAll("[data-net-kind]").forEach((cb) => {
+        cb.checked = true;
+        cb.dispatchEvent(new Event("change"));
+      });
+      deactivate();
+    });
+  })();
+</script>
