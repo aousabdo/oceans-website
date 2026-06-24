@@ -1,17 +1,20 @@
 ---
-// Canonical OCEANS LLC logo — wave-O mark + "CEANS" wordmark in the active
-// theme's display font. The mark uses currentColor so it picks up whatever
-// text color is in scope.
+// Canonical OCEANS LLC logo — the Bracketed mark: square brackets `[~]`
+// enclosing a single wave. Scientific notation meets ocean. Geometric,
+// modern, monochrome-safe, holds up at favicon size.
+//
+// Picked by Danny + Paul on 2026-06-15 ("really like [~] as our own
+// little logo / emoji. Simple, clean, isn't a specific jpg or anything").
+// The mark is paired with "OCEANS" in the active theme's display font
+// (Mariner = Cormorant Garamond).
 //
 // Variants:
-//   full      — mark + wordmark side by side (default; for nav/footer)
-//   mark      — just the wave-O mark (for favicon, badges, watermarks)
-//   wordmark  — just "OCEANS" wordmark (rare; for footnotes)
+//   full      — `[~] OCEANS` lockup (default; for nav/footer)
+//   mark      — just `[~]` (for favicon, badges, watermarks, social emoji)
+//   wordmark  — just "OCEANS" (rare; for footnotes)
 //
-// The wordmark uses the active theme's --font-display so each theme
-// produces a slightly different lockup personality while the mark stays
-// constant. After Danny picks a theme, that theme's font becomes the
-// canonical brand font.
+// All strokes use currentColor so the mark picks up whatever text color
+// is in scope. The mark's natural aspect ratio is 2:1.
 
 interface Props {
   variant?: "full" | "mark" | "wordmark";
@@ -21,34 +24,48 @@ interface Props {
 const props = Astro.props as Props;
 const { variant = "full", size = "md", class: extra = "" } = props;
 
+// Mark width = 2x mark height (the natural aspect of `[~]`).
 const sizes = {
-  sm: { mark: 28, word: 18, gap: "3px" },
-  md: { mark: 36, word: 22, gap: "4px" },
-  lg: { mark: 56, word: 36, gap: "6px" },
+  sm: { markH: 22, word: 18, gap: "5px" },
+  md: { markH: 28, word: 22, gap: "6px" },
+  lg: { markH: 44, word: 36, gap: "8px" },
 }[size];
-
-const id = `logo-${size}-${Math.random().toString(36).slice(2, 8)}`;
 ---
 {variant === "mark" && (
   <svg
-    viewBox="0 0 100 100"
-    width={sizes.mark}
-    height={sizes.mark}
+    viewBox="0 0 120 60"
+    width={sizes.markH * 2}
+    height={sizes.markH}
     role="img"
     aria-label="OCEANS LLC"
     class:list={[extra]}
   >
-    <defs><clipPath id={id}><circle cx="50" cy="50" r="38" /></clipPath></defs>
-    <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="6" />
-    <g clip-path={`url(#${id})`}>
-      <path
-        d="M 5 52 Q 22 42 38 52 T 70 52 T 102 52"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="6"
-        stroke-linecap="round"
-      />
-    </g>
+    {/* Left bracket */}
+    <path
+      d="M 22 8 L 12 8 L 12 52 L 22 52"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="4"
+      stroke-linejoin="miter"
+      stroke-linecap="square"
+    />
+    {/* Right bracket */}
+    <path
+      d="M 98 8 L 108 8 L 108 52 L 98 52"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="4"
+      stroke-linejoin="miter"
+      stroke-linecap="square"
+    />
+    {/* Wave */}
+    <path
+      d="M 28 30 Q 42 18 60 30 T 92 30"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="4"
+      stroke-linecap="round"
+    />
   </svg>
 )}
 {variant === "wordmark" && (
@@ -66,29 +83,41 @@ const id = `logo-${size}-${Math.random().toString(36).slice(2, 8)}`;
     aria-label="OCEANS LLC"
   >
     <svg
-      viewBox="0 0 100 100"
-      width={sizes.mark}
-      height={sizes.mark}
+      viewBox="0 0 120 60"
+      width={sizes.markH * 2}
+      height={sizes.markH}
       aria-hidden="true"
       style="flex-shrink:0;"
     >
-      <defs><clipPath id={id}><circle cx="50" cy="50" r="38" /></clipPath></defs>
-      <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="6" />
-      <g clip-path={`url(#${id})`}>
-        <path
-          d="M 5 52 Q 22 42 38 52 T 70 52 T 102 52"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="6"
-          stroke-linecap="round"
-        />
-      </g>
+      <path
+        d="M 22 8 L 12 8 L 12 52 L 22 52"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="4"
+        stroke-linejoin="miter"
+        stroke-linecap="square"
+      />
+      <path
+        d="M 98 8 L 108 8 L 108 52 L 98 52"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="4"
+        stroke-linejoin="miter"
+        stroke-linecap="square"
+      />
+      <path
+        d="M 28 30 Q 42 18 60 30 T 92 30"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="4"
+        stroke-linecap="round"
+      />
     </svg>
     <span
       class="font-display font-bold uppercase"
       style={`letter-spacing:0.16em; font-size:${sizes.word}px;`}
     >
-      CEANS
+      OCEANS
     </span>
   </span>
 )}

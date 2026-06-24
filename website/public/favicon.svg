@@ -1,16 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 60">
   <defs>
-    <clipPath id="fav-ring"><circle cx="50" cy="50" r="38"/></clipPath>
     <style>
       :root { color-scheme: light dark; }
-      .ring { stroke: #1A2840; }
+      .mk { stroke: #1A6FAB; }
       @media (prefers-color-scheme: dark) {
-        .ring { stroke: #5BD4FF; }
+        .mk { stroke: #5BD4FF; }
       }
     </style>
   </defs>
-  <circle class="ring" cx="50" cy="50" r="40" fill="none" stroke-width="8"/>
-  <g clip-path="url(#fav-ring)">
-    <path class="ring" d="M 5 52 Q 22 42 38 52 T 70 52 T 102 52" fill="none" stroke-width="8" stroke-linecap="round"/>
-  </g>
+  <!-- Left bracket -->
+  <path class="mk" d="M 22 8 L 12 8 L 12 52 L 22 52"
+        fill="none" stroke-width="6" stroke-linejoin="miter" stroke-linecap="square"/>
+  <!-- Right bracket -->
+  <path class="mk" d="M 98 8 L 108 8 L 108 52 L 98 52"
+        fill="none" stroke-width="6" stroke-linejoin="miter" stroke-linecap="square"/>
+  <!-- Wave -->
+  <path class="mk" d="M 28 30 Q 42 18 60 30 T 92 30"
+        fill="none" stroke-width="6" stroke-linecap="round"/>
 </svg>
