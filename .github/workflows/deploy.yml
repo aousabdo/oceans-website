@@ -1,15 +1,17 @@
 name: Deploy
 on:
   push:
-    branches: [main, "theme/operator", "theme/institute", "theme/mariner"]
+    branches: [main]
+  # Manual dispatch can still build any of the three themes — useful for
+  # comparing alternates without changing the canonical brand.
   workflow_dispatch:
     inputs:
       theme:
-        description: "Theme to deploy"
+        description: "Theme to build & deploy"
         required: true
-        default: "operator"
+        default: "mariner"
         type: choice
-        options: [operator, institute, mariner]
+        options: [mariner, operator, institute]
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -30,14 +32,10 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "theme=${{ inputs.theme }}" >> $GITHUB_OUTPUT
-            exit 0
+          else
+            # Default branch push → canonical theme (Mariner).
+            echo "theme=mariner" >> $GITHUB_OUTPUT
           fi
-          case "${GITHUB_REF_NAME}" in
-            theme/operator)  echo "theme=operator"  >> $GITHUB_OUTPUT ;;
-            theme/institute) echo "theme=institute" >> $GITHUB_OUTPUT ;;
-            theme/mariner)   echo "theme=mariner"   >> $GITHUB_OUTPUT ;;
-            *)               echo "theme=operator"  >> $GITHUB_OUTPUT ;;
-          esac
       - name: Build
         run: PUBLIC_THEME=${{ steps.theme.outputs.theme }} npm run build
       - name: Deploy to Cloudflare Pages
