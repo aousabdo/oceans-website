@@ -14,7 +14,8 @@
 //   wordmark  — just "OCEANS" (rare; for footnotes)
 //
 // All strokes use currentColor so the mark picks up whatever text color
-// is in scope. The mark's natural aspect ratio is 2:1.
+// is in scope. The mark's natural aspect ratio is ~1.6:1 (was 2:1 — the
+// brackets sat too far apart and the lockup felt visually unbalanced).
 
 interface Props {
   variant?: "full" | "mark" | "wordmark";
@@ -24,48 +25,35 @@ interface Props {
 const props = Astro.props as Props;
 const { variant = "full", size = "md", class: extra = "" } = props;
 
-// Mark width = 2x mark height (the natural aspect of `[~]`).
+// Mark scaled to roughly 0.8x the wordmark cap height so it reads as an
+// accent next to the wordmark, not as a peer.
 const sizes = {
-  sm: { markH: 22, word: 18, gap: "5px" },
-  md: { markH: 28, word: 22, gap: "6px" },
-  lg: { markH: 44, word: 36, gap: "8px" },
+  sm: { markH: 14, word: 18, gap: "6px" },
+  md: { markH: 18, word: 22, gap: "7px" },
+  lg: { markH: 28, word: 36, gap: "10px" },
 }[size];
+
+// Tighter geometry: viewBox 96×60 (1.6:1) with bracket-to-bracket inside
+// span of 60 units (vs 76 prior). The whole mark renders narrower.
+const VB = "0 0 96 60";
+const D_LEFT  = "M 18 10 L 10 10 L 10 50 L 18 50";
+const D_RIGHT = "M 78 10 L 86 10 L 86 50 L 78 50";
+const D_WAVE  = "M 22 30 Q 34 18 48 30 T 74 30";
+const SW = 4;
+const markW = Math.round(sizes.markH * 1.6);
 ---
 {variant === "mark" && (
   <svg
-    viewBox="0 0 120 60"
-    width={sizes.markH * 2}
+    viewBox={VB}
+    width={markW}
     height={sizes.markH}
     role="img"
     aria-label="OCEANS LLC"
     class:list={[extra]}
   >
-    {/* Left bracket */}
-    <path
-      d="M 22 8 L 12 8 L 12 52 L 22 52"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="4"
-      stroke-linejoin="miter"
-      stroke-linecap="square"
-    />
-    {/* Right bracket */}
-    <path
-      d="M 98 8 L 108 8 L 108 52 L 98 52"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="4"
-      stroke-linejoin="miter"
-      stroke-linecap="square"
-    />
-    {/* Wave */}
-    <path
-      d="M 28 30 Q 42 18 60 30 T 92 30"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="4"
-      stroke-linecap="round"
-    />
+    <path d={D_LEFT}  fill="none" stroke="currentColor" stroke-width={SW} stroke-linejoin="miter" stroke-linecap="square" />
+    <path d={D_RIGHT} fill="none" stroke="currentColor" stroke-width={SW} stroke-linejoin="miter" stroke-linecap="square" />
+    <path d={D_WAVE}  fill="none" stroke="currentColor" stroke-width={SW} stroke-linecap="round" />
   </svg>
 )}
 {variant === "wordmark" && (
@@ -83,35 +71,15 @@ const sizes = {
     aria-label="OCEANS LLC"
   >
     <svg
-      viewBox="0 0 120 60"
-      width={sizes.markH * 2}
+      viewBox={VB}
+      width={markW}
       height={sizes.markH}
       aria-hidden="true"
       style="flex-shrink:0;"
     >
-      <path
-        d="M 22 8 L 12 8 L 12 52 L 22 52"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="4"
-        stroke-linejoin="miter"
-        stroke-linecap="square"
-      />
-      <path
-        d="M 98 8 L 108 8 L 108 52 L 98 52"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="4"
-        stroke-linejoin="miter"
-        stroke-linecap="square"
-      />
-      <path
-        d="M 28 30 Q 42 18 60 30 T 92 30"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="4"
-        stroke-linecap="round"
-      />
+      <path d={D_LEFT}  fill="none" stroke="currentColor" stroke-width={SW} stroke-linejoin="miter" stroke-linecap="square" />
+      <path d={D_RIGHT} fill="none" stroke="currentColor" stroke-width={SW} stroke-linejoin="miter" stroke-linecap="square" />
+      <path d={D_WAVE}  fill="none" stroke="currentColor" stroke-width={SW} stroke-linecap="round" />
     </svg>
     <span
       class="font-display font-bold uppercase"
