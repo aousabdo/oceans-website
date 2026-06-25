@@ -35,6 +35,21 @@ export function organizationLd() {
       addressCountry: "US",
     },
     sameAs: ["https://www.linkedin.com/company/o.c.e.a.n.s.-llc"],
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        contactType: "sales",
+        email: "info@oceansllc.com",
+        areaServed: ["US", "GB", "CA", "AU", "NZ"],
+        availableLanguage: ["English"],
+      },
+      {
+        "@type": "ContactPoint",
+        contactType: "human resources",
+        email: "careers@oceansllc.com",
+        availableLanguage: ["English"],
+      },
+    ],
     knowsAbout: [
       "Systems Engineering",
       "Test and Evaluation",

@@ -79,8 +79,20 @@ const themeColors: Record<typeof ACTIVE_THEME, string> = {
     >
       Skip to content
     </a>
-    <slot name="nav" />
+    <header>
+      <slot name="nav" />
+    </header>
     <main id="main" class="flex-1">
+      <noscript>
+        <div class="bg-bg-2 border-y border-border-hairline text-sm">
+          <div class="mx-auto max-w-5xl px-6 py-3 text-fg leading-relaxed">
+            Some interactive features on this site (Mission Network, Engagement
+            Scope tool, keyboard search) need JavaScript. Email
+            <a href="mailto:info@oceansllc.com" class="text-accent underline">info@oceansllc.com</a>
+            and we'll share equivalent material directly.
+          </div>
+        </div>
+      </noscript>
       <slot />
     </main>
     <slot name="footer" />

@@ -87,8 +87,11 @@
       const trigger = window.innerHeight * 0.35;
       const past = window.scrollY > trigger;
       // Hide before the footer so it doesn't overlap the page CTA
+      // Hide the bar well before the footer so it never clips the page's
+      // own CTAs or content (e.g. the partner-logo grid on /experience).
+      // 480 keeps the bar above ~1 viewport's worth of bottom material.
       const nearBottom =
-        window.innerHeight + window.scrollY > document.body.scrollHeight - 200;
+        window.innerHeight + window.scrollY > document.body.scrollHeight - 480;
       const shouldShow = past && !nearBottom;
       if (shouldShow && !visible) {
         bar.hidden = false;

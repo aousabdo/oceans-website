@@ -11,7 +11,6 @@ const services = defineCollection({
     summary: z.string(),
     tags: z.array(z.string()),
     methods: z.array(z.string()),
-    relatedCaseStudies: z.array(z.string()).default([]),
   }),
 });
 

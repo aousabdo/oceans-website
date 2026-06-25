@@ -30,7 +30,7 @@ const sectionOrder = [
 ];
 const sectionDisplay: Record<string, string> = {
   "Department of Homeland Security": "DHS",
-  "Department of War": "DoD",
+  "Department of War": "DoW",
   "Additional Federal Entities": "Other Federal",
   "International Entities": "International",
   "Local Law Enforcement": "Law Enforcement",
@@ -126,7 +126,7 @@ const area = `M ${px(0)},${py(0)} L ${growth.map((p, i) => `${px(i)},${py(p.coun
     <div>
       <SectionLabel>From the data</SectionLabel>
       <h2 class="font-display text-3xl md:text-4xl font-bold text-fg-strong mt-3 leading-tight">
-        Twelve years, eight sectors, one footprint.
+        {currentYear - startYear} years, eight sectors, one footprint.
       </h2>
       <p class="mt-3 text-muted max-w-2xl leading-relaxed">
         The shape of our past performance — what we've actually supported, where, and how

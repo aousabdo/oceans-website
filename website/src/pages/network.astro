@@ -46,7 +46,7 @@ function clientToSector(client: string): string | null {
 // Display labels for sectors
 const sectorDisplay: Record<string, string> = {
   "Department of Homeland Security": "DHS",
-  "Department of War": "DoD",
+  "Department of War": "DoW",
   "Additional Federal Entities": "Other Federal",
   "International Entities": "International",
   "Local Law Enforcement": "Law Enforcement",
@@ -77,8 +77,9 @@ interface GraphLink {
   weight?: number;
 }
 
+const yearsOperating = new Date().getFullYear() - 2013;
 const nodes: GraphNode[] = [
-  { id: "oceans", label: "OCEANS LLC", kind: "center", size: 24, url: "/", desc: "12 years of federal engineering" },
+  { id: "oceans", label: "OCEANS LLC", kind: "center", size: 24, url: "/", desc: `${yearsOperating} years of federal engineering` },
   ...services.map((s) => ({
     id: `service:${s.data.slug}`,
     label: s.data.title,

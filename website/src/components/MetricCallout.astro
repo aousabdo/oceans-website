@@ -12,8 +12,12 @@ interface Props {
 const props = Astro.props as Props;
 const { metrics, class: extra = "", animate = true } = props;
 
-// Detect whether a value is a numeric counter we can animate (e.g., "50", "57", "2013")
+// Detect whether a value is a numeric counter we can animate.
+// Year-shaped strings (e.g. "2013", "1995") are excluded — counting up from
+// zero to a year looks like a date-picker glitch, not a celebrated metric.
+const YEAR_RE = /^(19|20)\d{2}$/;
 function parseNumeric(v: string): number | null {
+  if (YEAR_RE.test(v.trim())) return null;
   const cleaned = v.replace(/[^\d.]/g, "");
   if (!cleaned) return null;
   const n = Number(cleaned);

@@ -19,7 +19,11 @@ const recentPosts = (await getCollection("blog", ({ data }) => !data.draft))
   .sort((a, b) => +b.data.date - +a.data.date)
   .slice(0, 3);
 ---
-<PageLayout title="OCEANS LLC" path="/">
+<PageLayout
+  title="Federal Systems Engineering & T&E"
+  description="Federal systems engineering, operational test & evaluation, and mission data — for DoW, DHS, and federal civilian customers who need defensible, traceable outcomes from a small business prime."
+  path="/"
+>
   <!-- DEPTH 01 — HERO -->
   <MaritimeVideoHero>
     <div class="mx-auto max-w-6xl px-6 w-full py-24">
@@ -29,11 +33,12 @@ const recentPosts = (await getCollection("blog", ({ data }) => !data.draft))
       <h1 class="font-display font-light text-fg-strong text-6xl md:text-8xl lg:text-9xl mt-6 leading-[0.95]">
         Depth.<br />Discipline.<br /><em class="text-accent">Direction.</em>
       </h1>
-      <p class="mt-8 max-w-lg text-lg text-muted font-serif italic">
+      <p class="mt-8 max-w-xl text-xl text-fg font-serif italic">
         Engineering the systems that carry federal missions through deep, uncertain water.
       </p>
-      <div class="mt-10">
-        <Button href="/services" variant="primary">Plot a course</Button>
+      <div class="mt-10 flex flex-wrap items-center gap-4">
+        <Button href="/services" variant="primary" size="lg">Plot a course</Button>
+        <Button href="/experience" variant="outline">See past performance</Button>
       </div>
     </div>
   </MaritimeVideoHero>

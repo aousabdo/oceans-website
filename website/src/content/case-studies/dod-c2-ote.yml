@@ -1,5 +1,5 @@
 slug: dod-c2-ote
-client: Department of Defense
+client: Department of War
 title: Operational Test & Evaluation — Command & Control Systems
 year: 2024
 domain: Defense / C2
@@ -7,7 +7,7 @@ role: Test design lead · White Team lead
 duration: 18 months
 classification: Sanitized for public sharing
 illustrative: true
-summary: A structured OT&E program for a new multi-domain Command & Control capability, executed under aggressive milestone pressure with acquisition-grade evidence as the deliverable.
+summary: Structured OT&E for a multi-domain Command & Control capability — executed under aggressive milestone pressure, with acquisition-grade evidence as the deliverable.
 
 challenge: >-
   A new multi-domain C2 capability was scheduled for a milestone decision in 18 months.

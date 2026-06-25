@@ -14,6 +14,8 @@ import { getCollection } from "astro:content";
 interface Partner { section: string; agency: string; logo: string | null }
 const partners = partnersData as Partner[];
 const caseStudies = (await getCollection("caseStudies")).sort((a, b) => b.data.year - a.data.year);
+const services = await getCollection("services");
+const team = await getCollection("team");
 
 const sectionOrder = [
   "Department of Homeland Security",
@@ -39,6 +41,11 @@ const groups = sectionOrder.map((sec) => ({
 
 const totalPartners = partners.length;
 const totalSections = groups.length;
+// Mission Network node count matches what /network actually renders:
+// 1 OCEANS + services + sectors-in-use + partners + case studies + team.
+const sectorsInUse = new Set(partners.map((p) => p.section)).size;
+const networkNodeCount =
+  1 + services.length + sectorsInUse + partners.length + caseStudies.length + team.length;
 ---
 <PageLayout
   title="Relevant Experience"
@@ -117,7 +124,7 @@ const totalSections = groups.length;
           </h3>
           <p class="mt-3 text-muted leading-relaxed max-w-2xl">
             Every case study sits between the service lines we used and the sector we served.
-            Open the interactive graph — 76 nodes, real relationships, drag and zoom to explore.
+            Open the interactive graph — {networkNodeCount} nodes, real relationships, drag and zoom to explore.
           </p>
         </div>
         <div class="shrink-0">

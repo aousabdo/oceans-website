@@ -73,10 +73,10 @@
 
   --color-accent:          #1A6FAB;
   --color-accent-2:        #7FB8E0;
-  --color-accent-warm:     #B8924A;
-  --color-accent-go:       #2F855A;
-  --color-accent-warn:     #B8924A;
-  --color-accent-critical: #B33A3A;
+  --color-accent-warm:     #8C6A2C;  /* darkened from #B8924A for AA contrast on bg */
+  --color-accent-go:       #256B48;  /* darkened from #2F855A for AA contrast on bg */
+  --color-accent-warn:     #8C6A2C;  /* matched to accent-warm */
+  --color-accent-critical: #A12727;  /* darkened from #B33A3A for AA contrast on bg */
   --color-border-hairline: rgba(26, 111, 171, 0.18);
 
   --font-display: "Cormorant Garamond", "Fraunces", Georgia, serif;
