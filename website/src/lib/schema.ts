@@ -59,6 +59,10 @@ export function organizationLd() {
       "Counter-Unmanned Aircraft Systems",
       "Intelligence, Surveillance, and Reconnaissance",
     ],
+    // Federal small-business set-aside designation — SDVOSB is a recognized
+    // SBA / VA category and worth surfacing in structured data so federal
+    // procurement crawlers can pick it up.
+    award: "Service-Disabled Veteran-Owned Small Business (SDVOSB)",
     areaServed: [
       { "@type": "Country", name: "United States" },
       { "@type": "Country", name: "United Kingdom" },
