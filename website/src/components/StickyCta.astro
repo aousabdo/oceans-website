@@ -16,10 +16,14 @@
   role="region"
   aria-label="Quick action"
 >
-  <div class="flex items-center gap-3 bg-surface/95 backdrop-blur-md border border-accent/30 rounded-full shadow-2xl pl-5 pr-2 py-2">
+  <div class="flex items-center gap-3 bg-surface/95 backdrop-blur-md border border-accent/30 rounded-full shadow-2xl pl-3 sm:pl-5 pr-2 py-2">
+    {/* Contextual text is hidden on mobile — the long per-page strings
+        ("Want a deeper read-out on past performance?" etc.) overflow the
+        rounded pill at narrow widths. On mobile we just show the
+        action button + dismiss. */}
     <span
       id="sticky-cta-text"
-      class="font-display text-sm font-bold text-fg-strong"
+      class="font-display text-sm font-bold text-fg-strong hidden sm:inline truncate"
     >Working on something this touches?</span>
     <a
       id="sticky-cta-link"
