@@ -110,7 +110,7 @@ const intlOnly = projectedPins.filter((p) => p.international);
         </h2>
         <p class="mt-3 text-muted max-w-2xl leading-relaxed">
           {partners.length} partner agencies, services, and organizations across the U.S.,
-          FVEY allies, and other supporting nations. Drag to pan, scroll to zoom, hover any
+          FVEY allies, and other supporting nations. Drag to pan, scroll to zoom, click any
           marker for details.
         </p>
       </div>
@@ -139,20 +139,34 @@ const intlOnly = projectedPins.filter((p) => p.international);
           >⤺</button>
         </div>
 
-        {/* Floating partner card */}
+        {/* Floating partner card — click-to-open so it stays put while
+            you scroll the agency list. Pointer events on so the user
+            can scroll/select text inside it. Click outside or Esc to
+            close. */}
         <div
           id="pmap-card"
-          class="hidden lg:block absolute top-3 left-3 z-10 max-w-[280px] bg-bg/95 backdrop-blur-sm border border-accent/30 rounded-lg p-3 shadow-xl opacity-0 transition-opacity pointer-events-none"
+          class="hidden lg:block absolute top-3 left-3 z-10 w-[300px] max-w-[calc(100%-1.5rem)] bg-bg/95 backdrop-blur-sm border border-accent/30 rounded-lg p-3 shadow-xl opacity-0 invisible transition-[opacity,visibility]"
           aria-hidden="true"
         >
-          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent" data-card-region>—</div>
-          <div class="font-display text-sm font-bold text-fg-strong mt-1" data-card-count>—</div>
-          <ul class="mt-2 space-y-0.5 text-[11px] text-muted max-h-[240px] overflow-y-auto" data-card-list></ul>
+          <button
+            type="button"
+            id="pmap-card-close"
+            class="absolute top-2 right-2 grid place-items-center w-7 h-7 text-muted hover:text-fg-strong transition-colors rounded"
+            aria-label="Close partner list"
+          >
+            <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+              <line x1="3" y1="3" x2="9" y2="9"></line>
+              <line x1="9" y1="3" x2="3" y2="9"></line>
+            </svg>
+          </button>
+          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent pr-7" data-card-region>—</div>
+          <div class="font-display text-sm font-bold text-fg-strong mt-1 pr-7" data-card-count>—</div>
+          <ul class="mt-2 space-y-0.5 text-[11px] text-muted max-h-[260px] overflow-y-auto pr-1" data-card-list></ul>
         </div>
 
         {/* Hint chip */}
         <div class="absolute bottom-3 left-3 z-10 font-mono text-[9px] uppercase tracking-[0.18em] text-muted bg-bg-2/80 backdrop-blur-sm border border-border-hairline rounded px-2 py-1 pointer-events-none">
-          drag · scroll · hover
+          drag · scroll · click
         </div>
 
         <svg
@@ -313,26 +327,65 @@ const intlOnly = projectedPins.filter((p) => p.international);
   .pmap-pin:hover,
   .pmap-pin:focus-visible,
   .pmap-pin.is-active {
-    filter: brightness(1.3);
+    filter: brightness(1.35);
   }
   .pmap-pin:focus-visible {
     outline: none;
   }
+
+  /* Hover pulse — animates the glow circle so the pin signals
+     interactivity. The card itself only opens on click (per Aaron's
+     fix); the pulse is the visual cue that something will happen if
+     you click. */
+  @keyframes pmap-pulse {
+    0%   { opacity: 0.4; }
+    50%  { opacity: 0.95; }
+    100% { opacity: 0.4; }
+  }
   .pmap-glow {
     transition: opacity 200ms;
   }
-  .pmap-pin:hover ~ * .pmap-glow,
-  .pmap-pin.is-active + .pmap-glow {
-    opacity: 0.8;
+  /* `.pmap-pin:hover ~ * .pmap-glow` is fragile (depends on sibling
+     ordering inside the SVG). The pmap-glow circles live in a sibling
+     <g> ABOVE the pins group, so :hover on a pin won't actually match
+     them. Use the JS-toggled `.is-active` for selection feedback, and
+     scope hover-pulse to the corresponding glow via data-glow-id +
+     :has() (supported in evergreen browsers). Falls back to the
+     existing is-active styling for older browsers. */
+  .pmap-glow[data-glow-id]:hover,
+  g.pmap-glow {
+    /* placeholder selector for upstream patterns */
   }
+  .pmap-pin.is-hovered ~ * .pmap-glow,
+  .pmap-pin.is-active ~ * .pmap-glow {
+    opacity: 0.85;
+  }
+  /* Driven by JS: when a pin's hover state activates, the matching
+     glow gets `.is-pulsing`. */
+  .pmap-glow.is-pulsing {
+    animation: pmap-pulse 1.6s ease-in-out infinite;
+  }
+  .pmap-glow.is-locked {
+    opacity: 0.85 !important;
+    animation: none;
+  }
+
   .pmap-label {
     transition: opacity 150ms;
   }
   .pmap-label.is-active {
     opacity: 1 !important;
   }
+
+  /* Card opens / closes via opacity + visibility (visibility delayed by
+     transition so pointer events block until the fade finishes). */
+  #pmap-card {
+    transition: opacity 200ms;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     #pmap-zoom-group { transition: none !important; }
+    .pmap-glow.is-pulsing { animation: none; opacity: 0.85; }
   }
 </style>
 
@@ -460,6 +513,14 @@ const intlOnly = projectedPins.filter((p) => p.international);
     });
 
     // ─ Pin selection / readout ────────────────────
+    // Switched from hover-to-show to click-to-pin (per Aaron Winkler's
+    // bug report 2026-06-30): when DC was hovered, moving the cursor
+    // toward the card to scroll its 18-agency list crossed mouseleave
+    // territory and the card closed. Now: hover gives a pulse only;
+    // click locks the card open; outside-click / Esc / close button
+    // dismisses.
+    let activeId = null;
+
     function selectPin(id) {
       document
         .querySelectorAll(".pmap-pin.is-active, .pmap-label.is-active")
@@ -476,38 +537,101 @@ const intlOnly = projectedPins.filter((p) => p.international);
         card.querySelector("[data-card-list]").innerHTML = data.agencies
           .map((a) => `<li>${a}</li>`)
           .join("");
+        card.classList.remove("invisible");
         card.style.opacity = "1";
+        card.setAttribute("aria-hidden", "false");
+        // Reset scroll position so each new pin opens at the top
+        const list = card.querySelector("[data-card-list]");
+        if (list) list.scrollTop = 0;
       }
+      // Lock the glow into the "is-locked" steady state and clear any
+      // pulse so the active pin reads as different from hover-only.
+      document.querySelectorAll(".pmap-glow.is-locked, .pmap-glow.is-pulsing")
+        .forEach((el) => el.classList.remove("is-locked", "is-pulsing"));
+      const g = document.querySelector(`.pmap-glow[data-glow-id='${CSS.escape(id)}']`);
+      g?.classList.add("is-locked");
+      activeId = id;
     }
     function deselect() {
       document
         .querySelectorAll(".pmap-pin.is-active, .pmap-label.is-active")
         .forEach((el) => el.classList.remove("is-active"));
-      if (card) card.style.opacity = "0";
+      document.querySelectorAll(".pmap-glow.is-locked")
+        .forEach((el) => el.classList.remove("is-locked"));
+      if (card) {
+        card.style.opacity = "0";
+        card.setAttribute("aria-hidden", "true");
+        // Defer hiding the element so the fade-out completes before
+        // pointer events are blocked.
+        setTimeout(() => {
+          if (activeId === null) card.classList.add("invisible");
+        }, 200);
+      }
+      activeId = null;
+    }
+
+    function glowFor(id) {
+      return document.querySelector(`.pmap-glow[data-glow-id='${CSS.escape(id)}']`);
+    }
+    function startPulse(id) {
+      const g = glowFor(id);
+      if (g && !g.classList.contains("is-locked")) g.classList.add("is-pulsing");
+    }
+    function stopPulse(id) {
+      const g = glowFor(id);
+      if (g) g.classList.remove("is-pulsing");
     }
 
     document.querySelectorAll(".pmap-pin").forEach((pin) => {
       const id = pin.getAttribute("data-city");
       if (!id) return;
-      pin.addEventListener("mouseenter", () => selectPin(id));
-      pin.addEventListener("focus", () => selectPin(id));
-      pin.addEventListener("mouseleave", () => {
-        if (!pin.matches(":focus")) deselect();
-      });
-      pin.addEventListener("blur", deselect);
+      // Hover / focus = pulse only (visual cue). The card itself opens
+      // on click — switching from hover-to-show fixed the bug where
+      // moving the cursor toward the card to scroll closed it.
+      pin.addEventListener("mouseenter", () => startPulse(id));
+      pin.addEventListener("mouseleave", () => stopPulse(id));
+      pin.addEventListener("focus", () => startPulse(id));
+      pin.addEventListener("blur", () => stopPulse(id));
+      // Click toggles selection.
       pin.addEventListener("click", (e) => {
         if (moved) {
           e.preventDefault();
           return;
         }
-        selectPin(id);
+        e.stopPropagation();
+        if (activeId === id) deselect();
+        else selectPin(id);
       });
+      // Keyboard: Enter / Space toggles.
       pin.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          selectPin(id);
+          if (activeId === id) deselect();
+          else selectPin(id);
         }
       });
+    });
+
+    // Card close button
+    document.getElementById("pmap-card-close")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      deselect();
+    });
+
+    // Clicking inside the card (to scroll, select text) should not
+    // dismiss it.
+    card?.addEventListener("click", (e) => e.stopPropagation());
+    card?.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
+
+    // Click anywhere else on the document closes the card.
+    document.addEventListener("click", (e) => {
+      if (activeId === null) return;
+      const target = e.target;
+      if (target && target.closest && target.closest(".pmap-pin")) return;
+      deselect();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && activeId !== null) deselect();
     });
   })();
 </script>
