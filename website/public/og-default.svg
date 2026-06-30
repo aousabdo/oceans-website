@@ -45,7 +45,7 @@
 
   <!-- Footer line -->
   <line x1="80" y1="545" x2="160" y2="545" stroke="#1A6FAB" stroke-width="2"/>
-  <text x="80" y="582" font-family="ui-monospace, monospace" font-size="18" fill="#4A6480" letter-spacing="0.12em">OCEANS LLC  ·  JACKSONVILLE, FL  ·  EST. 2013</text>
+  <text x="80" y="582" font-family="ui-monospace, monospace" font-size="18" fill="#4A6480" letter-spacing="0.12em">OCEANS LLC  ·  JACKSONVILLE, FL  ·  EST. 2012</text>
 
   <!-- Right-side decorative [~] hero element -->
   <g transform="translate(900 240)" opacity="0.55">

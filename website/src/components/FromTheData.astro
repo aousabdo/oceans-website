@@ -89,8 +89,8 @@ const domainGroups = [
 const domainTotal = domainGroups.reduce((a, b) => a + b.count, 0);
 
 // ── 3. Partner growth sparkline (illustrative) ─────────────────────
-// We know: founded 2013, today ~`total` partners. Smooth S-curve growth.
-const startYear = 2013;
+// We know: founded 2012, today ~`total` partners. Smooth S-curve growth.
+const startYear = 2012;
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => startYear + i);
 
@@ -130,7 +130,7 @@ const area = `M ${px(0)},${py(0)} L ${growth.map((p, i) => `${px(i)},${py(p.coun
       </h2>
       <p class="mt-3 text-muted max-w-2xl leading-relaxed">
         The shape of our past performance — what we've actually supported, where, and how
-        that's grown since we opened in 2013. Sector and domain counts are real; the
+        that's grown since we opened in 2012. Sector and domain counts are real; the
         year-over-year curve is illustrative.
       </p>
     </div>

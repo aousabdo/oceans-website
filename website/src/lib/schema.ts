@@ -6,7 +6,7 @@ import { SITE_NAME, SITE_URL } from "./seo";
  * Notes:
  *  - `naics`: 541330 (Engineering Services). Confirm CAGE/UEI with Danny before
  *    surfacing those publicly.
- *  - `foundingDate`: 2013 per company history.
+ *  - `foundingDate`: 2012 per company history.
  *  - `areaServed`: federal customers across US + FVEY allies.
  */
 export function organizationLd() {
@@ -27,7 +27,7 @@ export function organizationLd() {
     image: `${SITE_URL}/og-default.png`,
     description:
       "Systems engineering, test & evaluation, and mission data solutions for federal customers who need defensible outcomes.",
-    foundingDate: "2013",
+    foundingDate: "2012",
     address: {
       "@type": "PostalAddress",
       addressLocality: "Jacksonville",
