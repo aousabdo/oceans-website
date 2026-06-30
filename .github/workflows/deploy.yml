@@ -37,6 +37,14 @@ jobs:
             echo "theme=mariner" >> $GITHUB_OUTPUT
           fi
       - name: Build
+        env:
+          # PUBLIC_TURNSTILE_SITE_KEY must be available at build time —
+          # Astro bakes PUBLIC_* env vars into client HTML at compile.
+          # Set this as a GitHub Actions secret (Settings -> Secrets and
+          # Variables -> Actions) with the real Turnstile site key.
+          # Without it, the build falls back to Cloudflare's always-pass
+          # test sitekey and the form provides no real bot protection.
+          PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
         run: PUBLIC_THEME=${{ steps.theme.outputs.theme }} npm run build
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
