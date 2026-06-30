@@ -1,8 +1,8 @@
 // Cloudflare Pages Function: POST /api/subscribe
 // Newsletter signup endpoint. Currently logs + (if Resend is configured)
-// sends a notification email to info@ so a human can add them to the list.
-// When Danny picks a real ESP (Beehiiv / Mailchimp / Resend Audiences), this
-// endpoint is the single place to wire it in.
+// sends a notification to the NEWSLETTER_TO env var so a human can add
+// them to the list. When Danny picks a real ESP (Beehiiv / Mailchimp /
+// Resend Audiences), this endpoint is the single place to wire it in.
 
 interface Env {
   RESEND_API_KEY?: string;
@@ -21,7 +21,11 @@ function escapeHtml(s: string): string {
 
 async function sendNotification(env: Env, email: string, source: string): Promise<boolean> {
   if (!env.RESEND_API_KEY) return false;
-  const to = env.NEWSLETTER_TO ?? "info@oceansllc.com";
+  // Recipient address comes only from the NEWSLETTER_TO Cloudflare Pages
+  // env var — never hardcoded in source. If not configured, the
+  // submission is dropped rather than leaking a default.
+  const to = env.NEWSLETTER_TO;
+  if (!to) return false;
   const from = env.NEWSLETTER_FROM ?? "OCEANS LLC <onboarding@resend.dev>";
   const subject = `[oceansllc.com] Newsletter signup — ${email}`;
   const html = `

@@ -73,7 +73,9 @@ const team = defineCollection({
     order: z.number().int().default(100),
     bio: z.string(),
     portrait: z.string().optional(),
-    email: z.string().email().optional(),
+    // No `email` field — per Dan Brent's directive (2026-06-29), the only
+    // way to reach OCEANS is the /contact form. Keeping addresses out of
+    // source prevents scraper harvest and AI-generated phishing setups.
     linkedin: z.string().url().optional(),
   }),
 });

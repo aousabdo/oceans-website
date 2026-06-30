@@ -66,10 +66,10 @@ const crumbs = breadcrumbLd([
 
   <section class="mx-auto max-w-3xl px-6 py-16 border-t border-border-hairline text-center">
     <SectionLabel class="justify-center">Apply</SectionLabel>
-    <p class="mt-4 text-muted">Apply by email — we read every application and reply within two business days.</p>
+    <p class="mt-4 text-muted">Apply through the contact form — we read every application and reply within two business days.</p>
     <div class="mt-6 flex justify-center">
-      <Button href={`mailto:careers@oceansllc.com?subject=Application — ${job.title}`} variant="primary">
-        Apply via email
+      <Button href={`/contact?subject=${encodeURIComponent(`Application — ${job.title}`)}`} variant="primary">
+        Apply
       </Button>
     </div>
   </section>

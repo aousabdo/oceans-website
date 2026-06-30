@@ -39,14 +39,14 @@ export function organizationLd() {
       {
         "@type": "ContactPoint",
         contactType: "sales",
-        email: "info@oceansllc.com",
+        url: `${SITE_URL}/contact`,
         areaServed: ["US", "GB", "CA", "AU", "NZ"],
         availableLanguage: ["English"],
       },
       {
         "@type": "ContactPoint",
         contactType: "human resources",
-        email: "careers@oceansllc.com",
+        url: `${SITE_URL}/careers`,
         availableLanguage: ["English"],
       },
     ],

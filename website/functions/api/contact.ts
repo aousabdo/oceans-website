@@ -51,7 +51,11 @@ async function verifyTurnstile(secret: string, token: string, ip?: string): Prom
 
 async function sendEmail(env: Env, p: Record<string, string>): Promise<boolean> {
   if (!env.RESEND_API_KEY) return false;
-  const to = env.CONTACT_TO ?? "info@oceansllc.com";
+  // Recipient address comes only from the CONTACT_TO Cloudflare Pages env
+  // var — never hardcoded in source. If not configured, drop the
+  // submission rather than leaking a default.
+  const to = env.CONTACT_TO;
+  if (!to) return false;
   const from = env.CONTACT_FROM ?? "OCEANS LLC <onboarding@resend.dev>";
   const subject = `[oceansllc.com] ${p.subject?.trim() || "New inquiry"} — ${p.firstName} ${p.lastName}`;
   const html = `

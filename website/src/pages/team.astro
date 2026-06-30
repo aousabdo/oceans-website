@@ -77,14 +77,6 @@ function initials(name: string) {
                   {m.data.name}
                 </h3>
                 <p class="mt-4 text-fg leading-relaxed">{m.data.bio}</p>
-                {m.data.email && (
-                  <a
-                    href={`mailto:${m.data.email}`}
-                    class="mt-5 inline-block font-mono text-xs text-accent hover:underline"
-                  >
-                    {m.data.email}
-                  </a>
-                )}
               </div>
             </article>
           ))
@@ -177,14 +169,6 @@ function initials(name: string) {
                     {m.data.name}
                   </h3>
                   <p class="mt-3 text-sm text-fg leading-relaxed">{m.data.bio}</p>
-                  {m.data.email && (
-                    <a
-                      href={`mailto:${m.data.email}`}
-                      class="mt-3 inline-block font-mono text-xs text-accent hover:underline"
-                    >
-                      {m.data.email}
-                    </a>
-                  )}
                 </div>
               </article>
             ))}
@@ -209,8 +193,8 @@ function initials(name: string) {
       </div>
       <div class="flex flex-col gap-3 shrink-0">
         <Button href="/careers" variant="primary">See open roles</Button>
-        <Button href="mailto:careers@oceansllc.com" variant="outline" size="sm">
-          Email careers@
+        <Button href="/contact?subject=Careers+%E2%80%94+general+interest" variant="outline" size="sm">
+          Get in touch
         </Button>
       </div>
     </div>
