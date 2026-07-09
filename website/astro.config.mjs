@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 
-const theme = process.env.PUBLIC_THEME ?? 'operator';
+const theme = process.env.PUBLIC_THEME ?? 'mariner';
 
 // https://astro.build/config
 export default defineConfig({
