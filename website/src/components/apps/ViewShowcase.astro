@@ -1,0 +1,208 @@
+---
+/**
+ * ViewShowcase — tabbed, browser-framed screenshots of a live app.
+ * Auto-advances while in view until the visitor picks a tab; arrow keys
+ * move between tabs; reduced-motion disables autoplay and tilt.
+ */
+interface View {
+  key: string;
+  label: string;
+  img: string;
+  alt: string;
+  caption: string;
+  path?: string;
+}
+interface Props {
+  id: string;
+  host: string;
+  href: string;
+  views: View[];
+  tone?: "dark" | "light";
+}
+const { id, host, href, views, tone = "dark" } = Astro.props;
+const dark = tone === "dark";
+---
+<div class:list={["showcase", dark ? "is-dark" : "is-light"]} data-showcase data-interval="6500">
+  <div
+    role="tablist"
+    aria-label={`${host} views`}
+    class:list={[
+      "flex flex-wrap gap-1 rounded-lg p-1 font-mono text-[10px] uppercase tracking-[0.16em] sm:text-[11px]",
+      dark ? "bg-[#061A30]/70 border border-[#7FB8E0]/15" : "bg-white/70 border border-[#0B1F3A]/10",
+    ]}
+  >
+    {views.map((v, i) => (
+      <button
+        type="button"
+        role="tab"
+        id={`${id}-tab-${v.key}`}
+        aria-controls={`${id}-panel`}
+        aria-selected={i === 0 ? "true" : "false"}
+        tabindex={i === 0 ? 0 : -1}
+        data-index={i}
+        class="sc-tab relative overflow-hidden rounded-md px-3 py-2 transition-colors"
+      >
+        {v.label}
+        <span class="sc-progress absolute bottom-0 left-0 h-px w-full origin-left scale-x-0"></span>
+      </button>
+    ))}
+  </div>
+
+  <div class="sc-stage mt-5 [perspective:1800px]">
+    <div
+      id={`${id}-panel`}
+      role="tabpanel"
+      aria-labelledby={`${id}-tab-${views[0]?.key}`}
+      class:list={[
+        "sc-frame overflow-hidden rounded-xl transition-transform duration-300 ease-out will-change-transform",
+        dark
+          ? "border border-[#7FB8E0]/20 bg-[#04121F] shadow-[0_40px_120px_-30px_rgba(0,0,0,0.85)]"
+          : "border border-[#0B1F3A]/15 bg-[#0B1F3A] shadow-[0_40px_100px_-40px_rgba(6,26,48,0.55)]",
+      ]}
+    >
+      <div class="flex items-center gap-3 border-b border-white/10 bg-[#0B1F3A] px-4 py-2.5">
+        <span class="flex gap-1.5" aria-hidden="true">
+          <span class="h-2.5 w-2.5 rounded-full bg-white/15"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-white/15"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-white/15"></span>
+        </span>
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener"
+          class="mx-auto flex max-w-full items-center gap-2 truncate rounded-md bg-white/5 px-3 py-1 font-mono text-[11px] tracking-wide text-[#EBE3D0]/80 transition-colors hover:bg-white/10 hover:text-[#EBE3D0]"
+        >
+          <svg width="10" height="12" viewBox="0 0 10 12" aria-hidden="true"><rect x="1" y="5" width="8" height="6.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M3 5V3.5a2 2 0 0 1 4 0V5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+          {host}
+          <span class="sc-path -ml-2 text-[#7FB8E0]/80">{views[0]?.path ?? ""}</span>
+        </a>
+        <span class="hidden items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[#5EE6B8] sm:flex">
+          <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-[#5EE6B8]"></span>Live
+        </span>
+      </div>
+      <div class="relative aspect-[16/10] bg-[#04121F]">
+        {views.map((v, i) => (
+          <img
+            src={v.img}
+            alt={v.alt}
+            width="1600"
+            height="1000"
+            loading={i === 0 ? "eager" : "lazy"}
+            decoding="async"
+            data-index={i}
+            class:list={["sc-img absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-700", i === 0 ? "opacity-100" : "opacity-0"]}
+          />
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <p
+    class:list={["sc-caption mt-5 min-h-[3.5rem] max-w-3xl font-serif text-lg italic leading-relaxed", dark ? "text-[#EBE3D0]/85" : "text-fg"]}
+    aria-live="polite"
+  >{views[0]?.caption}</p>
+  <script type="application/json" set:html={JSON.stringify(views.map((v) => ({ caption: v.caption, key: v.key, path: v.path ?? "" })))} />
+</div>
+
+<style>
+  .is-dark .sc-tab { color: rgba(235, 227, 208, 0.62); }
+  .is-dark .sc-tab:hover { color: #EBE3D0; }
+  .is-dark .sc-tab[aria-selected="true"] { color: #061A30; background: #7FB8E0; }
+  .is-dark .sc-progress { background: #061A30; }
+  .is-light .sc-tab { color: #4A6480; }
+  .is-light .sc-tab:hover { color: #0B1F3A; }
+  .is-light .sc-tab[aria-selected="true"] { color: #F1EDE2; background: #0B1F3A; }
+  .is-light .sc-progress { background: #D4A24A; }
+  .sc-tab[aria-selected="true"] .sc-progress.is-running {
+    animation: sc-progress var(--sc-interval, 6500ms) linear forwards;
+  }
+  @keyframes sc-progress { to { transform: scaleX(1); } }
+</style>
+
+<script>
+  function init(root: HTMLElement) {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>(".sc-tab")];
+    const imgs = [...root.querySelectorAll<HTMLImageElement>(".sc-img")];
+    const panel = root.querySelector<HTMLElement>("[role=tabpanel]")!;
+    const frame = root.querySelector<HTMLElement>(".sc-frame")!;
+    const caption = root.querySelector<HTMLElement>(".sc-caption")!;
+    const path = root.querySelector<HTMLElement>(".sc-path")!;
+    const meta: { caption: string; key: string; path: string }[] = JSON.parse(root.querySelector("script[type='application/json']")!.textContent!);
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const interval = Number(root.dataset.interval) || 6500;
+    root.style.setProperty("--sc-interval", `${interval}ms`);
+    let current = 0;
+    let timer = 0;
+    let auto = !reduce;
+    let visible = false;
+
+    function select(i: number, focus = false) {
+      current = (i + tabs.length) % tabs.length;
+      tabs.forEach((t, j) => {
+        const on = j === current;
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+        t.querySelector(".sc-progress")?.classList.remove("is-running");
+      });
+      imgs.forEach((im, j) => {
+        im.classList.toggle("opacity-100", j === current);
+        im.classList.toggle("opacity-0", j !== current);
+        if (j === current) im.loading = "eager";
+      });
+      panel.setAttribute("aria-labelledby", tabs[current]!.id);
+      caption.textContent = meta[current]?.caption ?? "";
+      path.textContent = meta[current]?.path ?? "";
+      if (focus) tabs[current]!.focus();
+      schedule();
+    }
+
+    function schedule() {
+      clearTimeout(timer);
+      if (!auto || !visible) return;
+      const bar = tabs[current]!.querySelector(".sc-progress");
+      bar?.classList.remove("is-running");
+      void (bar as HTMLElement | null)?.offsetWidth;
+      bar?.classList.add("is-running");
+      timer = window.setTimeout(() => select(current + 1), interval);
+    }
+
+    function stopAuto() {
+      auto = false;
+      clearTimeout(timer);
+      tabs.forEach((t) => t.querySelector(".sc-progress")?.classList.remove("is-running"));
+    }
+
+    tabs.forEach((t, i) => {
+      t.addEventListener("click", () => { stopAuto(); select(i); });
+      t.addEventListener("keydown", (e) => {
+        const k = e.key;
+        if (k !== "ArrowRight" && k !== "ArrowLeft" && k !== "Home" && k !== "End") return;
+        e.preventDefault();
+        stopAuto();
+        select(k === "Home" ? 0 : k === "End" ? tabs.length - 1 : current + (k === "ArrowRight" ? 1 : -1), true);
+      });
+    });
+
+    new IntersectionObserver(([e]) => {
+      visible = !!e?.isIntersecting;
+      if (visible) {
+        // warm the remaining screenshots once the showcase is near
+        imgs.forEach((im) => (im.loading = "eager"));
+        schedule();
+      } else clearTimeout(timer);
+    }, { threshold: 0.35 }).observe(root);
+
+    if (!reduce && matchMedia("(pointer: fine)").matches) {
+      frame.addEventListener("pointermove", (e) => {
+        const r = frame.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        frame.style.transform = `rotateX(${(-y * 3).toFixed(2)}deg) rotateY(${(x * 4).toFixed(2)}deg)`;
+      });
+      frame.addEventListener("pointerleave", () => (frame.style.transform = ""));
+      frame.addEventListener("pointerenter", () => clearTimeout(timer));
+      frame.addEventListener("pointerleave", () => schedule());
+    }
+  }
+  document.querySelectorAll<HTMLElement>("[data-showcase]").forEach(init);
+</script>

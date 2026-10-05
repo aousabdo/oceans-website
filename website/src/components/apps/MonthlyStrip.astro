@@ -1,0 +1,149 @@
+---
+/**
+ * MonthlyStrip — every month of FAA UAS sighting reports in the SKYWATCH
+ * snapshot, Feb 2016 onward. Months the FAA never published are drawn as
+ * hatched gaps rather than zeros (they are missing data, not quiet skies).
+ */
+import snap from "@/data/apps/skywatch.json";
+
+const counts = new Map(snap.byMonth as [string, number][]);
+const [y0, m0] = snap.dateMin.split("-").map(Number) as [number, number];
+const [y1, m1] = snap.dateMax.split("-").map(Number) as [number, number];
+
+const months: { key: string; n: number | null; label: string }[] = [];
+for (let y = y0, m = m0; y < y1 || (y === y1 && m <= m1); m === 12 ? (y++, (m = 1)) : m++) {
+  const key = `${y}-${String(m).padStart(2, "0")}`;
+  const label = new Date(Date.UTC(y, m - 1, 1)).toLocaleString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
+  months.push({ key, n: counts.get(key) || null, label });
+}
+
+const W = 1000;
+const H = 150;
+const TOP = 14;
+const step = W / months.length;
+const bw = Math.max(2, step - 2);
+const max = Math.max(...months.map((m) => m.n ?? 0));
+const recentFrom = months.length - 12;
+const years = months
+  .map((m, i) => ({ i, y: m.key.slice(0, 4), first: m.key.endsWith("-01") }))
+  .filter((m) => m.first);
+
+// The long FAA publishing pause, for the annotation
+const pause = (() => {
+  let best = { start: 0, len: 0 };
+  for (let i = 0, run = 0; i < months.length; i++) {
+    run = months[i]!.n === null ? run + 1 : 0;
+    if (run > best.len) best = { start: i - run + 1, len: run };
+  }
+  return best;
+})();
+const fmt = (n: number) => n.toLocaleString("en-US");
+---
+<figure class="monthly" data-monthly>
+  <div class="flex flex-wrap items-baseline justify-between gap-3 font-mono text-[11px] uppercase tracking-[0.16em]">
+    <span class="text-[#7FB8E0]/70">Reports per month · {months[0]!.label} – {months.at(-1)!.label}</span>
+    <span class="text-[#EBE3D0]" aria-live="polite" data-readout>
+      Last 12 months · <span class="text-[#7FB8E0]">{fmt(snap.last12)}</span> reports
+    </span>
+  </div>
+  <svg viewBox={`0 0 ${W} ${H + 26}`} class="mt-4 w-full overflow-visible rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#7FB8E0]" role="img" tabindex="0" aria-label={`Monthly FAA UAS sighting reports, ${months[0]!.label} to ${months.at(-1)!.label}. Use the left and right arrow keys to read each month.`}>
+    <defs>
+      <pattern id="ms-hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <line x1="0" y1="0" x2="0" y2="4" stroke="#7FB8E0" stroke-opacity="0.35" stroke-width="1.2" />
+      </pattern>
+    </defs>
+    <line x1="0" x2={W} y1={H} y2={H} stroke="#7FB8E0" stroke-opacity="0.2" />
+    {months.map((m, i) => {
+      const h = m.n === null ? 18 : Math.max(2, ((m.n / max) * (H - TOP)));
+      const x = i * step + (step - bw) / 2;
+      return (
+        <g class="ms-col" data-label={m.label} data-n={m.n ?? ""}>
+          <rect x={i * step} y="0" width={step} height={H} fill="transparent" />
+          {m.n === null ? (
+            <rect x={x} y={H - h} width={bw} height={h} fill="url(#ms-hatch)" />
+          ) : (
+            <rect
+              class="ms-bar"
+              x={x}
+              y={H - h}
+              width={bw}
+              height={h}
+              rx="1"
+              fill="#7FB8E0"
+              fill-opacity={i >= recentFrom ? 0.95 : 0.38}
+              style={`--i:${i}`}
+            />
+          )}
+        </g>
+      );
+    })}
+    {pause.len > 3 && (
+      <g aria-hidden="true" class="font-mono" font-size="10" letter-spacing="1.4">
+        <line x1={pause.start * step} x2={(pause.start + pause.len) * step} y1={H - 30} y2={H - 30} stroke="#D4A24A" stroke-opacity="0.7" />
+        <line x1={pause.start * step} x2={pause.start * step} y1={H - 34} y2={H - 26} stroke="#D4A24A" stroke-opacity="0.7" />
+        <line x1={(pause.start + pause.len) * step} x2={(pause.start + pause.len) * step} y1={H - 34} y2={H - 26} stroke="#D4A24A" stroke-opacity="0.7" />
+        <text x={(pause.start + pause.len / 2) * step} y={H - 40} text-anchor="middle" fill="#D4A24A">FAA PUBLISHING PAUSE</text>
+      </g>
+    )}
+    {years.map((y) => (
+      <text x={y.i * step} y={H + 18} class="font-mono" font-size="10" letter-spacing="1" fill="#EBE3D0" fill-opacity="0.5">{y.y}</text>
+    ))}
+  </svg>
+  <figcaption class="mt-3 text-sm leading-relaxed text-[#EBE3D0]/60">
+    Hatched months are quarters the FAA never released publicly, not quiet skies. The long gap is the
+    FAA's 2022–23 publishing pause. Earlier quarters the FAA no longer posts were recovered from the
+    Internet Archive.
+  </figcaption>
+</figure>
+
+<style>
+  .ms-col { cursor: default; outline: none; }
+  .ms-col:hover .ms-bar, .ms-col.is-cursor .ms-bar { fill: #EBE3D0; fill-opacity: 1; }
+  .ms-col.is-cursor rect:first-child { fill: rgba(127, 184, 224, 0.1); }
+  .monthly svg:focus { outline: none; }
+  @media (prefers-reduced-motion: no-preference) {
+    .monthly .ms-bar { transform-box: fill-box; transform-origin: bottom; transform: scaleY(0); }
+    .monthly.is-in .ms-bar { transform: none; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); transition-delay: calc(var(--i) * 6ms); }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-monthly]").forEach((root) => {
+    const readout = root.querySelector<HTMLElement>("[data-readout]")!;
+    const resting = readout.innerHTML;
+    const show = (g: Element | null) => {
+      if (!(g instanceof SVGGElement) || !g.classList.contains("ms-col")) return;
+      const n = g.dataset.n;
+      readout.innerHTML = n
+        ? `${g.dataset.label} · <span class="text-[#7FB8E0]">${Number(n).toLocaleString("en-US")}</span> reports`
+        : `${g.dataset.label} · <span class="text-[#D4A24A]">no FAA release</span>`;
+    };
+    const svg = root.querySelector("svg")!;
+    const cols = [...root.querySelectorAll(".ms-col")];
+    let cursor = -1;
+    const setCursor = (i: number) => {
+      cols[cursor]?.classList.remove("is-cursor");
+      cursor = Math.max(0, Math.min(cols.length - 1, i));
+      cols[cursor]!.classList.add("is-cursor");
+      show(cols[cursor]!);
+    };
+    const reset = () => {
+      cols[cursor]?.classList.remove("is-cursor");
+      cursor = -1;
+      readout.innerHTML = resting;
+    };
+    cols.forEach((g) => g.addEventListener("pointerenter", () => show(g)));
+    root.addEventListener("pointerleave", () => cursor < 0 && (readout.innerHTML = resting));
+    svg.addEventListener("keydown", (e) => {
+      const step = { ArrowRight: 1, ArrowLeft: -1, PageUp: 12, PageDown: -12 }[e.key];
+      if (e.key === "Home" || e.key === "End") { e.preventDefault(); setCursor(e.key === "Home" ? 0 : cols.length - 1); return; }
+      if (!step) return;
+      e.preventDefault();
+      setCursor(cursor < 0 ? cols.length - 1 : cursor + step);
+    });
+    svg.addEventListener("blur", reset);
+    new IntersectionObserver(([e], obs) => {
+      if (e?.isIntersecting) { root.classList.add("is-in"); obs.disconnect(); }
+    }, { threshold: 0.3 }).observe(root);
+  });
+</script>

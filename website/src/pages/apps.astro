@@ -1,0 +1,585 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import Logo from "@components/Logo.astro";
+import RadarScope from "@components/apps/RadarScope.astro";
+import ViewShowcase from "@components/apps/ViewShowcase.astro";
+import MonthlyStrip from "@components/apps/MonthlyStrip.astro";
+import TraceThread from "@components/apps/TraceThread.astro";
+import snap from "@/data/apps/skywatch.json";
+
+const SKYWATCH = "https://skywatch.oceansllc.com/";
+const ATLAS = "https://atlas.oceansllc.com/";
+
+const fmt = (n: number) => n.toLocaleString("en-US");
+const L = snap.layers;
+const infra = L.installations + L.airports + L.noDroneZones + L.powerPlants + L.seaports;
+const g = snap.geocoding;
+const gTotal = g.city + g.alias + g.state;
+const pct = (n: number) => ((n / gTotal) * 100).toFixed(1);
+const span = Number(snap.dateMax.slice(0, 4)) - Number(snap.dateMin.slice(0, 4));
+const monthYear = (iso: string) =>
+  new Date(`${iso}T00:00:00Z`).toLocaleString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
+
+const skyStats = [
+  { n: snap.count, label: "FAA sighting reports", note: `${monthYear(snap.dateMin)} – ${monthYear(snap.dateMax)}` },
+  { n: span, label: "Years of records", note: "Archived quarters recovered" },
+  { n: infra, label: "Infrastructure sites", note: "Bases, airports, no-drone zones, power, ports" },
+  { n: snap.last12, label: "Reports, last 12 months", note: "The current window" },
+];
+
+const skyViews = [
+  {
+    key: "alerts",
+    label: "Proximity alerts",
+    img: "/img/apps/sky-main.webp",
+    alt: "SKYWATCH map of the continental US with drone sighting clusters in blue and proximity alerts in red, a ranked list of military installations on the left, and layer toggles on the right.",
+    caption: "Sightings within 5, 10 or 25 nm of an installation glow red. The side panel ranks installations by nearby reports in the current window and flags the ones that are rising.",
+  },
+  {
+    key: "infrastructure",
+    label: "Infrastructure",
+    img: "/img/apps/sky-infra.webp",
+    alt: "SKYWATCH with every infrastructure overlay switched on: installation footprints, FAA no-drone zones, power plants and major airports across the US.",
+    caption: `Stack the overlays: ${fmt(L.installations)} installation footprints, ${fmt(L.noDroneZones)} FAA no-drone zones, ${fmt(L.powerPlants)} power plants including nuclear, ${fmt(L.airports)} airports and the DoD's strategic seaports, JAXPORT among them.`,
+  },
+  {
+    key: "analytics",
+    label: "Analytics",
+    img: "/img/apps/sky-analytics.webp",
+    alt: "SKYWATCH analytics view: US counties shaded by sighting rate per 100,000 residents, hot spots outlined in red, and space-time cluster circles in pink.",
+    caption: "County sighting rates per 100k with hot spots outlined, and Kulldorff space-time scan clusters significant at p < 0.05.",
+  },
+];
+
+const skyFeatures = [
+  { t: "Proximity alerts", d: "Pick a 5, 10 or 25 nm radius. Installations rank by nearby reports, with rising-trend flags and fly-to on click.", i: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 5a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm0 3.2a.8.8 0 1 0 0 1.6.8.8 0 0 0 0-1.6Z" },
+  { t: "Time scrubber", d: `Drag any window across ${span} years of records, or press play and watch the timeline roll month by month.`, i: "M3 17h2v-4H3v4Zm4 0h2V9H7v8Zm4 0h2V5h-2v12Zm4 0h2v-6h-2v6Zm4 0h2V8h-2v9ZM3 20h18" },
+  { t: "Space-time clusters", d: "Kulldorff scan statistics at p < 0.05, county rates per 100k, and a watchlist of counties running hot over the last six months.", i: "M7 8a3 3 0 1 0 0 .01M17 6a4 4 0 1 0 0 .01M14 17a5 5 0 1 0 0 .01" },
+  { t: "Insights", d: "A negative-binomial model across US counties separates real signal from plain population, with every statistical term defined on hover.", i: "M4 19 9 13l4 3 7-9M4 5v14h16" },
+  { t: "Global frame", d: `${L.intlIncidents} curated international drone incidents and ${L.globalInstallations} US, NATO, Russian and Chinese installations put the domestic picture in context.`, i: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9S9.5 5.5 12 3Z" },
+  { t: "Built to hand off", d: "Every view is a shareable link. Search the pilot narratives, export a branded PNG, or take the 14-step guided tour.", i: "M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" },
+];
+
+const skySources = [
+  "FAA UAS Sightings Reports",
+  "US Census Gazetteer",
+  "HIFLD",
+  "OurAirports",
+  "FAA National Security UAS Flight Restrictions",
+  "USDOT / BTS",
+  "ACLED",
+];
+
+const atlasViews = [
+  {
+    key: "reference",
+    label: "Reference",
+    path: "/reference",
+    img: "/img/apps/atlas-reference.webp",
+    alt: "ATLAS Reference and Methodology tab showing a confidence ledger split into high, moderate and low confidence findings.",
+    caption: "What every term means, how each figure was derived, and a confidence ledger that separates what was read from a source from what was inferred.",
+  },
+  {
+    key: "analytics",
+    label: "Analytics",
+    path: "/analytics",
+    img: "/img/apps/atlas-analytics.webp",
+    alt: "ATLAS Analytics tab showing realization by risk band with progress bars for high, medium and low risk systems.",
+    caption: "Realization by risk band and risk by owner organization, because a single percentage prices a high-risk system and a low-risk one the same.",
+  },
+  {
+    key: "lossiness",
+    label: "Lossiness",
+    path: "/lossiness",
+    img: "/img/apps/atlas-lossiness.webp",
+    alt: "ATLAS Lossiness tab with seven scorecards such as requirement attrition, realization gap and orphaned hardware, above an attrition flow diagram.",
+    caption: "Seven scorecards, each opening onto the requirements, systems or devices behind it, plus an attrition flow from requirement to hardware.",
+  },
+  {
+    key: "network",
+    label: "Network",
+    path: "/network",
+    img: "/img/apps/atlas-network.webp",
+    alt: "ATLAS Network Topology tab: a force-directed graph of a sample site's devices grouped into colored zones, with a list of single points of failure.",
+    caption: "What is physically deployed at each site: zones, links and devices, with single points of failure called out and counted.",
+  },
+  {
+    key: "map",
+    label: "Orientation",
+    path: "/map",
+    img: "/img/apps/atlas-map.webp",
+    alt: "ATLAS Orientation Map: a radial tree of baselines, systems and stakeholders branching from the architecture root.",
+    caption: "The whole architecture on one canvas: baselines, systems, stakeholders, and the links between them.",
+  },
+];
+
+const atlasPillars = [
+  { t: "Your file never leaves the tab", d: "Load your own traceability matrix and ATLAS parses it in the browser. No upload, no server, nothing written to storage. Open the network panel while it loads: it stays empty." },
+  { t: "Works air-gapped", d: "The whole app builds to one self-contained HTML file with every asset inlined. The build fails if a remote reference sneaks in, so the claim is enforced, not asserted." },
+  { t: "Markings burned in", d: "A stated control marking is drawn into every PNG and PDF and written into every CSV. Pixels survive a copy and paste. Metadata does not." },
+  { t: "No number without evidence", d: "Every figure carries the IDs of the entities behind it and drills through to them. A metric you cannot audit is a claim, not a measurement." },
+  { t: "Empty is not broken", d: "“No data” and “failed to load” are separate components, so a dead fetch can never pose as a zero on a chart." },
+  { t: "Nothing persists", d: "No local storage, no cache, no service worker. Close the tab and the data is gone, and a test fails if that ever changes." },
+];
+
+const principles = [
+  { n: "I", t: "Show the evidence.", d: "Every point in SKYWATCH opens onto the FAA record behind it. Every figure in ATLAS drills to the rows that produced it. If we can't show where a number came from, it doesn't ship." },
+  { n: "II", t: "Say what you don't know.", d: "SKYWATCH prints the geocoding precision of every placement. ATLAS treats an unmapped site as an absence of evidence, not evidence of absence, and says so on screen." },
+  { n: "III", t: "Nothing to trust but the code.", d: "No accounts, no backend, no trackers. Static files, your browser, and either public records or data that never leaves your machine." },
+  { n: "IV", t: "Built for the watch floor.", d: "A link for every view, exports that carry their context, guided tours for the first visit. Tools one operator can hand to the next shift." },
+];
+
+const spec: { row: string; sky: string; atlas: string }[] = [
+  { row: "The question", sky: "Where are drones being reported near the things that matter?", atlas: "Where does the architecture lose information between intent and deployment?" },
+  { row: "Data", sky: "FAA public records and six public overlay sources", atlas: "A synthetic sample bundle, or your own matrix, parsed locally" },
+  { row: "Coverage", sky: `${monthYear(snap.dateMin)} – ${monthYear(snap.dateMax)} · ${fmt(snap.count)} reports`, atlas: "Five views · seven lossiness dimensions" },
+  { row: "Runs on", sky: "Any modern browser, fully client-side", atlas: "Any modern browser, or one offline HTML file" },
+  { row: "Login", sky: "None", atlas: "None" },
+  { row: "Exports", sky: "Branded PNG, shareable links", atlas: "PNG, PDF, CSV with control markings" },
+  { row: "Built with", sky: "TypeScript · MapLibre GL · D3", atlas: "React · TypeScript · D3 · SheetJS" },
+];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      name: "SKYWATCH — Counter-UAS Incident Atlas",
+      url: SKYWATCH,
+      applicationCategory: "Map / Data visualization",
+      operatingSystem: "Any (web browser)",
+      description: "FAA UAS sighting reports mapped against US military installations, airports, no-drone zones and power plants, with proximity alerts and space-time cluster analytics.",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      publisher: { "@type": "Organization", name: "OCEANS LLC", url: "https://www.oceansllc.com" },
+    },
+    {
+      "@type": "WebApplication",
+      name: "ATLAS — Architecture Traceability and Lossiness Analysis System",
+      url: ATLAS,
+      applicationCategory: "Systems engineering / Data analysis",
+      operatingSystem: "Any (web browser)",
+      description: "Traces requirements through systems to deployed hardware and measures seven dimensions of information loss. Runs entirely in the browser.",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      publisher: { "@type": "Organization", name: "OCEANS LLC", url: "https://www.oceansllc.com" },
+    },
+  ],
+};
+---
+<PageLayout
+  title="Apps — SKYWATCH & ATLAS"
+  description="Purpose-built instruments from OCEANS LLC. SKYWATCH maps every FAA drone sighting against US critical infrastructure. ATLAS traces requirements to deployed hardware and measures what is lost on the way. Live, free, no login."
+  path="/apps"
+  image="/og-apps.png"
+>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <!-- ═══ HERO ═══════════════════════════════════════════════════════ -->
+  <section class="apps-dark relative isolate overflow-hidden bg-[#061A30] text-[#EBE3D0]">
+    <div class="chart-grid absolute inset-0 -z-10" aria-hidden="true"></div>
+    <div class="absolute -right-40 top-10 -z-10 h-[720px] w-[720px] rounded-full bg-[#1A6FAB]/20 blur-[140px]" aria-hidden="true"></div>
+    <div class="mx-auto grid max-w-7xl items-center gap-14 px-6 pb-20 pt-14 md:pt-20 lg:grid-cols-12 lg:gap-8">
+      <div class="lg:col-span-6">
+        <p class="font-mono text-[11px] uppercase tracking-[0.32em] text-[#D4A24A]">⌁&nbsp;&nbsp;OCEANS Apps&nbsp;&nbsp;⌁</p>
+        <h1 class="mt-6 font-display text-6xl font-light leading-[0.95] text-[#F6F1E6] md:text-7xl xl:text-[5.6rem]">
+          Instruments<br />you can <em class="text-[#7FB8E0]">steer by.</em>
+        </h1>
+        <p class="mt-8 max-w-xl font-serif text-xl italic leading-relaxed text-[#EBE3D0]/85">
+          Purpose-built tools from OCEANS LLC. Live on the open web, free to use, no login. We build them
+          the way we engineer for our customers: every number traceable to its source, every limit stated
+          out loud.
+        </p>
+        <div class="mt-10 flex flex-wrap items-center gap-3">
+          <a href="#instruments" class="btn-sky">Meet the instruments <span aria-hidden="true">↓</span></a>
+          <a href={SKYWATCH} target="_blank" rel="noopener" class="btn-ghost-dark">SKYWATCH <span aria-hidden="true">↗</span></a>
+          <a href={ATLAS} target="_blank" rel="noopener" class="btn-ghost-dark">ATLAS <span aria-hidden="true">↗</span></a>
+        </div>
+        <dl class="mt-14 grid max-w-md grid-cols-3 gap-6 border-t border-[#7FB8E0]/15 pt-6">
+          <div><dt class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#EBE3D0]/55">Live</dt><dd class="lnum mt-1 font-display text-4xl font-light text-[#F6F1E6]">2</dd></div>
+          <div><dt class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#EBE3D0]/55">Logins</dt><dd class="lnum mt-1 font-display text-4xl font-light text-[#F6F1E6]">0</dd></div>
+          <div><dt class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#EBE3D0]/55">Backends</dt><dd class="lnum mt-1 font-display text-4xl font-light text-[#F6F1E6]">0</dd></div>
+        </dl>
+      </div>
+      <div class="lg:col-span-6">
+        <div class="mx-auto max-w-[600px]">
+          <RadarScope />
+          <p class="mt-4 text-[13px] leading-relaxed text-[#EBE3D0]/55">
+            Live render from SKYWATCH's data: every FAA UAS sighting place since {monthYear(snap.dateMin)}, at its city centroid.
+            Red contacts sit within 10 nm of a military installation, mostly because cities and bases share
+            ground. Hover a contact to read it.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ INDEX ══════════════════════════════════════════════════════ -->
+  <section id="instruments" class="apps-dark scroll-mt-16 border-t border-[#7FB8E0]/10 bg-[#061A30] text-[#EBE3D0]">
+    <div class="mx-auto max-w-7xl px-6 py-16">
+      <div class="grid gap-4 md:grid-cols-3">
+        <a href="#skywatch" class="index-card group">
+          <span class="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.2em]">
+            <span class="text-[#D4A24A]">01</span>
+            <span class="flex items-center gap-2 text-[#5EE6B8]"><span class="h-1.5 w-1.5 rounded-full bg-[#5EE6B8]"></span>Live</span>
+          </span>
+          <span class="mt-8 block font-display text-4xl font-light tracking-[0.08em] text-[#F6F1E6]">SKYWATCH</span>
+          <span class="mt-1 block font-mono text-[11px] uppercase tracking-[0.18em] text-[#7FB8E0]">Counter-UAS Incident Atlas</span>
+          <span class="mt-5 block font-serif text-lg italic leading-snug text-[#EBE3D0]/80">Every FAA drone sighting since 2016, against the infrastructure that matters.</span>
+          <span class="mt-8 flex items-center justify-between font-mono text-[11px] text-[#EBE3D0]/50"><span>skywatch.oceansllc.com</span><span class="transition-transform group-hover:translate-y-0.5" aria-hidden="true">↓</span></span>
+        </a>
+        <a href="#atlas" class="index-card group">
+          <span class="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.2em]">
+            <span class="text-[#D4A24A]">02</span>
+            <span class="flex items-center gap-2 text-[#5EE6B8]"><span class="h-1.5 w-1.5 rounded-full bg-[#5EE6B8]"></span>Live</span>
+          </span>
+          <span class="mt-8 block font-display text-4xl font-light tracking-[0.08em] text-[#F6F1E6]">ATLAS</span>
+          <span class="mt-1 block font-mono text-[11px] uppercase tracking-[0.18em] text-[#7FB8E0]">Traceability &amp; Lossiness Analysis</span>
+          <span class="mt-5 block font-serif text-lg italic leading-snug text-[#EBE3D0]/80">Requirement to hardware, and everything lost on the way.</span>
+          <span class="mt-8 flex items-center justify-between font-mono text-[11px] text-[#EBE3D0]/50"><span>atlas.oceansllc.com</span><span class="transition-transform group-hover:translate-y-0.5" aria-hidden="true">↓</span></span>
+        </a>
+        <div class="index-card is-next">
+          <span class="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.2em]">
+            <span class="text-[#D4A24A]/70">03</span>
+            <span class="flex items-center gap-2 text-[#EBE3D0]/45"><span class="h-1.5 w-1.5 rounded-full border border-[#EBE3D0]/45"></span>On the bench</span>
+          </span>
+          <span class="mt-8 flex h-10 items-center text-[#EBE3D0]/40" aria-hidden="true"><Logo variant="mark" size="lg" class="!h-8 !w-auto" /></span>
+          <span class="mt-1 block font-mono text-[11px] uppercase tracking-[0.18em] text-[#EBE3D0]/40">Next instrument</span>
+          <span class="mt-5 block font-serif text-lg italic leading-snug text-[#EBE3D0]/50">More public-data tools are in the works. The shelf keeps filling.</span>
+          <span class="mt-8 block font-mono text-[11px] text-[#EBE3D0]/30">coming soon</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 01 · SKYWATCH ══════════════════════════════════════════════ -->
+  <section id="skywatch" class="apps-dark relative isolate scroll-mt-16 overflow-hidden bg-[#0B1F3A] text-[#EBE3D0]">
+    <div class="absolute -left-60 top-40 -z-10 h-[640px] w-[640px] rounded-full bg-[#1A6FAB]/15 blur-[140px]" aria-hidden="true"></div>
+    <div class="mx-auto max-w-7xl px-6 py-24 md:py-32">
+      <div class="grid gap-12 lg:grid-cols-12">
+        <div class="lg:col-span-7">
+          <div class="flex items-end gap-6">
+            <span class="numeral" aria-hidden="true">01</span>
+            <p class="mb-5 font-mono text-[11px] uppercase tracking-[0.24em] text-[#7FB8E0]">Counter-UAS Incident Atlas</p>
+          </div>
+          <h2 class="mt-2 font-display text-6xl font-light tracking-[0.08em] text-[#F6F1E6] md:text-8xl">SKYWATCH</h2>
+          <p class="mt-6 max-w-2xl font-serif text-2xl italic leading-snug text-[#EBE3D0]/90 md:text-3xl">
+            Every drone sighting the FAA has logged, mapped against the infrastructure that matters.
+          </p>
+        </div>
+        <div class="flex flex-col justify-end lg:col-span-5">
+          <p class="leading-relaxed text-[#EBE3D0]/75">
+            The FAA publishes its UAS sighting reports as quarterly spreadsheets: a date, a city, and a
+            pilot's narrative. No coordinates, no context. SKYWATCH geocodes all {fmt(snap.count)} of them and
+            lays them over {fmt(L.installations)} military installations, {fmt(L.airports)} airports,
+            {" "}{fmt(L.noDroneZones)} FAA no-drone zones and {fmt(L.powerPlants)} power plants, with a curated
+            international incident layer for perspective. One operator view of the domestic drone picture.
+          </p>
+          <div class="mt-8 flex flex-wrap items-center gap-4">
+            <a href={SKYWATCH} target="_blank" rel="noopener" class="btn-sky">Launch SKYWATCH <span aria-hidden="true">↗</span></a>
+            <span class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#EBE3D0]/50">Opens with a guided tour</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-20 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-[#7FB8E0]/15 bg-[#7FB8E0]/15 lg:grid-cols-4">
+        {skyStats.map((s) => (
+          <div class="bg-[#0B1F3A] p-6 md:p-8">
+            <p class="lnum font-display text-5xl font-light text-[#F6F1E6] md:text-6xl" data-count={s.n}>{fmt(s.n)}</p>
+            <p class="mt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-[#7FB8E0]">{s.label}</p>
+            <p class="mt-1 text-sm text-[#EBE3D0]/50">{s.note}</p>
+          </div>
+        ))}
+      </div>
+
+      <div class="mt-20">
+        <ViewShowcase id="sky" host="skywatch.oceansllc.com" href={SKYWATCH} views={skyViews} tone="dark" />
+      </div>
+
+      <div class="mt-24 grid gap-12 lg:grid-cols-12">
+        <div class="lg:col-span-7">
+          <h3 class="font-display text-3xl font-light text-[#F6F1E6] md:text-4xl">{span} years of reports, month by month.</h3>
+          <p class="mt-3 max-w-xl leading-relaxed text-[#EBE3D0]/70">
+            Hover a bar, or focus the chart and use the arrow keys. This counts what people phoned in, so
+            it tracks reporting habits as well as drones.
+          </p>
+          <div class="mt-8"><MonthlyStrip /></div>
+        </div>
+        <aside class="rounded-2xl border border-[#7FB8E0]/15 bg-[#061A30]/60 p-7 md:p-8 lg:col-span-5">
+          <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-[#D4A24A]">Honest geocoding</p>
+          <h3 class="mt-3 font-display text-3xl font-light text-[#F6F1E6]">Precise about its precision.</h3>
+          <p class="mt-4 leading-relaxed text-[#EBE3D0]/75">
+            The FAA's records carry a city, never a coordinate. SKYWATCH places each report at a census place
+            centroid and prints the precision of every placement in its popup. Nothing sits at an invented
+            precise location.
+          </p>
+          <div class="mt-7 flex h-3 overflow-hidden rounded-full bg-white/5" role="img" aria-label={`City centroid ${pct(g.city)} percent, metro alias ${pct(g.alias)} percent, state fallback ${pct(g.state)} percent`}>
+            <span class="bg-[#7FB8E0]" style={`width:${pct(g.city)}%`}></span>
+            <span class="bg-[#D4A24A]" style={`width:${pct(g.alias)}%`}></span>
+            <span class="bg-[#E8615A]" style={`width:${pct(g.state)}%`}></span>
+          </div>
+          <dl class="mt-5 grid grid-cols-3 gap-3 font-mono text-[11px] uppercase tracking-[0.12em]">
+            <div><dt class="flex items-center gap-1.5 text-[#EBE3D0]/55"><span class="h-2 w-2 rounded-full bg-[#7FB8E0]"></span>City</dt><dd class="mt-1 text-base text-[#F6F1E6]">{pct(g.city)}%</dd></div>
+            <div><dt class="flex items-center gap-1.5 text-[#EBE3D0]/55"><span class="h-2 w-2 rounded-full bg-[#D4A24A]"></span>Metro alias</dt><dd class="mt-1 text-base text-[#F6F1E6]">{pct(g.alias)}%</dd></div>
+            <div><dt class="flex items-center gap-1.5 text-[#EBE3D0]/55"><span class="h-2 w-2 rounded-full bg-[#E8615A]"></span>State</dt><dd class="mt-1 text-base text-[#F6F1E6]">{pct(g.state)}%</dd></div>
+          </dl>
+          <blockquote class="mt-8 border-l-2 border-[#D4A24A] pl-5">
+            <p class="font-serif text-2xl italic leading-snug text-[#F6F1E6]">&ldquo;Proximity is colocation, not confirmed incursion.&rdquo;</p>
+            <footer class="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#EBE3D0]/50">SKYWATCH methodology</footer>
+          </blockquote>
+        </aside>
+      </div>
+
+      <div class="mt-24 grid gap-px overflow-hidden rounded-xl border border-[#7FB8E0]/12 bg-[#7FB8E0]/12 sm:grid-cols-2 lg:grid-cols-3">
+        {skyFeatures.map((f) => (
+          <div class="feature-cell bg-[#0B1F3A] p-7">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7FB8E0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={f.i} /></svg>
+            <h3 class="mt-5 font-display text-2xl font-light text-[#F6F1E6]">{f.t}</h3>
+            <p class="mt-2 text-[15px] leading-relaxed text-[#EBE3D0]/70">{f.d}</p>
+          </div>
+        ))}
+      </div>
+
+      <div class="mt-16 flex flex-col gap-4 md:flex-row md:items-center">
+        <p class="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-[#D4A24A]">Public sources only</p>
+        <ul class="flex flex-wrap gap-2">
+          {skySources.map((s) => (
+            <li class="rounded-full border border-[#7FB8E0]/20 px-3 py-1 font-mono text-[11px] text-[#EBE3D0]/70">{s}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 02 · ATLAS ═════════════════════════════════════════════════ -->
+  <section id="atlas" class="relative isolate scroll-mt-16 overflow-hidden bg-[#F1EDE2] text-[#0A2942]">
+    <div class="chart-grid-light absolute inset-0 -z-10" aria-hidden="true"></div>
+    <div class="mx-auto max-w-7xl px-6 py-24 md:py-32">
+      <div class="grid gap-12 lg:grid-cols-12">
+        <div class="lg:col-span-7">
+          <div class="flex items-end gap-6">
+            <span class="numeral numeral-light" aria-hidden="true">02</span>
+            <p class="mb-5 font-mono text-[11px] uppercase tracking-[0.24em] text-[#1A6FAB]">Traceability &amp; Lossiness Analysis</p>
+          </div>
+          <h2 class="mt-2 font-display text-6xl font-light tracking-[0.08em] text-[#061A30] md:text-8xl">ATLAS</h2>
+          <p class="mt-6 max-w-2xl font-serif text-2xl italic leading-snug text-[#0A2942] md:text-3xl">
+            Trace a requirement from intent to the hardware on the ground, and see exactly where the
+            information goes missing.
+          </p>
+        </div>
+        <div class="flex flex-col justify-end lg:col-span-5">
+          <p class="leading-relaxed text-[#0A2942]/80">
+            Big programs keep their architecture in three places: a traceability matrix, a stack of site
+            diagrams, and the heads of the few people who were there. ATLAS reads the first two together and
+            measures what falls out between the requirement, the system and the device. Seven lossiness
+            dimensions, each opening onto the entities behind the number, because a gap you cannot name is a
+            gap nobody can close.
+          </p>
+          <div class="mt-8 flex flex-wrap items-center gap-4">
+            <a href={ATLAS} target="_blank" rel="noopener" class="btn-navy">Explore ATLAS <span aria-hidden="true">↗</span></a>
+            <span class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#4A6480]">Opens on synthetic sample data</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-20 rounded-2xl border border-[#0B1F3A]/10 bg-white/55 p-5 shadow-[0_30px_80px_-50px_rgba(6,26,48,0.45)] backdrop-blur-sm md:p-10">
+        <div class="mb-8 flex flex-wrap items-baseline justify-between gap-3">
+          <h3 class="font-display text-3xl font-light text-[#061A30] md:text-4xl">Where the thread breaks.</h3>
+          <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-[#4A6480]">The seven things ATLAS measures</p>
+        </div>
+        <TraceThread />
+      </div>
+
+      <div class="mt-24">
+        <ViewShowcase id="atlas" host="atlas.oceansllc.com" href={ATLAS} views={atlasViews} tone="light" />
+      </div>
+
+      <div class="mt-24">
+        <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-[#8C6A2C]">Built for sensitive work</p>
+        <h3 class="mt-3 max-w-3xl font-display text-4xl font-light leading-tight text-[#061A30] md:text-5xl">
+          The safest server is the one that doesn't exist.
+        </h3>
+        <div class="mt-12 grid gap-px overflow-hidden rounded-xl border border-[#0B1F3A]/10 bg-[#0B1F3A]/10 sm:grid-cols-2 lg:grid-cols-3">
+          {atlasPillars.map((p, i) => (
+            <div class="bg-[#F1EDE2] p-7">
+              <span class="font-mono text-[11px] tracking-[0.18em] text-[#8C6A2C]">{String(i + 1).padStart(2, "0")}</span>
+              <h4 class="mt-4 font-display text-2xl font-light text-[#061A30]">{p.t}</h4>
+              <p class="mt-2 text-[15px] leading-relaxed text-[#0A2942]/75">{p.d}</p>
+            </div>
+          ))}
+        </div>
+        <p class="mt-8 max-w-4xl border-l-2 border-[#8C6A2C] pl-5 text-sm leading-relaxed text-[#0A2942]/75">
+          The hosted ATLAS runs on a fabricated sample bundle; nothing in it describes a real site. ATLAS
+          has no accreditation for controlled information, and whether your data may be handled this way is
+          a determination for you and your data owner.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ PRINCIPLES ═════════════════════════════════════════════════ -->
+  <section class="mx-auto max-w-7xl px-6 py-24 md:py-32">
+    <div class="grid gap-12 lg:grid-cols-12">
+      <div class="lg:col-span-4">
+        <p class="font-serif text-xs italic tracking-[0.2em] text-accent">⌁&nbsp;&nbsp;how we build&nbsp;&nbsp;⌁</p>
+        <h2 class="mt-5 font-display text-4xl font-light leading-tight text-fg-strong md:text-5xl">One standard, every instrument.</h2>
+        <p class="mt-5 font-serif text-lg leading-relaxed text-fg">
+          The two apps answer very different questions. They are built to the same rules, the ones we hold
+          our customer work to.
+        </p>
+      </div>
+      <div class="grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:col-span-8">
+        {principles.map((p) => (
+          <div class="border-t border-border-hairline pt-6">
+            <span class="font-display text-5xl font-light text-accent-2">{p.n}</span>
+            <h3 class="mt-3 font-display text-2xl text-fg-strong">{p.t}</h3>
+            <p class="mt-2 leading-relaxed text-muted">{p.d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SPEC SHEET ═════════════════════════════════════════════════ -->
+  <section class="mx-auto max-w-7xl px-6 pb-24 md:pb-32">
+    <div class="flex items-center gap-3">
+      <span class="block h-px w-6 bg-accent"></span>
+      <h2 class="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">Side by side</h2>
+    </div>
+    <div class="mt-8 overflow-x-auto rounded-xl border border-border-hairline bg-surface">
+      <table class="w-full min-w-[640px] text-left">
+        <thead>
+          <tr class="border-b border-border-hairline">
+            <th scope="col" class="w-1/5 px-6 py-5"><span class="sr-only">Attribute</span></th>
+            <th scope="col" class="px-6 py-5 font-display text-2xl font-light tracking-[0.08em] text-fg-strong">
+              SKYWATCH <a href={SKYWATCH} target="_blank" rel="noopener" class="ml-2 align-middle font-mono text-[11px] tracking-normal text-accent hover:underline">open ↗</a>
+            </th>
+            <th scope="col" class="px-6 py-5 font-display text-2xl font-light tracking-[0.08em] text-fg-strong">
+              ATLAS <a href={ATLAS} target="_blank" rel="noopener" class="ml-2 align-middle font-mono text-[11px] tracking-normal text-accent hover:underline">open ↗</a>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {spec.map((r, i) => (
+            <tr class:list={[i % 2 === 0 && "bg-surface-2/40"]}>
+              <th scope="row" class="px-6 py-4 align-top font-mono text-[11px] font-normal uppercase tracking-[0.16em] text-muted">{r.row}</th>
+              <td class="px-6 py-4 align-top text-[15px] leading-relaxed text-fg">{r.sky}</td>
+              <td class="px-6 py-4 align-top text-[15px] leading-relaxed text-fg">{r.atlas}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══ CTA ════════════════════════════════════════════════════════ -->
+  <section class="apps-dark relative isolate -mb-24 overflow-hidden bg-[#061A30] text-[#EBE3D0]">
+    <div class="chart-grid absolute inset-0 -z-10" aria-hidden="true"></div>
+    <div class="pointer-events-none absolute -right-24 top-1/2 -z-10 -translate-y-1/2 text-[#7FB8E0]/[0.06]" aria-hidden="true">
+      <Logo variant="mark" size="lg" class="!h-[420px] !w-auto" />
+    </div>
+    <div class="mx-auto max-w-4xl px-6 py-28 text-center">
+      <p class="font-mono text-[11px] uppercase tracking-[0.3em] text-[#D4A24A]">⌁&nbsp;&nbsp;commission an instrument&nbsp;&nbsp;⌁</p>
+      <h2 class="mt-6 font-display text-5xl font-light leading-tight text-[#F6F1E6] md:text-6xl">
+        Your mission has a question.<br /><em class="text-[#7FB8E0]">Let's build the instrument.</em>
+      </h2>
+      <p class="mx-auto mt-6 max-w-2xl font-serif text-xl italic leading-relaxed text-[#EBE3D0]/80">
+        We build these the way we engineer for our customers. If your program has a question that deserves
+        a purpose-built tool, tell us about it.
+      </p>
+      <div class="mt-10 flex flex-wrap justify-center gap-3">
+        <a href="/contact" class="btn-sky">Start a conversation</a>
+        <a href="/services/mission-data" class="btn-ghost-dark">Mission data services</a>
+      </div>
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  .chart-grid {
+    background-image:
+      linear-gradient(rgba(127, 184, 224, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(127, 184, 224, 0.07) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 80% 70% at 65% 45%, #000 20%, transparent 75%);
+  }
+  .chart-grid-light {
+    background-image:
+      linear-gradient(rgba(11, 31, 58, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(11, 31, 58, 0.05) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: linear-gradient(180deg, #000, transparent 60%);
+  }
+  .numeral {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(6rem, 12vw, 10rem);
+    line-height: 0.8;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(212, 162, 74, 0.6);
+    font-variant-numeric: lining-nums;
+  }
+  .lnum { font-variant-numeric: lining-nums tabular-nums; }
+  .numeral-light { -webkit-text-stroke: 1px rgba(140, 106, 44, 0.65); }
+
+  .btn-sky, .btn-ghost-dark, .btn-navy {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    border-radius: 0.375rem;
+    padding: 0.9rem 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .btn-sky { background: #7FB8E0; color: #061A30; box-shadow: 0 10px 30px -10px rgba(127, 184, 224, 0.55); }
+  .btn-sky:hover { background: #A7D0EE; transform: translateY(-1px); }
+  .btn-ghost-dark { border: 1px solid rgba(127, 184, 224, 0.35); color: #EBE3D0; }
+  .btn-ghost-dark:hover { border-color: #7FB8E0; color: #fff; background: rgba(127, 184, 224, 0.08); }
+  .btn-navy { background: #0B1F3A; color: #F1EDE2; box-shadow: 0 10px 30px -12px rgba(6, 26, 48, 0.6); }
+  .btn-navy:hover { background: #1A6FAB; transform: translateY(-1px); }
+  .apps-dark :focus-visible { outline-color: #7FB8E0; }
+
+  .index-card {
+    display: block;
+    position: relative;
+    border-radius: 1rem;
+    border: 1px solid rgba(127, 184, 224, 0.15);
+    background: linear-gradient(160deg, rgba(26, 111, 171, 0.14), rgba(6, 26, 48, 0) 60%);
+    padding: 1.75rem;
+    transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  a.index-card:hover { border-color: rgba(127, 184, 224, 0.5); transform: translateY(-3px); box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.8); }
+  .index-card.is-next { border-style: dashed; background: none; }
+
+  .feature-cell { transition: background-color 0.3s ease; }
+  .feature-cell:hover { background-color: #0E2747; }
+</style>
+
+<script>
+  // Count-up for stat numerals, once, when they scroll into view.
+  const els = document.querySelectorAll<HTMLElement>("[data-count]");
+  if (els.length && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const fmt = (n: number) => n.toLocaleString("en-US");
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        io.unobserve(e.target);
+        const el = e.target as HTMLElement;
+        const to = Number(el.dataset.count);
+        const t0 = performance.now();
+        const dur = 1400;
+        const tick = (t: number) => {
+          const p = Math.min(1, (t - t0) / dur);
+          el.textContent = fmt(Math.round(to * (1 - Math.pow(1 - p, 4))));
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+    }, { threshold: 0.6 });
+    els.forEach((el) => {
+      if (el.getBoundingClientRect().top > innerHeight) el.textContent = "0";
+      io.observe(el);
+    });
+  }
+</script>

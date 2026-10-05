@@ -1,0 +1,401 @@
+---
+/**
+ * RadarScope — the /apps hero instrument.
+ *
+ * A plan-position-indicator sweep over every FAA UAS sighting place in
+ * the SKYWATCH snapshot (src/data/apps/skywatch.json). Projection and the
+ * dot-matrix land are computed here at build time; the browser only
+ * animates. Contacts within 10 nm of a military installation render red.
+ */
+import { geoAlbers, geoContains } from "d3-geo";
+import { feature } from "topojson-client";
+// @ts-expect-error - world-atlas JSON has no TS types
+import world from "world-atlas/countries-50m.json";
+import type { Feature, FeatureCollection, Geometry } from "geojson";
+import snap from "@/data/apps/skywatch.json";
+
+const S = 1000;
+const C = S / 2;
+const R = 480;
+
+const countries = feature(world, world.objects.countries) as unknown as FeatureCollection<Geometry>;
+const byId = (id: string) => countries.features.find((f) => String(f.id) === id);
+const us = byId("840") as Feature<Geometry>;
+// Canada, Mexico, Cuba, Bahamas — faint context so the US doesn't float in a void
+const neighbors = ["124", "484", "192", "044"].map(byId).filter(Boolean) as Feature<Geometry>[];
+
+const projection = geoAlbers().fitExtent(
+  [[130, 130], [870, 870]],
+  {
+    type: "MultiPoint",
+    coordinates: [[-124.7, 48.4], [-67.0, 44.8], [-80.1, 25.1], [-117.1, 32.5], [-97.4, 25.9], [-95.2, 49.4]],
+  },
+);
+
+// Hex-offset dot matrix, clipped to the scope face
+const STEP = 10.5;
+const land: number[] = [];
+const other: number[] = [];
+let row = 0;
+for (let y = STEP / 2; y < S; y += STEP * 0.866, row++) {
+  for (let x = (row % 2 ? STEP : STEP / 2); x < S; x += STEP) {
+    if (Math.hypot(x - C, y - C) > R - 10) continue;
+    const ll = projection.invert?.([x, y]);
+    if (!ll) continue;
+    if (geoContains(us, ll)) land.push(Math.round(x), Math.round(y));
+    else if (neighbors.some((f) => geoContains(f, ll))) other.push(Math.round(x), Math.round(y));
+  }
+}
+
+// Contacts — CONUS only (AK / HI / PR / GU sit off the scope face)
+const pts: number[] = [];
+const names: string[] = [];
+let conus = 0;
+let alerts = 0;
+for (const p of snap.points as unknown as [number, number, number, number, string?][]) {
+  const [lat, lon, n, a, name] = p;
+  if (lon < -125 || lon > -66 || lat < 24 || lat > 50) continue;
+  const xy = projection([lon, lat]);
+  if (!xy) continue;
+  pts.push(Math.round(xy[0]), Math.round(xy[1]), n, a);
+  names.push(name ?? "");
+  conus += n;
+  alerts += a;
+}
+
+const payload = JSON.stringify({ s: S, c: C, r: R, land, other, pts, names, conus, alerts });
+const fmt = (n: number) => n.toLocaleString("en-US");
+const largest = snap.points[0] as unknown as [number, number, number, number, string];
+---
+<figure class="radar relative w-full" data-radar>
+  <div class="relative aspect-square w-full">
+    <canvas
+      class="absolute inset-0 h-full w-full"
+      role="img"
+      aria-label={`Radar-style render of ${fmt(conus)} FAA UAS sighting reports across the continental US, ${fmt(alerts)} of them within 10 nautical miles of a military installation.`}
+    ></canvas>
+    <div class="radar-tip pointer-events-none absolute z-10 hidden min-w-[11rem] rounded-md border border-[#7FB8E0]/25 bg-[#061A30]/95 px-3 py-2 font-mono text-[11px] leading-relaxed text-[#EBE3D0] shadow-xl backdrop-blur" aria-hidden="true"></div>
+  </div>
+
+  <figcaption class="mt-5 grid grid-cols-3 gap-px overflow-hidden rounded-lg border border-[#7FB8E0]/15 bg-[#7FB8E0]/10 font-mono text-[10px] uppercase tracking-[0.18em]">
+    <div class="bg-[#061A30]/80 px-4 py-3">
+      <span class="block text-[#7FB8E0]/60">Bearing</span>
+      <span class="mt-1 block text-base tracking-[0.12em] text-[#EBE3D0]" data-hud="brg">000°</span>
+    </div>
+    <div class="bg-[#061A30]/80 px-4 py-3">
+      <span class="block text-[#7FB8E0]/60">Contacts</span>
+      <span class="mt-1 block text-base tracking-[0.06em] text-[#7FB8E0] tabular-nums" data-hud="contacts">0</span>
+    </div>
+    <div class="bg-[#061A30]/80 px-4 py-3">
+      <span class="block text-[#E8615A]/80">≤ 10 nm of a base</span>
+      <span class="mt-1 block text-base tracking-[0.06em] text-[#E8615A] tabular-nums" data-hud="alerts">0</span>
+    </div>
+  </figcaption>
+  <p class="mt-3 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-[#EBE3D0]/70" aria-live="off">
+    <span class="radar-ping inline-block h-1.5 w-1.5 rounded-full bg-[#7FB8E0]"></span>
+    <span data-hud="ticker">{largest[4]} · {fmt(largest[2])} reports</span>
+  </p>
+
+  <script type="application/json" set:html={payload} />
+</figure>
+
+<style>
+  .radar canvas { cursor: crosshair; }
+  .radar-ping { box-shadow: 0 0 0 0 rgba(127, 184, 224, 0.6); animation: radar-ping 2s infinite; }
+  .radar-ping.is-alert { background: #E8615A; box-shadow: 0 0 0 0 rgba(232, 97, 90, 0.6); }
+  @keyframes radar-ping {
+    0% { box-shadow: 0 0 0 0 rgba(127, 184, 224, 0.55); }
+    70% { box-shadow: 0 0 0 8px rgba(127, 184, 224, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(127, 184, 224, 0); }
+  }
+  [data-hud="ticker"] { transition: opacity 0.25s ease; }
+  [data-hud="ticker"].is-fresh { opacity: 0.35; }
+</style>
+
+<script>
+  type RadarData = {
+    s: number; c: number; r: number;
+    land: number[]; other: number[]; pts: number[]; names: string[];
+    conus: number; alerts: number;
+  };
+
+  const TAU = Math.PI * 2;
+  const PERIOD = 7000; // ms per revolution
+  const TRAIL = 1.15; // radians of afterglow behind the sweep
+  const DECAY = 2600; // ms phosphor decay
+  const SKY: [number, number, number] = [127, 184, 224];
+  const ALERT: [number, number, number] = [232, 97, 90];
+  const BRASS = "212, 162, 74";
+
+  function sprite(rgb: [number, number, number]) {
+    const c = document.createElement("canvas");
+    c.width = c.height = 64;
+    const g = c.getContext("2d")!;
+    const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0, `rgba(${rgb.join(",")},0.9)`);
+    grad.addColorStop(0.35, `rgba(${rgb.join(",")},0.35)`);
+    grad.addColorStop(1, `rgba(${rgb.join(",")},0)`);
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 64, 64);
+    return c;
+  }
+
+  function init(root: HTMLElement) {
+    const canvas = root.querySelector("canvas")!;
+    const tip = root.querySelector<HTMLElement>(".radar-tip")!;
+    const raw = root.querySelector("script[type='application/json']")?.textContent;
+    const ctx = canvas.getContext("2d");
+    if (!raw || !ctx) return;
+    const d: RadarData = JSON.parse(raw);
+    const hud = {
+      brg: root.querySelector<HTMLElement>("[data-hud=brg]")!,
+      contacts: root.querySelector<HTMLElement>("[data-hud=contacts]")!,
+      alerts: root.querySelector<HTMLElement>("[data-hud=alerts]")!,
+      ticker: root.querySelector<HTMLElement>("[data-hud=ticker]")!,
+      ping: root.querySelector<HTMLElement>(".radar-ping")!,
+    };
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const fmt = (n: number) => n.toLocaleString("en-US");
+
+    const N = d.pts.length / 4;
+    const ang = new Float32Array(N);
+    const last = new Float64Array(N).fill(-1e9);
+    const seen = new Uint8Array(N);
+    for (let i = 0; i < N; i++) {
+      const dx = d.pts[i * 4]! - d.c;
+      const dy = d.pts[i * 4 + 1]! - d.c;
+      ang[i] = (Math.atan2(dx, -dy) + TAU) % TAU; // clockwise from north
+    }
+
+    const skySprite = sprite(SKY);
+    const alertSprite = sprite(ALERT);
+    const face = document.createElement("canvas");
+    let W = 0;
+    let k = 1;
+    let hover = -1;
+
+    function drawFace() {
+      face.width = face.height = W;
+      const g = face.getContext("2d")!;
+      const cx = d.c * k, cy = d.c * k, R = d.r * k;
+      const bg = g.createRadialGradient(cx, cy, 0, cx, cy, R);
+      bg.addColorStop(0, "#10304F");
+      bg.addColorStop(0.75, "#0A2340");
+      bg.addColorStop(1, "#061A30");
+      g.fillStyle = bg;
+      g.beginPath(); g.arc(cx, cy, R, 0, TAU); g.fill();
+
+      // land dot matrix
+      const dot = 1.55 * k;
+      g.fillStyle = "rgba(127,184,224,0.11)";
+      for (let i = 0; i < d.other.length; i += 2) { g.beginPath(); g.arc(d.other[i]! * k, d.other[i + 1]! * k, dot, 0, TAU); g.fill(); }
+      g.fillStyle = "rgba(127,184,224,0.30)";
+      for (let i = 0; i < d.land.length; i += 2) { g.beginPath(); g.arc(d.land[i]! * k, d.land[i + 1]! * k, dot, 0, TAU); g.fill(); }
+
+      // range rings + crosshair
+      g.lineWidth = Math.max(1, k);
+      for (const f of [0.25, 0.5, 0.75]) {
+        g.strokeStyle = `rgba(${BRASS},0.16)`;
+        g.setLineDash([2 * k, 6 * k]);
+        g.beginPath(); g.arc(cx, cy, R * f, 0, TAU); g.stroke();
+      }
+      g.setLineDash([]);
+      g.strokeStyle = "rgba(127,184,224,0.07)";
+      g.beginPath(); g.moveTo(cx - R, cy); g.lineTo(cx + R, cy); g.moveTo(cx, cy - R); g.lineTo(cx, cy + R); g.stroke();
+      g.strokeStyle = `rgba(${BRASS},0.55)`;
+      g.lineWidth = Math.max(1, 1.5 * k);
+      g.beginPath(); g.arc(cx, cy, R, 0, TAU); g.stroke();
+
+      // bearing ticks and labels
+      g.font = `${Math.round(12 * k)}px ui-monospace, "SF Mono", Menlo, monospace`;
+      g.textAlign = "center";
+      g.textBaseline = "middle";
+      for (let deg = 0; deg < 360; deg += 5) {
+        const a = (deg * Math.PI) / 180 - Math.PI / 2;
+        const len = deg % 30 === 0 ? 14 : deg % 10 === 0 ? 8 : 4;
+        g.strokeStyle = `rgba(${BRASS},${deg % 30 === 0 ? 0.7 : 0.35})`;
+        g.beginPath();
+        g.moveTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
+        g.lineTo(cx + Math.cos(a) * (R - len * k), cy + Math.sin(a) * (R - len * k));
+        g.stroke();
+        if (deg % 30 === 0) {
+          g.fillStyle = `rgba(${BRASS},0.75)`;
+          g.fillText(String(deg).padStart(3, "0"), cx + Math.cos(a) * (R - 30 * k), cy + Math.sin(a) * (R - 30 * k));
+        }
+      }
+    }
+
+    function resize() {
+      const css = canvas.clientWidth;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = Math.max(1, Math.round(css * dpr));
+      canvas.width = canvas.height = W;
+      k = W / d.s;
+      drawFace();
+      if (!running) frame(performance.now(), true);
+    }
+
+    let phase = reduce ? Math.PI / 4 : 0;
+    let prev = phase;
+    let rev = 0;
+    let lastT = 0;
+    let shown = 0;
+    let revealed = 0;
+    let revealedAlerts = 0;
+    let lastHud = 0;
+    let running = false;
+    let raf = 0;
+
+    function draw(now: number, still: boolean) {
+      ctx!.clearRect(0, 0, W, W);
+      ctx!.drawImage(face, 0, 0);
+      const cx = d.c * k, cy = d.c * k, R = d.r * k;
+      const ca = phase - Math.PI / 2;
+
+      ctx!.save();
+      ctx!.beginPath(); ctx!.arc(cx, cy, R, 0, TAU); ctx!.clip();
+      if (!still && "createConicGradient" in ctx!) {
+        const g = ctx!.createConicGradient(ca - TRAIL, cx, cy);
+        const f = TRAIL / TAU;
+        g.addColorStop(0, "rgba(127,184,224,0)");
+        g.addColorStop(f * 0.985, "rgba(127,184,224,0.22)");
+        g.addColorStop(f, "rgba(127,184,224,0)");
+        g.addColorStop(1, "rgba(127,184,224,0)");
+        ctx!.fillStyle = g;
+        ctx!.fillRect(0, 0, W, W);
+        ctx!.strokeStyle = "rgba(205,232,250,0.8)";
+        ctx!.lineWidth = Math.max(1, 1.4 * k);
+        ctx!.beginPath(); ctx!.moveTo(cx, cy); ctx!.lineTo(cx + Math.cos(ca) * R, cy + Math.sin(ca) * R); ctx!.stroke();
+      }
+
+      ctx!.globalCompositeOperation = "lighter";
+      for (let i = 0; i < N; i++) {
+        const x = d.pts[i * 4]! * k, y = d.pts[i * 4 + 1]! * k, n = d.pts[i * 4 + 2]!, a = d.pts[i * 4 + 3]!;
+        const b = still ? 0.5 : Math.exp(-(now - last[i]!) / DECAY);
+        const r = (1.5 + Math.sqrt(n) * 0.5) * k;
+        const isAlert = a > 0;
+        if (b > 0.02) {
+          const rg = r * 3.4;
+          ctx!.globalAlpha = Math.min(1, b * 0.9);
+          ctx!.drawImage(isAlert ? alertSprite : skySprite, x - rg, y - rg, rg * 2, rg * 2);
+        }
+        ctx!.globalAlpha = Math.min(1, 0.16 + b * 0.9);
+        ctx!.fillStyle = isAlert ? "rgb(232,97,90)" : "rgb(127,184,224)";
+        ctx!.beginPath(); ctx!.arc(x, y, Math.max(0.9 * k, r * 0.5), 0, TAU); ctx!.fill();
+      }
+      ctx!.globalAlpha = 1;
+      ctx!.globalCompositeOperation = "source-over";
+
+      if (hover >= 0) {
+        const x = d.pts[hover * 4]! * k, y = d.pts[hover * 4 + 1]! * k, n = d.pts[hover * 4 + 2]!;
+        const r = (1.5 + Math.sqrt(n) * 0.5) * k;
+        ctx!.strokeStyle = "rgba(235,227,208,0.9)";
+        ctx!.lineWidth = Math.max(1, 1.2 * k);
+        ctx!.beginPath(); ctx!.arc(x, y, r + 6 * k, 0, TAU); ctx!.stroke();
+      }
+      ctx!.restore();
+    }
+
+    function sweep(now: number) {
+      const wrapped = phase < prev;
+      let best = -1;
+      for (let i = 0; i < N; i++) {
+        const p = ang[i]!;
+        const hit = wrapped ? p > prev || p <= phase : p > prev && p <= phase;
+        if (!hit) continue;
+        last[i] = now;
+        if (!seen[i]) {
+          seen[i] = 1;
+          revealed += d.pts[i * 4 + 2]!;
+          revealedAlerts += d.pts[i * 4 + 3]!;
+        }
+        if (d.names[i] && (best < 0 || d.pts[i * 4 + 2]! > d.pts[best * 4 + 2]!)) best = i;
+      }
+      if (wrapped) rev++;
+      if (best >= 0 && d.pts[best * 4 + 2]! >= 40) {
+        const a = d.pts[best * 4 + 3]! > 0;
+        hud.ticker.classList.add("is-fresh");
+        hud.ticker.textContent = `${d.names[best]} · ${fmt(d.pts[best * 4 + 2]!)} reports${a ? " · ≤ 10 nm alert" : ""}`;
+        hud.ping.classList.toggle("is-alert", a);
+        requestAnimationFrame(() => hud.ticker.classList.remove("is-fresh"));
+      }
+    }
+
+    function updateHud(now: number, force = false) {
+      if (!force && now - lastHud < 90) return;
+      lastHud = now;
+      hud.brg.textContent = `${String(Math.round((phase * 180) / Math.PI) % 360).padStart(3, "0")}°`;
+      const c = rev > 0 || reduce ? d.conus : revealed;
+      const a = rev > 0 || reduce ? d.alerts : revealedAlerts;
+      if (c !== shown) { hud.contacts.textContent = fmt(c); shown = c; }
+      hud.alerts.textContent = fmt(a);
+    }
+
+    function frame(now: number, still = false) {
+      if (!still) {
+        const dt = Math.min(50, lastT ? now - lastT : 16);
+        lastT = now;
+        prev = phase;
+        phase = (phase + (dt / PERIOD) * TAU) % TAU;
+        sweep(now);
+      }
+      draw(now, still || reduce);
+      updateHud(now, still);
+    }
+
+    function loop(now: number) {
+      frame(now);
+      raf = requestAnimationFrame(loop);
+    }
+    function start() {
+      if (running || reduce) return;
+      running = true;
+      lastT = 0;
+      raf = requestAnimationFrame(loop);
+    }
+    function stop() {
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+
+    new ResizeObserver(resize).observe(canvas);
+    resize();
+    if (reduce) {
+      updateHud(performance.now(), true);
+    } else {
+      new IntersectionObserver(([e]) => (e?.isIntersecting ? start() : stop()), { threshold: 0.05 }).observe(root);
+    }
+
+    // hover readout
+    canvas.addEventListener("pointermove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const lx = ((e.clientX - rect.left) / rect.width) * d.s;
+      const ly = ((e.clientY - rect.top) / rect.height) * d.s;
+      let bestI = -1, bestD = 18 * 18;
+      for (let i = 0; i < N; i++) {
+        const dx = d.pts[i * 4]! - lx, dy = d.pts[i * 4 + 1]! - ly, dd = dx * dx + dy * dy;
+        if (dd < bestD) { bestD = dd; bestI = i; }
+      }
+      hover = bestI;
+      if (bestI < 0) { tip.classList.add("hidden"); if (!running) frame(performance.now(), true); return; }
+      const n = d.pts[bestI * 4 + 2]!, a = d.pts[bestI * 4 + 3]!;
+      tip.innerHTML =
+        `<span class="block text-[#EBE3D0]">${d.names[bestI] || "City centroid"}</span>` +
+        `<span class="block text-[#7FB8E0]">${fmt(n)} report${n === 1 ? "" : "s"} · 2016–26</span>` +
+        (a > 0 ? `<span class="block text-[#E8615A]">within 10 nm of an installation</span>` : "");
+      tip.classList.remove("hidden");
+      const tx = ((d.pts[bestI * 4]! / d.s) * rect.width);
+      const ty = ((d.pts[bestI * 4 + 1]! / d.s) * rect.height);
+      tip.style.left = `${Math.min(rect.width - 190, tx + 14)}px`;
+      tip.style.top = `${Math.max(0, ty - 64)}px`;
+      if (!running) frame(performance.now(), true);
+    });
+    canvas.addEventListener("pointerleave", () => {
+      hover = -1;
+      tip.classList.add("hidden");
+      if (!running) frame(performance.now(), true);
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-radar]").forEach(init);
+</script>
