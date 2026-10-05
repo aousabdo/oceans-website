@@ -193,11 +193,21 @@ const jsonLd = {
           <a href={SKYWATCH} target="_blank" rel="noopener" class="btn-ghost-dark">SKYWATCH <span aria-hidden="true">↗</span></a>
           <a href={ATLAS} target="_blank" rel="noopener" class="btn-ghost-dark">ATLAS <span aria-hidden="true">↗</span></a>
         </div>
-        <dl class="mt-14 grid max-w-md grid-cols-3 gap-6 border-t border-[#7FB8E0]/15 pt-6">
-          <div><dt class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#EBE3D0]/55">Live</dt><dd class="lnum mt-1 font-display text-4xl font-light text-[#F6F1E6]">2</dd></div>
-          <div><dt class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#EBE3D0]/55">Logins</dt><dd class="lnum mt-1 font-display text-4xl font-light text-[#F6F1E6]">0</dd></div>
-          <div><dt class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#EBE3D0]/55">Backends</dt><dd class="lnum mt-1 font-display text-4xl font-light text-[#F6F1E6]">0</dd></div>
-        </dl>
+        <div class="mt-14 max-w-md border-y border-[#7FB8E0]/15 py-5 font-mono text-[11px] uppercase tracking-[0.2em]">
+          <ul class="flex flex-wrap gap-x-10 gap-y-3" aria-label="App status">
+            <li>
+              <a href={SKYWATCH} target="_blank" rel="noopener" class="flex items-center gap-3 text-[#F6F1E6] transition-colors hover:text-[#7FB8E0]">
+                SKYWATCH<span class="flex items-center gap-1.5 text-[#5EE6B8]"><span class="status-dot"></span>Live</span>
+              </a>
+            </li>
+            <li>
+              <a href={ATLAS} target="_blank" rel="noopener" class="flex items-center gap-3 text-[#F6F1E6] transition-colors hover:text-[#7FB8E0]">
+                ATLAS<span class="flex items-center gap-1.5 text-[#5EE6B8]"><span class="status-dot"></span>Live</span>
+              </a>
+            </li>
+          </ul>
+          <p class="mt-3 text-[10px] text-[#EBE3D0]/50">FAA data through {monthYear(snap.dateMax)}</p>
+        </div>
       </div>
       <div class="lg:col-span-6">
         <div class="mx-auto max-w-[600px]">
@@ -553,6 +563,20 @@ const jsonLd = {
   .index-card.is-next { border-style: dashed; background: none; }
 
   .feature-cell { transition: background-color 0.3s ease; }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: #5EE6B8;
+    box-shadow: 0 0 0 0 rgba(94, 230, 184, 0.55);
+    animation: status-ping 2.4s ease-out infinite;
+  }
+  @keyframes status-ping {
+    0% { box-shadow: 0 0 0 0 rgba(94, 230, 184, 0.55); }
+    70% { box-shadow: 0 0 0 7px rgba(94, 230, 184, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(94, 230, 184, 0); }
+  }
   .feature-cell:hover { background-color: #0E2747; }
 </style>
 
