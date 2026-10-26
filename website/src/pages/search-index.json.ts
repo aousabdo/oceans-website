@@ -49,6 +49,7 @@ const TOP_PAGES: IndexEntry[] = [
   { title: "About", url: "/about", kind: "Page" },
   { title: "Team", url: "/team", kind: "Page" },
   { title: "Careers", url: "/careers", kind: "Page", summary: "Open roles and how to apply." },
+  { title: "Mission Design Library", url: "/mission-design", kind: "Page", summary: "Federal system design problems to practice, with a 45-minute clock and a worked reference write-up.", keywords: "system design interview orals technical challenge architecture practice ais maritime c-uas traceability" },
   { title: "Journal", url: "/blog", kind: "Page", summary: "Practitioner notes on T&E, requirements, and federal engineering.", keywords: "blog articles writing" },
   { title: "Glossary", url: "/glossary", kind: "Page", summary: "Federal-engineering terms defined plainly.", keywords: "definitions terms vocabulary" },
   { title: "FAQ", url: "/faq", kind: "Page", summary: "Procurement, compliance, how-we-engage, and capabilities questions.", keywords: "questions answers cage uei naics clearance cmmc nda contract vehicles" },

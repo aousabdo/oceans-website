@@ -1,0 +1,416 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import Eyebrow from "@components/Eyebrow.astro";
+import SectionLabel from "@components/SectionLabel.astro";
+import Tag from "@components/Tag.astro";
+import { problems, COMPLEXITY_BARS, DOMAINS, CAPABILITIES, COMPLEXITIES, CONSTRAINTS, COMPOSITE_NOTE } from "@/data/mission-design";
+
+const pad = (n: number) => String(n).padStart(2, "0");
+const featured = problems[0]!;
+
+const stats = [
+  { v: pad(problems.length), l: "Problems" },
+  { v: pad(CAPABILITIES.length), l: "OCEANS capabilities" },
+  { v: pad(CONSTRAINTS.length), l: "Federal constraints tracked" },
+  { v: "00", l: "Photo-sharing apps" },
+];
+
+const filterGroups = [
+  { key: "domain", label: "Domain", values: DOMAINS },
+  { key: "capability", label: "Capability", values: CAPABILITIES },
+  { key: "complexity", label: "Complexity", values: COMPLEXITIES as string[] },
+];
+
+const different = [
+  {
+    t: "Authorization is architecture",
+    d: "Where the ATO boundary sits, which feeds need an ISA and an MOA, what the PIA lets you keep. On a federal program these shape the design as much as throughput does.",
+  },
+  {
+    t: "People are the bottleneck",
+    d: "Six analysts on a watch will bound a system long before the hardware does. Every write-up sizes the humans along with the machines.",
+  },
+  {
+    t: "Measured, not asserted",
+    d: "Each write-up ends with the measures of effectiveness and performance that would prove the design works, and how we would collect them.",
+  },
+];
+
+const anatomy = [
+  { t: "The prompt", d: "Stated the way an evaluator would say it, constraints and all." },
+  { t: "Ask these first", d: "The questions that change the design, before any boxes get drawn." },
+  { t: "Requirements", d: "Functional needs, plus thresholds and objectives for the rest." },
+  { t: "Sizing", d: "Back-of-envelope numbers, and which one actually binds." },
+  { t: "Architecture", d: "A reference diagram with the boundaries drawn in." },
+  { t: "Trade-offs", d: "The real forks, and the call we would make at each one." },
+  { t: "The federal layer", d: "ATO, PIA, agreements, markings, retention, Section 508." },
+  { t: "How it fails in month 12", d: "How a design like this usually fails, and the guard against it." },
+  { t: "How we'd test it", d: "MOEs and MOPs, and how each one gets measured." },
+];
+---
+<PageLayout
+  title="Mission Design Library"
+  description="Practice system design problems from federal missions: requirements with thresholds, architectures, trade-offs, and the ATO and privacy layer."
+  path="/mission-design"
+>
+  <div data-md-library>
+    <!-- HERO -->
+    <section class="mx-auto max-w-6xl px-6 pt-16 md:pt-20 pb-12">
+      <div class="flex flex-wrap items-center gap-3">
+        <Eyebrow>Mission Design Library</Eyebrow>
+        <Tag>Concept preview</Tag>
+      </div>
+      <div class="mt-6 grid gap-12 lg:grid-cols-12 lg:items-end">
+        <div class="lg:col-span-7">
+          <h1 class="font-display text-5xl md:text-7xl font-bold text-fg-strong leading-[1.02]">
+            System design, for missions <span class="text-accent">that can't go down.</span>
+          </h1>
+          <p class="mt-8 text-lg md:text-xl text-muted leading-relaxed max-w-2xl">
+            Interview prep sites teach you to design a photo-sharing app. Federal programs need people who can
+            design a maritime picture four agencies trust, a test pipeline that works off the grid, and a sharing
+            gateway that holds up in an audit. These are those problems. Problem 01 is worked end to end, the way we
+            work them. The rest are practice prompts, with write-ups to follow.
+          </p>
+        </div>
+
+        <!-- incoming prompt panel -->
+        <div class="lg:col-span-5">
+          <div class="rounded-lg border border-accent/30 bg-surface shadow-[0_24px_60px_-30px_rgba(91,212,255,0.35)]">
+            <div class="flex items-center justify-between gap-4 border-b border-border-hairline px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em]">
+              <span class="flex items-center gap-2 text-accent">
+                <span class="md-blink h-1.5 w-1.5 rounded-full bg-accent-go"></span>
+                Prompt {pad(featured.n)} · {featured.domain} · {featured.complexity}
+              </span>
+              <span class="text-accent-warm tabular-nums">45:00</span>
+            </div>
+            <p class="px-5 pt-5 text-[15px] leading-relaxed text-fg">
+              &ldquo;{featured.prompt}&rdquo;
+            </p>
+            <div class="flex flex-wrap gap-3 px-5 pb-5 pt-5">
+              <a
+                href={`/mission-design/${featured.slug}?practice=1`}
+                class="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest bg-accent text-bg px-4 py-2.5 rounded transition-all hover:brightness-110"
+              >
+                Start the clock <span aria-hidden="true">→</span>
+              </a>
+              <a
+                href={`/mission-design/${featured.slug}`}
+                class="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest border border-border-hairline text-fg-strong px-4 py-2.5 rounded transition-colors hover:border-accent hover:text-accent"
+              >
+                Read the write-up
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <dl class="mt-14 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border-hairline bg-border-hairline md:grid-cols-4">
+        {stats.map((s) => (
+          <div class="flex flex-col-reverse bg-bg p-5 md:p-6">
+            <dt class="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">{s.l}</dt>
+            <dd class="font-display text-4xl md:text-5xl font-bold text-fg-strong tabular-nums">{s.v}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+
+    <!-- LIBRARY -->
+    <section id="problems" class="mx-auto max-w-6xl px-6 pb-20 scroll-mt-20">
+      <SectionLabel as="h2">The problems</SectionLabel>
+
+      <div class="mt-6 space-y-4 rounded-lg border border-border-hairline bg-surface/50 p-4 md:p-5">
+        <div>
+          <label for="md-search" class="sr-only">Search problems</label>
+          <input
+            id="md-search"
+            type="search"
+            placeholder="Search: AIS, PIA, re-baseline, drone…"
+            autocomplete="off"
+            class="w-full rounded border border-border-hairline bg-bg px-4 py-2.5 font-mono text-sm text-fg placeholder:text-muted focus:border-accent focus:outline-none"
+          />
+        </div>
+        {filterGroups.map((g) => (
+          <div role="group" aria-label={`Filter by ${g.label.toLowerCase()}`} class="flex flex-wrap items-center gap-2">
+            <span class="w-24 shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">{g.label}</span>
+            {g.values.map((v) => (
+              <button
+                type="button"
+                data-filter={g.key}
+                data-value={v}
+                aria-pressed="false"
+                class="rounded-full border border-border-hairline px-3 py-1 font-mono text-[11px] text-fg transition-colors hover:border-accent hover:text-accent aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-bg"
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+        ))}
+        <div class="flex items-center justify-between gap-4 border-t border-border-hairline pt-3">
+          <p data-md-count aria-live="polite" class="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
+            Showing {problems.length} of {problems.length}
+          </p>
+          <button type="button" data-md-clear hidden class="font-mono text-[11px] uppercase tracking-[0.16em] text-accent hover:text-fg-strong">
+            Clear filters
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-6 overflow-hidden rounded-lg border border-border-hairline">
+        <div class="hidden lg:grid lg:grid-cols-[56px_1fr_150px_120px_130px] gap-6 border-b border-border-hairline bg-surface px-6 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+          <span>#</span>
+          <span>Problem</span>
+          <span>Domain</span>
+          <span>Complexity</span>
+          <span>Status</span>
+        </div>
+        <ol>
+          {problems.map((p) => {
+            const bars = COMPLEXITY_BARS[p.complexity];
+            const text = [p.title, p.short, p.domain, p.capability.label, p.complexity, ...p.constraints].join(" ").toLowerCase();
+            return (
+              <li
+                data-md-row
+                data-domain={p.domain}
+                data-capability={p.capability.label}
+                data-complexity={p.complexity}
+                data-text={text}
+                class="border-b border-border-hairline last:border-0"
+              >
+                <a
+                  href={`/mission-design/${p.slug}`}
+                  class="group grid grid-cols-[40px_1fr] lg:grid-cols-[56px_1fr_150px_120px_130px] gap-x-4 lg:gap-x-6 gap-y-4 px-5 py-6 lg:px-6 transition-colors hover:bg-surface/70"
+                >
+                  <span class="font-mono text-sm text-accent pt-1">{pad(p.n)}</span>
+                  <span class="min-w-0">
+                    <span class="block font-display text-lg md:text-xl font-bold leading-snug text-fg-strong transition-colors group-hover:text-accent">
+                      {p.title}
+                    </span>
+                    <span class="mt-2 block text-[15px] leading-relaxed text-muted">{p.short}</span>
+                    <span class="mt-3 flex flex-wrap gap-1.5">
+                      {p.constraints.map((c) => (
+                        <span class="rounded-sm border border-accent-warm/35 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-accent-warm">{c}</span>
+                      ))}
+                    </span>
+                  </span>
+
+                  <span class="col-start-2 lg:col-start-auto flex flex-wrap gap-x-6 gap-y-3 lg:contents">
+                    <span class="font-mono text-[11px] uppercase tracking-[0.14em] text-fg lg:pt-1">
+                      {p.domain}
+                      <span class="mt-1 block text-muted">{p.capability.label}</span>
+                    </span>
+                    <span class="lg:pt-1">
+                      <span class="flex gap-1" aria-hidden="true">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                          <span class:list={["h-3 w-1.5 rounded-[1px]", i <= bars ? (bars === 5 ? "bg-accent-critical" : "bg-accent") : "bg-surface-2"]}></span>
+                        ))}
+                      </span>
+                      <span class="mt-1.5 block font-mono text-[11px] uppercase tracking-[0.14em] text-fg">{p.complexity}</span>
+                    </span>
+                    <span class="font-mono text-[11px] uppercase tracking-[0.14em] lg:pt-1">
+                      {p.writeUp ? (
+                        <span class="flex items-center gap-2 text-accent-go">
+                          <span class="h-1.5 w-1.5 rounded-full bg-accent-go"></span>Write-up
+                        </span>
+                      ) : (
+                        <span class="flex items-center gap-2 text-muted">
+                          <span class="h-1.5 w-1.5 rounded-full border border-muted"></span>Prompt only
+                        </span>
+                      )}
+                    </span>
+                  </span>
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+        <p data-md-empty hidden class="px-6 py-10 text-center text-muted">
+          Nothing matches those filters yet. <button type="button" data-md-clear-inline class="text-accent underline underline-offset-4">Clear them</button> or suggest the problem you were looking for.
+        </p>
+      </div>
+      <p class="mt-4 text-sm text-muted">
+        {COMPOSITE_NOTE}
+      </p>
+    </section>
+
+    <!-- WHAT'S DIFFERENT -->
+    <section class="border-y border-border-hairline bg-surface/40">
+      <div class="mx-auto max-w-6xl px-6 py-20">
+        <SectionLabel as="h2">What the interview sites leave out</SectionLabel>
+        <div class="mt-10 grid gap-px overflow-hidden rounded-lg border border-border-hairline bg-border-hairline md:grid-cols-3">
+          {different.map((x, i) => (
+            <div class="bg-bg p-7">
+              <span class="font-mono text-[11px] text-accent">{pad(i + 1)}</span>
+              <h3 class="mt-4 font-display text-2xl font-bold text-fg-strong leading-tight">{x.t}</h3>
+              <p class="mt-3 text-[15px] leading-relaxed text-muted">{x.d}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ANATOMY -->
+    <section class="mx-auto max-w-6xl px-6 py-20">
+      <div class="grid gap-10 lg:grid-cols-12">
+        <div class="lg:col-span-4">
+          <SectionLabel>Anatomy of a write-up</SectionLabel>
+          <h2 class="mt-5 font-display text-3xl md:text-4xl font-bold text-fg-strong leading-tight">
+            Nine sections, same order, every time.
+          </h2>
+          <p class="mt-4 text-muted leading-relaxed">
+            The structure is the point. It is the order we work a real program in, so a reader can see where
+            the thinking happens, not only where it lands.
+          </p>
+        </div>
+        <ol class="grid gap-3 sm:grid-cols-2 lg:col-span-8 lg:grid-cols-3">
+          {anatomy.map((a, i) => (
+            <li class="rounded-lg border border-border-hairline bg-surface p-5">
+              <span class="font-mono text-[11px] text-accent">{pad(i + 1)}</span>
+              <h3 class="mt-2 font-display text-lg font-bold text-fg-strong">{a.t}</h3>
+              <p class="mt-1.5 text-sm leading-relaxed text-muted">{a.d}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <!-- PRACTICE -->
+    <section class="mx-auto max-w-6xl px-6 pb-20">
+      <div class="grid gap-10 overflow-hidden rounded-lg border border-accent/30 bg-surface p-8 md:p-12 lg:grid-cols-12 lg:items-center">
+        <div class="lg:col-span-7">
+          <SectionLabel>Practice mode</SectionLabel>
+          <h2 class="mt-5 font-display text-3xl md:text-4xl font-bold text-fg-strong leading-tight">
+            Rehearse it the way orals feel.
+          </h2>
+          <p class="mt-4 max-w-xl text-muted leading-relaxed">
+            Plenty of federal evaluations now include a live technical challenge. Open a problem in practice
+            mode and the clock starts at 45:00. Where a write-up is published, it stays hidden until you reveal
+            it and compare.
+          </p>
+          <a
+            href={`/mission-design/${featured.slug}?practice=1`}
+            class="mt-8 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest bg-accent text-bg px-6 py-3 rounded transition-all hover:brightness-110"
+          >
+            Try problem {pad(featured.n)} on the clock <span aria-hidden="true">→</span>
+          </a>
+        </div>
+        <ol class="space-y-4 lg:col-span-5">
+          {[
+            ["Open a problem", "Press Start practice. The prompt and the opening questions stay on screen."],
+            ["Work it on the clock", "The clock starts at 45:00 and any write-up stays hidden."],
+            ["Reveal and compare", "Where a write-up exists, check your answer against ours, trade-off by trade-off."],
+          ].map(([t, d], i) => (
+            <li class="flex gap-4">
+              <span class="grid h-9 w-9 shrink-0 place-items-center rounded border border-accent/40 font-mono text-xs text-accent">{pad(i + 1)}</span>
+              <span>
+                <span class="block font-display font-bold text-fg-strong">{t}</span>
+                <span class="mt-0.5 block text-sm text-muted leading-relaxed">{d}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="bg-surface border-y border-border-hairline">
+      <div class="mx-auto max-w-3xl px-6 py-16 text-center">
+        <h2 class="font-display text-2xl md:text-3xl font-bold text-fg-strong leading-tight">
+          Working a problem like one of these?
+        </h2>
+        <p class="mt-3 text-muted leading-relaxed max-w-xl mx-auto">
+          These problems are how we think. If your program is facing one of them for real, we would rather
+          talk it through than leave it to a diagram.
+        </p>
+        <div class="mt-6 flex flex-wrap justify-center gap-3">
+          <a
+            href="/scope"
+            class="inline-flex items-center justify-center font-mono text-xs uppercase tracking-widest bg-accent text-bg px-6 py-3 rounded transition-all hover:brightness-110"
+          >
+            Scope an engagement
+          </a>
+          <a
+            href="/contact"
+            class="inline-flex items-center justify-center font-mono text-xs uppercase tracking-widest border border-border-hairline text-fg-strong px-6 py-3 rounded transition-colors hover:border-accent hover:text-accent"
+          >
+            Suggest a problem
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
+</PageLayout>
+
+<style>
+  @media (prefers-reduced-motion: no-preference) {
+    .md-blink {
+      animation: md-blink 1.6s ease-in-out infinite;
+    }
+    @keyframes md-blink {
+      50% {
+        opacity: 0.25;
+      }
+    }
+  }
+</style>
+
+<script>
+  type Group = "domain" | "capability" | "complexity";
+
+  const root = document.querySelector<HTMLElement>("[data-md-library]");
+  if (root) {
+    const rows = [...root.querySelectorAll<HTMLElement>("[data-md-row]")];
+    const chips = [...root.querySelectorAll<HTMLButtonElement>("[data-filter]")];
+    const search = root.querySelector<HTMLInputElement>("#md-search")!;
+    const count = root.querySelector<HTMLElement>("[data-md-count]")!;
+    const empty = root.querySelector<HTMLElement>("[data-md-empty]")!;
+    const clear = root.querySelector<HTMLButtonElement>("[data-md-clear]")!;
+    const clearInline = root.querySelector<HTMLButtonElement>("[data-md-clear-inline]")!;
+    const active: Record<Group, Set<string>> = {
+      domain: new Set(),
+      capability: new Set(),
+      complexity: new Set(),
+    };
+
+    const apply = () => {
+      const q = search.value.trim().toLowerCase();
+      let shown = 0;
+      for (const row of rows) {
+        const matchesChips = (Object.keys(active) as Group[]).every(
+          (k) => active[k].size === 0 || active[k].has(row.dataset[k] ?? ""),
+        );
+        const ok = matchesChips && (!q || (row.dataset.text ?? "").includes(q));
+        row.hidden = !ok;
+        if (ok) shown++;
+      }
+      count.textContent = `Showing ${shown} of ${rows.length}`;
+      empty.hidden = shown !== 0;
+      clear.hidden = !q && Object.values(active).every((s) => s.size === 0);
+    };
+
+    const reset = () => {
+      Object.values(active).forEach((s) => s.clear());
+      chips.forEach((c) => c.setAttribute("aria-pressed", "false"));
+      search.value = "";
+      apply();
+    };
+
+    for (const chip of chips) {
+      chip.addEventListener("click", () => {
+        const set = active[chip.dataset.filter as Group];
+        const value = chip.dataset.value ?? "";
+        const on = !set.has(value);
+        if (on) set.add(value);
+        else set.delete(value);
+        chip.setAttribute("aria-pressed", String(on));
+        apply();
+      });
+    }
+    search.addEventListener("input", apply);
+    const resetAndFocus = () => {
+      reset();
+      search.focus();
+    };
+    clear.addEventListener("click", resetAndFocus);
+    clearInline.addEventListener("click", resetAndFocus);
+  }
+</script>
