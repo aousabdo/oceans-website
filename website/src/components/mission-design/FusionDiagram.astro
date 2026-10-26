@@ -1,0 +1,210 @@
+---
+/**
+ * Reference architecture for the vessel-of-interest fusion problem.
+ * Colors come from the theme tokens, so the diagram follows whichever
+ * theme the site is built in. Narrow screens scroll it sideways inside
+ * its frame rather than shrinking the text past legibility.
+ */
+const sources = [
+  { t: "Terrestrial AIS", s: "VHF shore stations" },
+  { t: "Satellite AIS", s: "orbital receivers" },
+  { t: "Coastal radar", s: "~400 tracks each" },
+  { t: "SAR detections", s: "per satellite pass" },
+  { t: "Partner reports", s: "under MOA" },
+];
+const srcY = [80, 143, 206, 269, 332];
+---
+<figure class="md-figure">
+  <div class="overflow-x-auto rounded-lg border border-border-hairline bg-bg-2/60">
+    <svg
+      viewBox="0 0 1040 500"
+      class="block w-full min-w-[820px]"
+      role="img"
+      aria-labelledby="md-fusion-title md-fusion-desc"
+    >
+      <title id="md-fusion-title">Vessel-of-interest fusion pipeline, reference architecture</title>
+      <desc id="md-fusion-desc">
+        Five sources (terrestrial AIS, satellite AIS, coastal radar, SAR detections and partner reports) feed
+        source adapters, then a partitioned event stream. The stream feeds track correlation and behavior
+        detectors, with a vessel registry supporting the detectors. Correlation feeds the COP service; detectors
+        feed vessel-of-interest scoring and a review queue. Both serve the watch floor, whose decisions feed back
+        into scoring. Releasable tracks and flags pass through a release gateway in its own authorization
+        boundary to partner agencies. An audit ledger records analyst decisions and partner releases.
+      </desc>
+      <defs>
+        <marker id="md-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" class="md-head-fill" />
+        </marker>
+        <marker id="md-arrow-warm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" class="md-head-fill-warm" />
+        </marker>
+      </defs>
+
+      <!-- column headers -->
+      <text x="20" y="56" class="md-col">SOURCES</text>
+      <text x="180" y="56" class="md-col">INGEST</text>
+      <text x="340" y="56" class="md-col">STREAM</text>
+      <text x="500" y="56" class="md-col">FUSION &amp; ANALYSIS</text>
+      <text x="675" y="56" class="md-col">SERVE</text>
+      <text x="850" y="56" class="md-col">CONSUMERS</text>
+
+      <!-- sources -->
+      {sources.map((src, i) => (
+        <g>
+          <rect x="20" y={srcY[i]} width="130" height="48" rx="6" class="md-box" />
+          <text x="34" y={srcY[i]! + 21} class="md-title">{src.t}</text>
+          <text x="34" y={srcY[i]! + 36} class="md-sub">{src.s}</text>
+          <path d={`M150 ${srcY[i]! + 24} H178`} class="md-flow" marker-end="url(#md-arrow)" />
+        </g>
+      ))}
+
+      <!-- adapters -->
+      <rect x="180" y="80" width="130" height="300" rx="6" class="md-box" />
+      <text x="194" y="196" class="md-title">Source adapters</text>
+      <text x="194" y="218" class="md-sub">normalize schema</text>
+      <text x="194" y="234" class="md-sub">sensor timestamps</text>
+      <text x="194" y="250" class="md-sub">stamp CUI marking</text>
+      <text x="194" y="266" class="md-sub">one per feed</text>
+      <path d="M310 170 H338" class="md-flow" marker-end="url(#md-arrow)" />
+
+      <!-- stream + registry -->
+      <rect x="340" y="80" width="130" height="180" rx="6" class="md-box" />
+      <text x="354" y="166" class="md-title">Event stream</text>
+      <text x="354" y="184" class="md-sub">partitioned by</text>
+      <text x="354" y="198" class="md-sub">geographic cell</text>
+      <rect x="340" y="320" width="130" height="60" rx="6" class="md-box" />
+      <text x="354" y="345" class="md-title">Vessel registry</text>
+      <text x="354" y="362" class="md-sub">hull + ownership</text>
+
+      <path d="M470 110 H498" class="md-flow" marker-end="url(#md-arrow)" />
+      <path d="M470 230 H498" class="md-flow" marker-end="url(#md-arrow)" />
+      <path d="M470 350 H482 V250 H498" class="md-flow" marker-end="url(#md-arrow)" />
+
+      <!-- fusion & analysis -->
+      <rect x="500" y="80" width="145" height="60" rx="6" class="md-box md-core" />
+      <text x="514" y="105" class="md-title">Track correlation</text>
+      <text x="514" y="122" class="md-sub">fused + source tracks</text>
+      <path d="M572 140 V198" class="md-flow" marker-end="url(#md-arrow)" />
+
+      <rect x="500" y="200" width="145" height="60" rx="6" class="md-box md-core" />
+      <text x="514" y="225" class="md-title">Behavior detectors</text>
+      <text x="514" y="242" class="md-sub">dark gap · spoofing</text>
+
+      <rect x="492" y="298" width="161" height="94" rx="8" class="md-boundary" />
+      <text x="500" y="313" class="md-boundary-label">OWN ATO BOUNDARY</text>
+      <rect x="500" y="320" width="145" height="60" rx="6" class="md-box md-warm" />
+      <text x="514" y="345" class="md-title">Release gateway</text>
+      <text x="514" y="362" class="md-sub">rules per agreement</text>
+
+      <!-- serve -->
+      <rect x="675" y="80" width="145" height="60" rx="6" class="md-box" />
+      <text x="689" y="105" class="md-title">COP service</text>
+      <text x="689" y="122" class="md-sub">tracks API + tiles</text>
+
+      <rect x="675" y="200" width="145" height="60" rx="6" class="md-box md-core" />
+      <text x="689" y="225" class="md-title">VOI scoring + queue</text>
+      <text x="689" y="242" class="md-sub">rules with reasons</text>
+
+      <rect x="675" y="320" width="145" height="60" rx="6" class="md-box" />
+      <text x="689" y="345" class="md-title">Partner agencies</text>
+      <text x="689" y="362" class="md-sub">filtered feed per MOA</text>
+
+      <path d="M645 110 H673" class="md-flow" marker-end="url(#md-arrow)" />
+      <path d="M645 230 H673" class="md-flow" marker-end="url(#md-arrow)" />
+      <path d="M705 260 V284 H630 V318" class="md-flow" marker-end="url(#md-arrow)" />
+      <path d="M645 350 H673" class="md-flow" marker-end="url(#md-arrow)" />
+
+      <!-- consumers -->
+      <rect x="850" y="80" width="170" height="180" rx="6" class="md-box md-warm" />
+      <text x="866" y="160" class="md-title">Watch floor</text>
+      <text x="866" y="178" class="md-sub">accept · dismiss · refer</text>
+      <text x="866" y="194" class="md-sub">~6 analysts per watch</text>
+      <path d="M820 110 H848" class="md-flow" marker-end="url(#md-arrow)" />
+      <path d="M820 222 H848" class="md-flow" marker-end="url(#md-arrow)" />
+      <path d="M850 246 H822" class="md-dash" marker-end="url(#md-arrow-warm)" />
+
+
+      <!-- audit ledger -->
+      <path d="M935 260 V414" class="md-dash" marker-end="url(#md-arrow-warm)" />
+      <path d="M572 392 V414" class="md-dash" marker-end="url(#md-arrow-warm)" />
+      <rect x="20" y="416" width="1000" height="40" rx="6" class="md-box md-ledger" />
+      <text x="36" y="441" class="md-col">AUDIT LEDGER</text>
+      <text x="150" y="441" class="md-sub">every analyst decision · every partner release · every marking change</text>
+
+      <!-- legend -->
+      <path d="M20 482 H52" class="md-flow" marker-end="url(#md-arrow)" />
+      <text x="62" y="486" class="md-sub">data flow</text>
+      <path d="M160 482 H192" class="md-dash" marker-end="url(#md-arrow-warm)" />
+      <text x="202" y="486" class="md-sub">decisions + audit</text>
+      <rect x="350" y="473" width="32" height="18" rx="4" class="md-boundary" />
+      <text x="392" y="486" class="md-sub">authorization boundary</text>
+    </svg>
+  </div>
+  <p class="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted md:hidden">Scroll sideways to see the full diagram</p>
+</figure>
+
+<style>
+  .md-box {
+    fill: var(--color-surface);
+    stroke: var(--color-border-hairline);
+    stroke-width: 1;
+  }
+  .md-core {
+    stroke: var(--color-accent);
+    stroke-width: 1.4;
+  }
+  .md-warm {
+    stroke: var(--color-accent-warm);
+    stroke-width: 1.4;
+  }
+  .md-ledger {
+    fill: var(--color-surface-2);
+  }
+  .md-title {
+    fill: var(--color-fg-strong);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .md-sub {
+    fill: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+  .md-col {
+    fill: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+  }
+  .md-flow {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 1.3;
+    opacity: 0.8;
+  }
+  .md-dash {
+    fill: none;
+    stroke: var(--color-accent-warm);
+    stroke-width: 1.2;
+    stroke-dasharray: 4 4;
+  }
+  .md-boundary {
+    fill: none;
+    stroke: var(--color-accent-warm);
+    stroke-width: 1;
+    stroke-dasharray: 5 4;
+  }
+  .md-boundary-label {
+    fill: var(--color-accent-warm);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.16em;
+  }
+  .md-head-fill {
+    fill: var(--color-accent);
+  }
+  .md-head-fill-warm {
+    fill: var(--color-accent-warm);
+  }
+</style>

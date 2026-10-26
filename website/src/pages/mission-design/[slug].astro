@@ -1,0 +1,495 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import SectionLabel from "@components/SectionLabel.astro";
+import Tag from "@components/Tag.astro";
+import FusionDiagram from "@components/mission-design/FusionDiagram.astro";
+import { problems, COMPLEXITY_BARS, COMPOSITE_NOTE, type MissionProblem } from "@/data/mission-design";
+import { breadcrumbLd } from "@lib/schema";
+
+export function getStaticPaths() {
+  return problems.map((p, i) => ({
+    params: { slug: p.slug },
+    props: { p, prev: problems[i - 1] ?? null, next: problems[i + 1] ?? null },
+  }));
+}
+
+interface Props {
+  p: MissionProblem;
+  prev: MissionProblem | null;
+  next: MissionProblem | null;
+}
+const { p, prev, next } = Astro.props;
+const w = p.writeUp;
+const pad = (n: number) => String(n).padStart(2, "0");
+const bars = COMPLEXITY_BARS[p.complexity];
+const hasDiagram = p.slug === "vessel-of-interest-fusion";
+
+const toc = [
+  { id: "prompt", t: "The prompt" },
+  { id: "questions", t: "Ask these first" },
+  ...(w
+    ? [
+        { id: "requirements", t: "Requirements" },
+        { id: "sizing", t: "Sizing" },
+        { id: "architecture", t: "Architecture" },
+        { id: "trade-offs", t: "Trade-offs" },
+        { id: "federal", t: "The federal layer" },
+        { id: "month-12", t: "How it fails in month 12" },
+        { id: "testing", t: "How we'd test it" },
+      ]
+    : []),
+];
+
+const crumbs = breadcrumbLd([
+  ["Home", "/"],
+  ["Mission Design Library", "/mission-design"],
+  [p.title, `/mission-design/${p.slug}`],
+]);
+---
+<PageLayout title={p.title} description={p.short} path={`/mission-design/${p.slug}`} type="article">
+  <script type="application/ld+json" set:html={JSON.stringify(crumbs)} />
+
+  <article data-md-problem data-state="read">
+    <!-- PRACTICE STRIP (visible only while practicing) -->
+    <div
+      data-practice-strip
+      tabindex="-1"
+      class="sticky top-0 z-30 border-b border-accent/40 bg-surface/95 backdrop-blur focus:outline-none"
+      role="region"
+      aria-label="Practice mode"
+    >
+      <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-2.5">
+        <span class="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
+          <span class="md-blink h-1.5 w-1.5 rounded-full bg-accent-critical"></span>
+          <span class="hidden sm:inline">Practice</span>
+          <span data-clock class="text-base tracking-normal text-fg-strong tabular-nums" aria-live="off">45:00</span>
+        </span>
+        <span class="flex items-center gap-2">
+          <button type="button" data-practice-reveal class="whitespace-nowrap rounded bg-accent px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-bg hover:brightness-110">
+            {w ? "Reveal write-up" : "End practice"}
+          </button>
+          <button type="button" data-practice-exit class="rounded border border-border-hairline px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-muted hover:text-fg-strong">
+            Exit
+          </button>
+        </span>
+      </div>
+    </div>
+
+    <div class="mx-auto max-w-6xl px-6 pt-10">
+      <a href="/mission-design" class="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted hover:text-fg-strong transition-colors">
+        ← Mission Design Library
+      </a>
+    </div>
+
+    <!-- HEADER -->
+    <header class="mx-auto grid max-w-6xl gap-10 px-6 pt-8 pb-14 lg:grid-cols-[1fr_300px] lg:gap-14">
+      <div class="min-w-0">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[11px] uppercase tracking-[0.18em]">
+          <span class="text-accent">Problem {pad(p.n)}</span>
+          <span class="text-muted">{p.domain}</span>
+          <a href={`/services/${p.capability.slug}`} class="text-muted hover:text-accent">{p.capability.label}</a>
+          <span class="flex items-center gap-2 text-muted">
+            <span class="flex gap-0.5" aria-hidden="true">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <span class:list={["h-2.5 w-1 rounded-[1px]", i <= bars ? (bars === 5 ? "bg-accent-critical" : "bg-accent") : "bg-surface-2"]}></span>
+              ))}
+            </span>
+            {p.complexity}
+          </span>
+          <Tag>Concept preview</Tag>
+        </div>
+        <h1 class="mt-6 max-w-4xl font-display text-4xl md:text-6xl font-bold leading-[1.05] text-fg-strong">{p.title}</h1>
+        <p class="mt-6 max-w-3xl text-lg md:text-xl leading-relaxed text-muted">{p.short}</p>
+        <ul class="mt-6 flex flex-wrap gap-1.5" aria-label="Federal constraints in play">
+          {p.constraints.map((c) => (
+            <li class="rounded-sm border border-accent-warm/35 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-accent-warm">{c}</li>
+          ))}
+        </ul>
+        <p class="mt-6 max-w-3xl rounded-md border border-accent/30 bg-bg-2 px-3 py-2 text-[13px] leading-relaxed text-muted">
+          <span class="mr-2 font-mono text-[10px] uppercase tracking-[0.18em] text-accent">Illustrative</span>{COMPOSITE_NOTE}
+        </p>
+      </div>
+      <div class="space-y-6">
+        <div class="rounded-lg border border-accent/30 bg-surface p-5">
+          <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">Practice mode</p>
+          <p data-clock-side class="mt-3 font-display text-5xl font-bold tabular-nums text-fg-strong">45:00</p>
+          <p class="mt-2 text-sm leading-relaxed text-muted">
+            {w ? "Hides the write-up and starts the clock." : "Starts a 45-minute clock on the prompt."} Built for rehearsing an orals technical challenge.
+          </p>
+          <button
+            type="button"
+            data-practice-start
+            class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded bg-accent px-4 py-2.5 font-mono text-[11px] uppercase tracking-widest text-bg transition-all hover:brightness-110"
+          >
+            Start practice <span aria-hidden="true">→</span>
+          </button>
+        </div>
+
+        <nav aria-label="On this page" class="hidden lg:block">
+          <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">On this page{w ? ` · ${w.readTime} read` : ""}</p>
+          <ol class="mt-3 space-y-1.5 border-l border-border-hairline">
+            {toc.map((s, i) => (
+              <li data-toc-item={s.id} class:list={[i > 1 && "md-toc-solution"]}>
+                <a href={`#${s.id}`} class="-ml-px block border-l border-transparent pl-4 text-sm text-muted transition-colors hover:border-accent hover:text-fg-strong">
+                  <span class="mr-2 font-mono text-[10px] text-accent">{pad(i + 1)}</span>{s.t}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      </div>
+    </header>
+
+    <div class="mx-auto max-w-6xl px-6 pb-24">
+      <div class="md-body space-y-20">
+        <section id="prompt" class="scroll-mt-32">
+          <SectionLabel as="h2">01 · The prompt</SectionLabel>
+          <blockquote class="mt-6 border-l-2 border-accent pl-6">
+            <p class="font-display text-xl md:text-2xl leading-relaxed text-fg-strong">&ldquo;{p.prompt}&rdquo;</p>
+          </blockquote>
+        </section>
+
+        <section id="questions" class="scroll-mt-32">
+          <SectionLabel as="h2">02 · Ask these first</SectionLabel>
+          <p class="mt-4 max-w-2xl text-muted leading-relaxed">
+            Each of these changes the design. Ask them before drawing a single box.
+          </p>
+          <ol class="mt-6 space-y-3">
+            {p.questions.map((q, i) => (
+              <li class="flex gap-4 rounded-lg border border-border-hairline bg-surface p-4">
+                <span class="font-mono text-xs text-accent pt-0.5">Q{i + 1}</span>
+                <span class="text-fg leading-relaxed">{q}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <!-- shown in place of the write-up while practicing -->
+        <div data-practice-only class="rounded-lg border border-dashed border-accent/50 bg-surface/60 p-8 text-center">
+          <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-accent">{w ? "Write-up hidden" : "Practice prompt"}</p>
+          <p class="mx-auto mt-3 max-w-lg font-display text-2xl font-bold leading-snug text-fg-strong">
+            Your turn. Requirements, sizing, architecture, trade-offs.
+          </p>
+          <p class="mx-auto mt-3 max-w-lg text-muted leading-relaxed">
+            {w ? (
+              "Work it on a whiteboard. When the clock runs out, or you're done, reveal ours and compare."
+            ) : (
+              <>
+                Work it on a whiteboard. Our write-up for this one is still being drafted, so compare your structure
+                against <a href={`/mission-design/${problems[0]!.slug}`} class="text-accent underline underline-offset-4 hover:text-fg-strong">problem 01</a>.
+              </>
+            )}
+          </p>
+          <p data-time-up hidden class="mt-5 font-mono text-sm uppercase tracking-[0.18em] text-accent-critical">Time. Pens down.</p>
+        </div>
+
+        {w ? (
+          <div data-solution class="space-y-20">
+            <section id="requirements" tabindex="-1" class="scroll-mt-32 outline-none">
+              <SectionLabel as="h2">03 · Requirements</SectionLabel>
+              <div class="mt-6 grid gap-10">
+                <div class="min-w-0">
+                  <h3 class="font-display text-xl font-bold text-fg-strong">What it has to do</h3>
+                  <ul class="mt-4 space-y-3">
+                    {w.functional.map((f) => (
+                      <li class="flex gap-3 text-fg leading-relaxed">
+                        <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true"></span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div class="min-w-0">
+                  <h3 class="font-display text-xl font-bold text-fg-strong">How well it has to do it</h3>
+                  <div class="mt-4 overflow-x-auto rounded-lg border border-border-hairline">
+                    <table class="w-full text-left text-sm">
+                      <thead class="bg-surface font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+                        <tr>
+                          <th scope="col" class="px-4 py-3 font-normal">Measure</th>
+                          <th scope="col" class="px-4 py-3 font-normal">Threshold</th>
+                          <th scope="col" class="px-4 py-3 font-normal">Objective</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {w.nonFunctional.map((r) => (
+                          <tr class="border-t border-border-hairline">
+                            <th scope="row" class="px-4 py-3 font-normal text-fg">{r.metric}</th>
+                            <td class="px-4 py-3 font-mono text-fg-strong whitespace-nowrap">{r.threshold}</td>
+                            <td class="px-4 py-3 font-mono text-accent whitespace-nowrap">{r.objective}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="mt-3 text-sm text-muted">Exercise values, invented for this problem. Not a recommendation for any program.</p>
+                </div>
+              </div>
+            </section>
+
+            <section id="sizing" class="scroll-mt-32">
+              <SectionLabel as="h2">04 · Sizing</SectionLabel>
+              <div class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {w.sizing.map((s) => (
+                  <div class:list={["rounded-lg border p-5", s.binding ? "border-accent-warm/60 bg-[color-mix(in_srgb,var(--color-accent-warm)_5%,var(--color-surface))]" : "border-border-hairline bg-surface"]}>
+                    {s.binding && <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent-warm">Binding constraint</p>}
+                    <p class:list={["font-display text-3xl font-bold tabular-nums", s.binding ? "mt-2 text-accent-warm" : "text-fg-strong"]}>
+                      {s.value.startsWith("~") ? (<><span class="mr-1 font-mono text-xl font-normal">~</span>{s.value.slice(1)}</>) : s.value}
+                    </p>
+                    <p class="mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-fg">{s.label}</p>
+                    <p class="mt-1 text-sm leading-relaxed text-muted">{s.note}</p>
+                  </div>
+                ))}
+              </div>
+              <p class="mt-6 max-w-3xl border-l-2 border-accent-warm pl-5 text-fg leading-relaxed">{w.sizingNote}</p>
+            </section>
+
+            <section id="architecture" class="scroll-mt-32">
+              <SectionLabel as="h2">05 · Architecture</SectionLabel>
+              <div class="mt-6">
+                {hasDiagram && <FusionDiagram />}
+              </div>
+              <p class="mt-4 max-w-3xl text-muted leading-relaxed">{w.diagramCaption}</p>
+            </section>
+
+            <section id="trade-offs" class="scroll-mt-32">
+              <SectionLabel as="h2">06 · Trade-offs</SectionLabel>
+              <div class="mt-6 space-y-4">
+                {w.tradeOffs.map((t, i) => (
+                  <div class="rounded-lg border border-border-hairline bg-surface p-5 md:p-6">
+                    <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">Decision {pad(i + 1)}</p>
+                    <h3 class="mt-2 font-display text-xl font-bold text-fg-strong">{t.decision}</h3>
+                    <div class="mt-4 grid gap-2 md:grid-cols-2">
+                      {(["a", "b"] as const).map((k) => (
+                        <div class:list={["rounded border px-4 py-3 text-sm leading-relaxed", t.pick === k ? "border-accent bg-accent/10 text-fg-strong" : "border-border-hairline text-muted"]}>
+                          <span class="mr-2 font-mono text-[10px] uppercase tracking-[0.16em]">{k.toUpperCase()}</span>
+                          {t[k]}
+                          {t.pick === k && <span class="ml-2 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.16em] text-accent">· Our call</span>}
+                        </div>
+                      ))}
+                    </div>
+                    <p class="mt-4 text-fg leading-relaxed">{t.why}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section id="federal" class="scroll-mt-32">
+              <SectionLabel as="h2">07 · The federal layer</SectionLabel>
+              <p class="mt-4 max-w-2xl text-muted leading-relaxed">
+                The part commercial interview prep skips. On a federal program it decides whether the system ships.
+              </p>
+              <div class="mt-6 grid gap-px overflow-hidden rounded-lg border border-border-hairline bg-border-hairline sm:grid-cols-2">
+                {w.federal.map((f, i) => (
+                  <div class="bg-bg p-6">
+                    <span class="font-mono text-[11px] text-accent-warm">{pad(i + 1)}</span>
+                    <h3 class="mt-3 font-display text-lg font-bold text-fg-strong">{f.t}</h3>
+                    <p class="mt-2 text-[15px] leading-relaxed text-muted">{f.d}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section id="month-12" class="scroll-mt-32">
+              <SectionLabel as="h2">08 · How it fails in month 12</SectionLabel>
+              <ul class="mt-6 space-y-3">
+                {w.failureModes.map((f) => (
+                  <li class="grid gap-2 rounded-lg border border-border-hairline bg-surface p-5 md:grid-cols-[200px_1fr] md:gap-6">
+                    <span class="flex items-start gap-3 font-display font-bold text-fg-strong">
+                      <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-critical" aria-hidden="true"></span>
+                      {f.t}
+                    </span>
+                    <span class="text-muted leading-relaxed">{f.d}</span>
+                  </li>
+                ))}
+              </ul>
+              <p class="mt-5 text-sm text-muted">
+                More on this pattern: <a href="/blog/what-kills-programs-in-month-12" class="text-accent underline underline-offset-4 hover:text-fg-strong">What kills programs in month 12</a>.
+              </p>
+            </section>
+
+            <section id="testing" class="scroll-mt-32">
+              <SectionLabel as="h2">09 · How we'd test it</SectionLabel>
+              <div class="mt-6 overflow-x-auto rounded-lg border border-border-hairline">
+                <table class="w-full min-w-[560px] text-left text-sm">
+                  <thead class="bg-surface font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+                    <tr>
+                      <th scope="col" class="px-4 py-3 font-normal">Type</th>
+                      <th scope="col" class="px-4 py-3 font-normal">Measure</th>
+                      <th scope="col" class="px-4 py-3 font-normal">How it gets measured</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {w.measures.map((m) => (
+                      <tr class="border-t border-border-hairline align-top">
+                        <td class="px-4 py-3">
+                          <span class:list={["rounded-sm border px-2 py-0.5 font-mono text-[10px] tracking-[0.12em]", m.kind === "MOE" ? "border-accent/40 text-accent" : "border-accent-go/40 text-accent-go"]}>{m.kind}</span>
+                        </td>
+                        <th scope="row" class="px-4 py-3 font-normal text-fg-strong">{m.measure}</th>
+                        <td class="px-4 py-3 text-muted leading-relaxed">{m.how}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p class="mt-4 text-sm text-muted">
+                MOE and MOP are defined in the <a href="/glossary#letter-M" class="text-accent underline underline-offset-4 hover:text-fg-strong">Mission Glossary</a>.
+              </p>
+            </section>
+          </div>
+        ) : (
+          <div data-solution tabindex="-1" class="md-pending outline-none rounded-lg border border-border-hairline bg-surface p-8">
+            <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-accent-warm">Write-up in progress</p>
+            <p class="mt-3 font-display text-2xl font-bold leading-snug text-fg-strong">
+              The prompt and the opening questions are live. Our full write-up is still being drafted.
+            </p>
+            <p class="mt-3 max-w-xl text-muted leading-relaxed">
+              You can practice it now. For the finished format, read
+              <a href={`/mission-design/${problems[0]!.slug}`} class="text-accent underline underline-offset-4 hover:text-fg-strong">problem 01</a>.
+            </p>
+          </div>
+        )}
+      </div>
+
+    </div>
+
+    <!-- PREV / NEXT -->
+    <nav aria-label="More problems" class="border-t border-border-hairline">
+      <div class="mx-auto grid max-w-6xl gap-px bg-border-hairline md:grid-cols-2">
+        {prev ? (
+          <a href={`/mission-design/${prev.slug}`} class="group bg-bg px-6 py-8 transition-colors hover:bg-surface">
+            <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">← Problem {pad(prev.n)}</span>
+            <span class="mt-2 block font-display text-lg font-bold leading-snug text-fg-strong group-hover:text-accent">{prev.title}</span>
+          </a>
+        ) : (
+          <a href="/mission-design" class="group bg-bg px-6 py-8 transition-colors hover:bg-surface">
+            <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">← Library</span>
+            <span class="mt-2 block font-display text-lg font-bold leading-snug text-fg-strong group-hover:text-accent">All mission design problems</span>
+          </a>
+        )}
+        {next ? (
+          <a href={`/mission-design/${next.slug}`} class="group bg-bg px-6 py-8 text-right transition-colors hover:bg-surface">
+            <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Problem {pad(next.n)} →</span>
+            <span class="mt-2 block font-display text-lg font-bold leading-snug text-fg-strong group-hover:text-accent">{next.title}</span>
+          </a>
+        ) : (
+          <a href="/scope" class="group bg-bg px-6 py-8 text-right transition-colors hover:bg-surface">
+            <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Facing one for real? →</span>
+            <span class="mt-2 block font-display text-lg font-bold leading-snug text-fg-strong group-hover:text-accent">Scope an engagement with OCEANS</span>
+          </a>
+        )}
+      </div>
+    </nav>
+  </article>
+</PageLayout>
+
+<style>
+  .md-body section:not(#architecture),
+  .md-body > [data-practice-only],
+  .md-body > .md-pending {
+    max-width: 56rem;
+  }
+  [data-md-problem] [data-practice-strip],
+  [data-md-problem] [data-practice-only] {
+    display: none;
+  }
+  [data-md-problem][data-state="practice"] [data-practice-strip],
+  [data-md-problem][data-state="practice"] [data-practice-only] {
+    display: block;
+  }
+  :global(html:has([data-md-problem][data-state="practice"])) {
+    scroll-padding-top: 4.5rem;
+  }
+  [data-md-problem][data-state="practice"] .md-body section {
+    scroll-margin-top: 1.5rem;
+  }
+  [data-md-problem] [tabindex="-1"]:focus {
+    outline: none;
+  }
+  [data-md-problem][data-state="practice"] [data-solution],
+  [data-md-problem][data-state="practice"] .md-toc-solution {
+    display: none;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .md-blink {
+      animation: md-blink 1.2s ease-in-out infinite;
+    }
+    @keyframes md-blink {
+      50% {
+        opacity: 0.25;
+      }
+    }
+  }
+</style>
+
+<script>
+  const LIMIT = 45 * 60;
+
+  const root = document.querySelector<HTMLElement>("[data-md-problem]");
+  if (root) {
+    const clocks = [...root.querySelectorAll<HTMLElement>("[data-clock], [data-clock-side]")];
+    const timeUp = root.querySelector<HTMLElement>("[data-time-up]")!;
+    const start = root.querySelector<HTMLButtonElement>("[data-practice-start]")!;
+    const strip = root.querySelector<HTMLElement>("[data-practice-strip]")!;
+    let left = LIMIT;
+    let deadline = 0;
+    let timer: number | undefined;
+
+    const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+    const paint = () => clocks.forEach((c) => (c.textContent = fmt(left)));
+
+    const stop = () => {
+      if (timer !== undefined) window.clearInterval(timer);
+      timer = undefined;
+    };
+
+    // Counts down from a deadline, so throttled ticks in a background tab
+    // delay the repaint but never the time.
+    const tick = () => {
+      left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      paint();
+      if (left === 0) {
+        stop();
+        timeUp.hidden = false;
+      }
+    };
+
+    const begin = () => {
+      stop();
+      timeUp.hidden = true;
+      root.dataset.state = "practice";
+      start.textContent = "Restart the clock";
+      deadline = Date.now() + LIMIT * 1000;
+      tick();
+      timer = window.setInterval(tick, 250);
+      document.getElementById("prompt")?.scrollIntoView({ block: "start" });
+      strip.focus({ preventScroll: true });
+    };
+
+    const end = (reveal: boolean) => {
+      stop();
+      root.dataset.state = "read";
+      start.innerHTML = 'Start practice <span aria-hidden="true">→</span>';
+      if (reveal) {
+        const target = document.getElementById("requirements") ?? root.querySelector<HTMLElement>("[data-solution]");
+        target?.scrollIntoView({ block: "start" });
+        target?.focus({ preventScroll: true });
+      } else {
+        left = LIMIT;
+        paint();
+        start.focus();
+      }
+    };
+
+    const resync = () => {
+      if (timer !== undefined) tick();
+    };
+    document.addEventListener("visibilitychange", resync);
+    window.addEventListener("pageshow", resync);
+
+    start.addEventListener("click", begin);
+    root.querySelector("[data-practice-reveal]")?.addEventListener("click", () => end(true));
+    root.querySelector("[data-practice-exit]")?.addEventListener("click", () => end(false));
+
+    if (new URLSearchParams(window.location.search).get("practice") === "1") begin();
+  }
+</script>
