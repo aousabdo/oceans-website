@@ -31,5 +31,10 @@ export function buildSeo(input: SeoInput) {
   };
 }
 
+/** Value for <meta name="robots">; noindex keeps unreleased pages out of search. */
+export function robotsFor(noindex: boolean): string {
+  return noindex ? "noindex, nofollow" : "index, follow, max-image-preview:large";
+}
+
 export const SITE_NAME = SITE.name;
 export const SITE_URL = SITE.url;
