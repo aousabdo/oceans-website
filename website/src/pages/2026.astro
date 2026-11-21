@@ -1,0 +1,538 @@
+---
+/**
+ * /2026 — OCEANS, 2026. Year in review + holiday card.
+ *
+ * Unreleased: not in the nav, the ⌘K index, the sticky CTA or (while the
+ * note is a draft) the sitemap, and marked noindex. Launch steps live in
+ * docs/year-2026/review-packet.md.
+ *
+ * Palette walks from Mariner daylight (hero, 01, 02) through a dusk band to
+ * night navy (03, 04, 05, card). Every text colour here is AA on the
+ * background it sits on; see the packet for the ratios.
+ */
+import { getCollection } from "astro:content";
+import PageLayout from "@layouts/PageLayout.astro";
+import Logo from "@components/Logo.astro";
+import HolidayCard from "@components/year/HolidayCard.astro";
+import { problems } from "@/data/mission-design";
+import { note, APPS, FOUNDED, YEAR } from "@/data/year-2026";
+import { NOTE_APPROVED } from "@lib/year2026";
+
+const team = (await getCollection("team")).map((e) => e.data).sort((a, b) => a.order - b.order);
+const bySlug = new Map(team.map((m) => [m.slug, m]));
+// Added to /team in 2026, in roster order. The copy makes no join-date claim.
+const NEW_CREW = ["mike-matechak", "daniel-trimper", "aaron-winkler", "russell-croft"]
+  .map((s) => bySlug.get(s))
+  .filter((m): m is NonNullable<typeof m> => !!m)
+  .sort((a, b) => a.order - b.order);
+
+const essays = (await getCollection("blog")).filter((p) => !p.data.draft).length;
+
+const numbers = [
+  { n: YEAR - FOUNDED, l: "Years since we started, in 2012" },
+  { n: APPS.length, l: "Apps live on the open web" },
+  { n: problems.length, l: "Problems in the Mission Design Library" },
+  { n: essays, l: "Essays in the Journal" },
+];
+
+const log = [
+  { id: "certified", n: "01", t: "Certified", d: "SBA VetCert" },
+  { id: "crew", n: "02", t: "New hands on deck", d: "The roster" },
+  { id: "home-port", n: "03", t: "A new home port", d: "oceansllc.com" },
+  { id: "instruments", n: "04", t: "Instruments", d: "SKYWATCH · ATLAS" },
+  { id: "library", n: "05", t: "The library", d: "Mission Design" },
+  { id: "card", n: "~", t: "The card", d: "To close the year" },
+];
+---
+<PageLayout
+  title={`OCEANS, ${YEAR}`}
+  description="A look back at 2026 at OCEANS LLC: SBA VetCert certification, new teammates, a relaunched site, two live apps, the Mission Design Library, and a holiday card from all of us."
+  path="/2026"
+  image="/og-2026.png"
+  noindex={!NOTE_APPROVED}
+>
+  <Fragment slot="head">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" />
+  </Fragment>
+
+  <div class="y26">
+    <!-- ═══ HERO (daylight) ═══════════════════════════════════════════ -->
+    <section class="relative overflow-hidden">
+      <div class="mx-auto grid max-w-6xl gap-12 px-4 pb-20 pt-14 sm:px-6 md:pt-20 lg:grid-cols-12 lg:items-end lg:gap-10">
+        <div class="lg:col-span-7">
+          <p class="y-eyebrow text-[#155C91]">Year in review</p>
+          <h1 class="mt-5 font-display text-[clamp(3.6rem,13vw,8.5rem)] font-light leading-[0.9] text-[#061A30]">
+            OCEANS,<br /><em class="text-[#155C91]">{YEAR}.</em>
+          </h1>
+          <p class="mt-8 max-w-xl font-serif text-[1.45rem] italic leading-snug text-[#0A2942] md:text-[1.7rem]">
+            Our fourteenth year out of Jacksonville. Five moments from it, and a card to close it out.
+          </p>
+          <a href="#certified" class="y-cta mt-10">Begin <span aria-hidden="true">↓</span></a>
+        </div>
+
+        <nav class="lg:col-span-5" aria-label="On this page">
+          <div class="rounded-2xl border border-[#0A2942]/12 bg-white/70 p-5 shadow-[0_30px_60px_-40px_rgba(6,26,48,0.45)] backdrop-blur sm:p-6">
+            <p class="y-eyebrow flex items-center justify-between text-[#4A6480]">
+              <span>Ship’s log</span><span>{YEAR}</span>
+            </p>
+            <ol class="mt-4 divide-y divide-[#0A2942]/10">
+              {log.map((r) => (
+                <li>
+                  <a href={`#${r.id}`} class="group grid grid-cols-[2.25rem_1fr_auto] items-baseline gap-3 py-3">
+                    <span class="font-mono text-xs text-[#7A5A22]">{r.n}</span>
+                    <span class="font-display text-xl text-[#061A30] group-hover:text-[#155C91]">{r.t}</span>
+                    <span class="hidden font-mono text-[11px] uppercase tracking-[0.12em] text-[#4A6480] sm:inline">{r.d}</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </nav>
+      </div>
+    </section>
+
+    <!-- ═══ 01 CERTIFIED ═══════════════════════════════════════════════ -->
+    <section id="certified" class="beat bg-[#E8F1F8]">
+      <div class="beat-grid">
+        <div class="beat-side">
+          <span class="numeral numeral-light" aria-hidden="true">01</span>
+          <p class="y-eyebrow mt-3 text-[#7A5A22]">Certified</p>
+        </div>
+        <div class="beat-main">
+          <h2 class="beat-title text-[#061A30]">Certified, officially.</h2>
+          <p class="beat-body text-[#0A2942]">
+            OCEANS is certified through the SBA’s VetCert program as both a Service-Disabled Veteran-Owned
+            Small Business and a Veteran-Owned Small Business. It puts on paper what has been true since
+            2012: a company co-founded and led by a Navy veteran, now eligible for SDVOSB and VOSB set-asides.
+          </p>
+          <div class="mt-10 flex flex-wrap items-center gap-6">
+            <img src="/img/certs/sba-sdvosb-certified.webp" width="77" height="96" loading="lazy" decoding="async" alt="U.S. Small Business Administration: Service-Disabled Veteran-Owned Certified" class="h-28 w-auto" />
+            <img src="/img/certs/sba-vosb-certified.webp" width="77" height="96" loading="lazy" decoding="async" alt="U.S. Small Business Administration: Veteran-Owned Certified" class="h-28 w-auto" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 02 CREW ═════════════════════════════════════════════════════ -->
+    <section id="crew" class="beat bg-[#E1ECF5]">
+      <div class="beat-grid">
+        <div class="beat-side">
+          <span class="numeral numeral-light" aria-hidden="true">02</span>
+          <p class="y-eyebrow mt-3 text-[#7A5A22]">Crew</p>
+        </div>
+        <div class="beat-main">
+          <h2 class="beat-title text-[#061A30]">New hands on deck.</h2>
+          <p class="beat-body text-[#0A2942]">
+            The roster grew. Four people we’re glad to sail with, bringing growth strategy, enterprise
+            architecture, frontend engineering and cloud infrastructure to the work.
+          </p>
+          <ul class="mt-10 grid gap-4 sm:grid-cols-2">
+            {NEW_CREW.map((m) => (
+              <li class="flex items-center gap-4 rounded-xl border border-[#0A2942]/10 bg-white/70 p-4">
+                {m.portrait ? (
+                  <img src={m.portrait} width="64" height="64" loading="lazy" decoding="async" alt="" class="h-16 w-16 shrink-0 rounded-full object-cover" />
+                ) : (
+                  <span class="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[#0A2942] font-display text-2xl text-[#EBE3D0]" aria-hidden="true">{m.name[0]}</span>
+                )}
+                <span>
+                  <span class="block font-display text-2xl leading-tight text-[#061A30]">{m.name}</span>
+                  <span class="mt-1 block font-mono text-[11px] uppercase tracking-[0.12em] text-[#4A6480]">{m.role}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+          <a href="/team" class="y-link mt-8 text-[#155C91]">Meet the whole crew <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ DUSK (decorative) ═══════════════════════════════════════════ -->
+    <div class="dusk" aria-hidden="true">
+      <svg viewBox="0 0 1440 320" preserveAspectRatio="xMidYMax slice">
+        <defs>
+          <radialGradient id="y-sun" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0" stop-color="#F3D08A" />
+            <stop offset="1" stop-color="#D4A24A" />
+          </radialGradient>
+          <radialGradient id="y-sun-glow" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0" stop-color="#E7B95E" stop-opacity="0.45" />
+            <stop offset="1" stop-color="#E7B95E" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <g class="dusk-sun">
+          <circle cx="720" cy="262" r="150" fill="url(#y-sun-glow)" />
+          <circle cx="720" cy="262" r="44" fill="url(#y-sun)" />
+        </g>
+        <rect y="262" width="1440" height="58" fill="#0B1F3A" />
+        <path d="M0 262 H1440" stroke="#EBE3D0" stroke-opacity="0.55" stroke-width="1.5" />
+      </svg>
+    </div>
+
+    <!-- ═══ 03 HOME PORT (night from here) ══════════════════════════════ -->
+    <section id="home-port" class="beat night bg-[#0B1F3A]">
+      <div class="beat-grid">
+        <div class="beat-side">
+          <span class="numeral" aria-hidden="true">03</span>
+          <p class="y-eyebrow mt-3 text-[#D4A24A]">Home port</p>
+        </div>
+        <div class="beat-main">
+          <h2 class="beat-title text-[#F6F1E6]">A new home port.</h2>
+          <p class="beat-body text-[#EBE3D0]">
+            oceansllc.com relaunched this summer, under a new mark: a wave, held in brackets. The site now
+            carries the Journal, where our team writes about the work, and the Mission Network, an
+            interactive map of how our services, partners and people connect.
+          </p>
+          <div class="mt-10 grid items-center gap-8 sm:grid-cols-[auto_1fr]">
+            <span class="text-[#EBE3D0]"><Logo variant="mark" size="lg" class="!h-auto !w-40 sm:!w-48" /></span>
+            <ul class="grid gap-2 font-mono text-[12px] uppercase tracking-[0.14em]">
+              <li><a href="/" class="y-chip">oceansllc.com <span aria-hidden="true">→</span></a></li>
+              <li><a href="/blog" class="y-chip">The Journal <span aria-hidden="true">→</span></a></li>
+              <li><a href="/network" class="y-chip">The Mission Network <span aria-hidden="true">→</span></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 04 INSTRUMENTS ══════════════════════════════════════════════ -->
+    <section id="instruments" class="beat night border-t border-[#7FB8E0]/10 bg-[#0A1C35]">
+      <div class="beat-grid">
+        <div class="beat-side">
+          <span class="numeral" aria-hidden="true">04</span>
+          <p class="y-eyebrow mt-3 text-[#D4A24A]">Instruments</p>
+        </div>
+        <div class="beat-main">
+          <h2 class="beat-title text-[#F6F1E6]">Instruments you can <em class="text-[#7FB8E0]">steer by.</em></h2>
+          <p class="beat-body text-[#EBE3D0]">
+            Two tools of our own, live on the open web. Free, no login, and every number traceable to its source.
+          </p>
+          <ul class="mt-10 grid gap-5 md:grid-cols-2">
+            {APPS.map((a) => (
+              <li>
+                <a href={a.url} target="_blank" rel="noopener" class="app-tile group">
+                  <img src={a.img} width="1600" height="1000" loading="lazy" decoding="async" alt={a.alt} class="block aspect-[16/10] w-full rounded-lg object-cover" />
+                  <span class="mt-5 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.18em]">
+                    <span class="text-[#7FB8E0]">{a.kind}</span>
+                    <span class="flex items-center gap-1.5 text-[#5EE6B8]"><span class="h-1.5 w-1.5 rounded-full bg-[#5EE6B8]"></span>Live</span>
+                  </span>
+                  <span class="mt-3 block font-display text-3xl tracking-[0.08em] text-[#F6F1E6]">{a.name}</span>
+                  <span class="mt-2 block font-serif text-lg italic leading-snug text-[#EBE3D0]">{a.line}</span>
+                  <span class="mt-4 block font-mono text-[12px] text-[#7FB8E0]">{a.host} <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <a href="/apps" class="y-link mt-8 text-[#7FB8E0]">More on both <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 05 LIBRARY ══════════════════════════════════════════════════ -->
+    <section id="library" class="beat night border-t border-[#7FB8E0]/10 bg-[#081A31]">
+      <div class="beat-grid">
+        <div class="beat-side">
+          <span class="numeral" aria-hidden="true">05</span>
+          <p class="y-eyebrow mt-3 text-[#D4A24A]">The library</p>
+        </div>
+        <div class="beat-main">
+          <h2 class="beat-title text-[#F6F1E6]">We opened the Mission Design Library.</h2>
+          <p class="beat-body text-[#EBE3D0]">
+            Practice system-design problems drawn from federal missions, worked the way we would work them:
+            requirements with thresholds, trade-offs, and the ATO and privacy layer that shapes a federal
+            design. {problems.length} problems so far, the first with a full write-up.
+          </p>
+          <ol class="mt-10 divide-y divide-[#7FB8E0]/12 border-y border-[#7FB8E0]/12">
+            {problems.map((p, i) => (
+              <li>
+                <a href={`/mission-design/${p.slug}`} class="group grid grid-cols-[2rem_1fr] gap-3 py-4 sm:grid-cols-[2.5rem_1fr_auto] sm:items-baseline">
+                  <span class="font-mono text-xs text-[#D4A24A]">{String(i + 1).padStart(2, "0")}</span>
+                  <span class="text-[1.05rem] leading-snug text-[#EBE3D0] group-hover:text-[#F6F1E6] group-hover:underline group-hover:decoration-[#7FB8E0]/60 group-hover:underline-offset-4">{p.title}</span>
+                  <span class="col-start-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#7FB8E0] sm:col-start-auto">{p.capability.label}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+          <a href="/mission-design" class="y-link mt-8 text-[#7FB8E0]">Open the library <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ BY THE NUMBERS ═════════════════════════════════════════════ -->
+    <section class="night border-t border-[#7FB8E0]/10 bg-[#071A31]" aria-labelledby="numbers-h">
+      <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+        <h2 id="numbers-h" class="y-eyebrow text-[#D4A24A]">By the numbers</h2>
+        <dl class="mt-8 grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4">
+          {numbers.map((x) => (
+            <div class="flex flex-col-reverse justify-end">
+              <dt class="mt-2 max-w-[14rem] font-mono text-[11px] uppercase leading-relaxed tracking-[0.14em] text-[#EBE3D0]">{x.l}</dt>
+              <dd class="font-display text-7xl font-light leading-none text-[#F6F1E6] lnum">{x.n}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+
+    <!-- ═══ THE CARD ═══════════════════════════════════════════════════ -->
+    <section id="card" class="night border-t border-[#7FB8E0]/10 bg-[#061A30]" aria-labelledby="card-h">
+      <div class="mx-auto max-w-6xl px-4 py-20 sm:px-6 md:py-28">
+        <h2 id="card-h" class="y-eyebrow text-center text-[#D4A24A]">To close the year</h2>
+        <div class="mt-10 grid items-center gap-12 lg:grid-cols-12 lg:gap-14">
+          <div class="mx-auto w-full max-w-[520px] lg:col-span-6">
+            <HolidayCard crew={team.map((m) => ({ name: m.name }))} />
+          </div>
+
+          <div class="lg:col-span-6">
+            <div class:list={["note", !NOTE_APPROVED && "is-draft"]} data-note-status={NOTE_APPROVED ? "approved" : "draft"}>
+              {!NOTE_APPROVED && (
+                <p class="draft-flag">
+                  <span class="draft-badge">Draft</span>
+                  <span>Placeholder words for Danny to rewrite or approve. Not his words yet.</span>
+                </p>
+              )}
+              <p class="y-eyebrow text-[#D4A24A]">A note from Danny</p>
+              <div class="mt-5 space-y-4 font-serif text-[1.4rem] italic leading-snug text-[#EBE3D0] md:text-[1.6rem]">
+                <p class="not-italic">{note.greeting}</p>
+                {note.paragraphs.map((p) => <p>{p}</p>)}
+              </div>
+              <p class="mt-8 font-display text-4xl text-[#F6F1E6]">{note.signOff}</p>
+              <p class="mt-1 font-mono text-[11px] uppercase tracking-[0.16em] text-[#7FB8E0]">{note.signature}</p>
+            </div>
+
+            <div class="mt-10 flex flex-wrap gap-3">
+              <a href="/" class="y-btn">Visit oceansllc.com <span aria-hidden="true">→</span></a>
+              <a href="/contact" class="y-btn y-btn-ghost">Get in touch</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</PageLayout>
+
+<style>
+  .y26 {
+    --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    overflow-x: clip;
+  }
+  .y-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+  .y-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 44px;
+    padding: 0.8rem 1.4rem;
+    border-radius: 999px;
+    background: #0b1f3a;
+    color: #f1ede2;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+  .y-cta:hover {
+    background: #155c91;
+    transform: translateY(-1px);
+  }
+  .y-link {
+    display: inline-flex;
+    gap: 0.5rem;
+    min-height: 44px;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 6px;
+  }
+
+  .beat {
+    padding-block: clamp(4.5rem, 10vw, 7.5rem);
+  }
+  .beat-grid {
+    margin-inline: auto;
+    max-width: 72rem;
+    padding-inline: 1rem;
+    display: grid;
+    gap: 1.5rem;
+  }
+  @media (min-width: 640px) {
+    .beat-grid {
+      padding-inline: 1.5rem;
+    }
+  }
+  @media (min-width: 900px) {
+    .beat-grid {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+      gap: 3rem;
+    }
+    .beat-side {
+      position: sticky;
+      top: 6rem;
+      align-self: start;
+    }
+  }
+  .beat-title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(2.6rem, 6.4vw, 4.4rem);
+    line-height: 1.02;
+  }
+  .beat-body {
+    margin-top: 1.5rem;
+    max-width: 40rem;
+    font-size: clamp(1.06rem, 1.6vw, 1.2rem);
+    line-height: 1.7;
+  }
+  .numeral {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(5rem, 11vw, 9rem);
+    line-height: 0.8;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(212, 162, 74, 0.7);
+    font-variant-numeric: lining-nums;
+  }
+  .numeral-light {
+    -webkit-text-stroke-color: rgba(122, 90, 34, 0.7);
+  }
+  .lnum {
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  .night :focus-visible {
+    outline-color: #7fb8e0;
+  }
+  .y-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    color: #ebe3d0;
+    border-bottom: 1px solid rgba(127, 184, 224, 0.35);
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .y-chip:hover {
+    color: #ffffff;
+    border-color: #7fb8e0;
+  }
+  .app-tile {
+    display: block;
+    height: 100%;
+    border-radius: 1rem;
+    border: 1px solid rgba(127, 184, 224, 0.18);
+    background: linear-gradient(160deg, rgba(26, 111, 171, 0.16), rgba(6, 26, 48, 0) 60%);
+    padding: 0.85rem 0.85rem 1.4rem;
+    transition: border-color 0.3s ease, transform 0.3s ease;
+  }
+  .app-tile:hover {
+    border-color: rgba(127, 184, 224, 0.55);
+    transform: translateY(-3px);
+  }
+
+  /* Dusk: daylight blue to night navy, with the sun on the horizon. */
+  .dusk {
+    position: relative;
+    height: clamp(150px, 24vw, 320px);
+    background: linear-gradient(180deg, #e1ecf5 0%, #c6dbeb 22%, #8db2d1 44%, #3f6c94 66%, #17385c 84%, #0b1f3a 100%);
+    overflow: hidden;
+  }
+  .dusk svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .dusk-sun {
+        animation: y-sunset linear both;
+        animation-timeline: view();
+        animation-range: entry 20% exit 80%;
+      }
+    }
+  }
+  @keyframes y-sunset {
+    from {
+      transform: translateY(-46px);
+    }
+    to {
+      transform: translateY(26px);
+    }
+  }
+
+  /* Danny's note. While it is a draft, it is framed and labelled as one. */
+  .note.is-draft {
+    position: relative;
+    border: 1.5px dashed #d4a24a;
+    border-radius: 14px;
+    padding: 1.5rem 1.25rem 1.75rem;
+    background: rgba(212, 162, 74, 0.05);
+  }
+  @media (min-width: 640px) {
+    .note.is-draft {
+      padding: 2rem 2rem 2.25rem;
+    }
+  }
+  .draft-flag {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(212, 162, 74, 0.35);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    line-height: 1.6;
+    color: #ebe3d0;
+  }
+  .draft-badge {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    background: #d4a24a;
+    color: #061a30;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  .y-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 44px;
+    padding: 0.8rem 1.4rem;
+    border-radius: 999px;
+    background: #7fb8e0;
+    color: #061a30;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+  .y-btn:hover {
+    background: #a7d0ee;
+    transform: translateY(-1px);
+  }
+  .y-btn-ghost {
+    background: transparent;
+    color: #ebe3d0;
+    border: 1px solid rgba(127, 184, 224, 0.4);
+  }
+  .y-btn-ghost:hover {
+    background: rgba(127, 184, 224, 0.08);
+    border-color: #7fb8e0;
+  }
+</style>

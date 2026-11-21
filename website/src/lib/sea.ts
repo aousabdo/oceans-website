@@ -15,7 +15,9 @@ import { MARK } from "./mark";
 
 export const CARD = { w: 800, h: 1000 } as const;
 export const HORIZON_Y = 440;
-export const WATER = { top: 470, bottom: 930, left: 130, right: 670 } as const;
+// Lights stay inside this box. The bottom leaves room for the card's sign-off;
+// the sides leave room for a centred name label under each light.
+export const WATER = { top: 470, bottom: 860, left: 130, right: 670 } as const;
 
 interface Pt {
   x: number;
@@ -91,7 +93,7 @@ export function layoutLights(n: number): { x: number; y: number; r: number }[] {
     const t = n === 1 ? 0.3 : i / (n - 1);
     const y = WATER.top + 10 + t * (WATER.bottom - WATER.top - 20);
     const u = (0.5 + i * PHI) % 1;
-    out.push({ x: Math.round(WATER.left + u * span), y: Math.round(y), r: Number((2.4 + 2.2 * t).toFixed(2)) });
+    out.push({ x: Math.round(WATER.left + u * span), y: Math.round(y), r: Number((3 + 2.6 * t).toFixed(2)) });
   }
   return out;
 }
