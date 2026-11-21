@@ -9,10 +9,12 @@ interface Props {
   path?: string;
   image?: string;
   type?: "website" | "article";
+  noindex?: boolean;
 }
 const props = Astro.props;
 ---
 <BaseLayout {...props}>
+  <slot name="head" slot="head" />
   <Nav slot="nav" />
   <Footer slot="footer" />
   <slot />

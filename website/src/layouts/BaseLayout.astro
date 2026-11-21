@@ -1,7 +1,7 @@
 ---
 import "@styles/global.css";
 import { ACTIVE_THEME } from "@lib/theme";
-import { buildSeo, type SeoInput } from "@lib/seo";
+import { buildSeo, robotsFor, type SeoInput } from "@lib/seo";
 import { organizationLd, websiteLd } from "@lib/schema";
 import BackToTop from "@components/BackToTop.astro";
 import CommandPalette from "@components/CommandPalette.astro";
@@ -9,9 +9,11 @@ import StickyCta from "@components/StickyCta.astro";
 
 interface Props extends Omit<SeoInput, "path"> {
   path?: string;
+  /** Keep the page out of search results (e.g. unreleased drafts). */
+  noindex?: boolean;
 }
 
-const { title, description, image, type, path } = Astro.props;
+const { title, description, image, type, path, noindex = false } = Astro.props;
 const seo = buildSeo({
   title,
   description,
@@ -44,7 +46,7 @@ const themeColors: Record<typeof ACTIVE_THEME, string> = {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content={themeColors[ACTIVE_THEME]} />
     <meta name="color-scheme" content="dark light" />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="robots" content={robotsFor(noindex)} />
     <title>{seo.title}</title>
     <meta name="description" content={seo.description} />
     <link rel="canonical" href={seo.url} />
@@ -71,6 +73,7 @@ const themeColors: Record<typeof ACTIVE_THEME, string> = {
     <link rel="alternate" type="application/rss+xml" title="OCEANS Journal" href="/rss.xml" />
     <script type="application/ld+json" set:html={JSON.stringify(organizationLd())} />
     <script type="application/ld+json" set:html={JSON.stringify(websiteLd())} />
+    <slot name="head" />
   </head>
   <body class="min-h-screen flex flex-col">
     <a
