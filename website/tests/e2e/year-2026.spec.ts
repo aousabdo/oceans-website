@@ -14,13 +14,31 @@ const team = readdirSync(teamDir)
   .map((m) => m.name);
 
 test.describe("/2026 — OCEANS, 2026", () => {
-  test("renders, stays unindexed, and marks the note as a draft", async ({ page }) => {
+  test("renders, is indexable, and shows no note while Danny's is held", async ({ page }) => {
     const res = await page.goto("/2026");
     expect(res?.status()).toBe(200);
     await expect(page.locator("h1")).toContainText("OCEANS");
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
-    await expect(page.locator(".draft-badge")).toHaveText(/draft/i);
-    await expect(page.locator(".draft-badge")).toBeVisible();
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /^index/);
+    await expect(page.locator(".note")).toHaveCount(0);
+    const html = await page.content();
+    expect(html).not.toContain("Placeholder words");
+    expect(html).not.toContain("A note from Danny");
+  });
+
+  test("has the 45-second film, never autoplaying, with both encodes served", async ({ page, request }) => {
+    await page.goto("/2026");
+    const video = page.locator("#film video");
+    await expect(video).toHaveAttribute("preload", "none");
+    await expect(video).toHaveAttribute("poster", "/video/oceans-film-poster.webp");
+    expect(await video.getAttribute("autoplay")).toBeNull();
+    const srcs = await page.locator("#film video source").evaluateAll((els) => els.map((e) => e.getAttribute("src")));
+    expect(srcs).toEqual(["/video/oceans-film-720p.mp4", "/video/oceans-film-1080p.mp4"]);
+    for (const src of [...srcs, "/video/oceans-film-poster.webp"]) {
+      const r = await request.get(src!, { headers: { Range: "bytes=0-1023" } });
+      expect([200, 206]).toContain(r.status());
+    }
+    await expect(page.locator("[data-film-play]")).toBeVisible();
+    await expect(page.locator("#film details li")).toHaveCount(8);
   });
 
   test("puts one light on the water per teammate, in roster order", async ({ page }) => {
@@ -77,8 +95,10 @@ test.describe("/2026 with reduced motion", () => {
 
 test.describe("/2026 without JavaScript", () => {
   test.use({ javaScriptEnabled: false });
-  test("shows the finished card", async ({ page }) => {
+  test("shows the finished card, and the film keeps its native controls", async ({ page }) => {
     await page.goto("/2026");
+    await expect(page.locator("#film video")).toHaveAttribute("controls", "");
+    await expect(page.locator("[data-film-play]")).toBeHidden();
     await expect(page.locator(".hc-names li").first()).toHaveCSS("opacity", "1");
     await expect(page.locator(".hc-greeting")).toHaveCSS("opacity", "1");
   });
