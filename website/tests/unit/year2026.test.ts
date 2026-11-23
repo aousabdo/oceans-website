@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isYear2026Path, NOTE_APPROVED } from "../../src/lib/year2026";
+import { isYear2026Path, notePolicy, NOTE_STATUS } from "../../src/lib/year2026";
 import { robotsFor } from "../../src/lib/seo";
 
 describe("robotsFor", () => {
@@ -23,8 +23,20 @@ describe("isYear2026Path", () => {
   });
 });
 
-describe("NOTE_APPROVED", () => {
-  it("ships as false until Danny signs off", () => {
-    expect(NOTE_APPROVED).toBe(false);
+describe("notePolicy", () => {
+  it("draft: shows the placeholder in a DRAFT frame and keeps the page out of search", () => {
+    expect(notePolicy("draft")).toEqual({ showNote: true, draftFrame: true, noindex: true });
+  });
+  it("held: no note at all, page is public", () => {
+    expect(notePolicy("held")).toEqual({ showNote: false, draftFrame: false, noindex: false });
+  });
+  it("approved: Danny's words, no frame, page is public", () => {
+    expect(notePolicy("approved")).toEqual({ showNote: true, draftFrame: false, noindex: false });
+  });
+});
+
+describe("NOTE_STATUS", () => {
+  it("ships as held: live without a note until Danny sends his words", () => {
+    expect(NOTE_STATUS).toBe("held");
   });
 });

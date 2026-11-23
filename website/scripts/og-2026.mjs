@@ -64,7 +64,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8">
   <div class="copy">
     <p class="eyebrow">Year in review</p>
     <h1>OCEANS,<br><em>2026.</em></h1>
-    <p class="sub">Five moments from our fourteenth year, and a card from all of us.</p>
+    <p class="sub">Six moments from our fourteenth year, and a card from all of us.</p>
   </div>
   <div class="foot"><span class="word">OCEANS <span>LLC</span></span><span class="meta">SDVOSB · JACKSONVILLE FL · EST. 2012</span></div>
 </body></html>`;

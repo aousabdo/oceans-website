@@ -1,8 +1,9 @@
 # OCEANS, 2026 — review packet
 
-For Aous to take to Danny. The page lives at `/2026` on branch
-`claude/ocean-2026-e7e88a`. It is not merged, not linked from the nav, marked
-noindex and kept out of the sitemap. Target: approved by about Dec 5, sent mid-December.
+For Aous to take to Danny. The page is live at <https://www.oceansllc.com/2026> as of
+2026-11-23. Danny's note is held off the page (`noteStatus: "held"`) until he sends his
+own words. Per Aous, it isn't linked from the nav. People arrive from Danny's email, and the page is
+indexable. Target: sent mid-December.
 
 To view it locally:
 
@@ -24,15 +25,16 @@ Then open <http://localhost:4321/2026>.
 | 03 | A new home port: the relaunched site, the `[~]` mark, the Journal, the Mission Network | `854966a` (Mariner + `[~]` locked 2026-06-24); DNS off Wix July 2026 |
 | 04 | Instruments: SKYWATCH + ATLAS, live, free, no login | `/apps`, `f554d0a` (2026-10-05) |
 | 05 | Mission Design Library | `9409e4f` (2026-10-26); the site calls it a concept preview |
-| ~ | The card: the `[~]` becomes water, one light per person on `/team`, a DRAFT note from Danny | `src/content/team/` (8 people) |
+| 06 | On film: the 45-second brand film (added 2026-11-23) | `Oceans/branding/brand-film/`; Danny approved the 16:9 cut |
+| ~ | The card: the `[~]` becomes water, one light per person on `/team`. Danny's note is held | `src/content/team/` (8 people) |
 
 ## 2. Page copy, every line
 
 **Hero**
 - Eyebrow: YEAR IN REVIEW
 - Title: **OCEANS, 2026.**
-- Lede: *Our fourteenth year out of Jacksonville. Five moments from it, and a card to close it out.*
-- Ship's log (table of contents): Certified · New hands on deck · A new home port · Instruments · The library · The card
+- Lede: *Our fourteenth year out of Jacksonville. Six moments from it, and a card to close it out.*
+- Ship's log (table of contents): Certified · New hands on deck · A new home port · Instruments · The library · On film · The card
 
 **01 · Certified**
 - **Certified, officially.**
@@ -72,6 +74,19 @@ Then open <http://localhost:4321/2026>.
   shapes a federal design. 5 problems so far, the first with a full write-up.
 - The five problem titles, each linked.
 
+**06 · On film**
+- **The mark, in motion.**
+- Forty-five seconds, made this year. The [~] draws itself, opens into the sea, and moves
+  through the work: maritime security, systems engineering and RDT&E, UAS and
+  counter-UAS, and mission data. Then the brackets close the whole picture back into the mark.
+- The film plays only on click, with sound, and is never autoplayed. Phones get the 720p
+  file (7 MB) and wider screens the 1080p file (16 MB). Both are web encodes of
+  `OCEANS-brand-film-16x9-1080p-music.mp4`, in `website/public/video/`.
+- Caption: With sound · Motion graphics and original score by OCEANS · Vessels, aircraft
+  and places shown are illustrative. No exclusive-rights claim, per `brand-film/LICENSES.md`.
+- "What happens in the film" is a time-coded scene list from `CUES.md`, which also
+  serves as the text alternative.
+
 **By the numbers:** 14 years since we started, in 2012 · 2 apps live on the open web · 5
 problems in the Mission Design Library · 7 essays in the Journal
 
@@ -81,10 +96,12 @@ problems in the Mission Design Library · 7 essays in the Journal
   each of the 8 people on `/team` · *Happy holidays from all of us at* OCEANS
 - Buttons under the note: Visit oceansllc.com → · Get in touch
 
-## 3. Danny's note: DRAFT, NOT HIS WORDS
+## 3. Danny's note: DRAFT, NOT HIS WORDS (held off the live page)
 
-These are placeholder words for Danny to rewrite or approve. On the page they sit
-inside a dashed frame with a DRAFT badge until the launch flag flips.
+These are placeholder words for Danny to rewrite or approve. They are **not on the
+live page**: `website/src/data/year-2026.json` has `"noteStatus": "held"`.
+- `"draft"` shows them in a dashed DRAFT frame and makes the page noindex. Use it for review previews only.
+- `"approved"` shows the note signed by Danny. Use it only once these are his words.
 
 > To our clients, partners and crew:
 >
@@ -176,12 +193,20 @@ copied from `/apps`. To drop the numbers strip, delete the `By the numbers` sect
 
 ## 8. Launch checklist
 
-1. Danny rewrites or approves the note → replace `note` in `website/src/data/year-2026.ts`.
-2. Settle the open items in section 6.
-3. Set `"noteApproved": true` in `website/src/data/year-2026.json`. That removes the
-   DRAFT frame and noindex, and adds `/2026` to the sitemap.
-4. If the card changes: `npm run build && node scripts/og-2026.mjs` to refresh
-   `public/og-2026.png`. Optionally copy it to the brand pack's `og-images/`.
-5. Optional: link `/2026` from the nav or the home page (Aous's call).
-6. Merge to `main`, which deploys to production on Cloudflare Pages.
-7. Danny sends the email mid-December.
+Done 2026-11-23: the page and the film are live, the note is held, and there is no nav link (Aous's call).
+
+When Danny sends his note:
+1. Put his words in `note` in `website/src/data/year-2026.ts`.
+2. Set `"noteStatus": "approved"` in `website/src/data/year-2026.json`.
+3. Open a PR and merge it to `main`.
+4. **Deploy by hand.** Merging does not deploy. This repo's GitHub Actions deploy has never
+   run, and production is pushed with wrangler. From `website/`:
+   ```bash
+   npm run build
+   ```
+   ```bash
+   npx wrangler pages deploy dist --project-name oceans-website --branch main
+   ```
+5. If the card changes: `npm run build && node scripts/og-2026.mjs` refreshes
+   `public/og-2026.png`.
+6. Danny sends the email mid-December.
